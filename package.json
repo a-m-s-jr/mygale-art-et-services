@@ -1,6 +1,7 @@
 {
   "name": "mygale-art-et-services",
   "version": "1.0.0",
+  "type": "commonjs",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -13,10 +14,13 @@
     "db:generate": "pnpm --filter @mygale/prisma db:generate",
     "db:push": "pnpm --filter @mygale/prisma db:push",
     "db:studio": "pnpm --filter @mygale/prisma db:studio",
+    "db:migrate": "pnpm --filter @mygale/prisma db:migrate",
+    "db:migrate:dev": "pnpm --filter @mygale/prisma exec prisma migrate dev",
+    "db:migrate:deploy": "pnpm --filter @mygale/prisma exec prisma migrate deploy",
     "build:web": "cd apps/web && pnpm build",
     "build:api": "cd apps/api && pnpm build",
     "build": "pnpm -w turbo run build",
-    "lint": "pnpm -w eslint \"**/*.{ts,tsx,js,jsx}\"",
+    "lint": "eslint \"**/*.{ts,tsx,js,jsx}\" --fix",
     "format": "prettier --write .",
     "prisma:generate": "pnpm -w prisma generate",
     "prepare": "husky"
@@ -26,22 +30,24 @@
   "license": "ISC",
   "packageManager": "pnpm@10.21.0",
   "lint-staged": {
-    "*.{ts,tsx,js,jsx,json,md}": [
-      "eslint --fix",
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ],
+    "*.{json,md}": [
       "prettier --write"
     ]
   },
   "devDependencies": {
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
-    "@eslint/js": "^9.39.1",
-    "@typescript-eslint/eslint-plugin": "^8.46.4",
-    "@typescript-eslint/parser": "^8.46.4",
-    "eslint": "^9.39.1",
-    "eslint-config-prettier": "^10.1.8",
+    "@eslint/js": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.0.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.6",
-    "prettier": "^3.6.2",
+    "prettier": "^3.0.0",
     "prisma": "^6.19.0",
     "turbo": "^2.6.1"
   },
