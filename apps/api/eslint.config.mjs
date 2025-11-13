@@ -32,8 +32,11 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
+      // @ts-ignore
       '@typescript-eslint/no-unsafe-assignment': 'off',
+      // @ts-ignore
       '@typescript-eslint/no-unsafe-call': 'off',
+      // @ts-ignore
       '@typescript-eslint/no-unsafe-member-access': 'off',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
