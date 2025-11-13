@@ -1,0 +1,12 @@
+node_modules
+dist
+.next
+.env
+.env.local
+.vscode
+.DS_Store
+.bun
+bun.lock
+data
+# Snyk Security Extension - AI Rules (auto-generated)
+.github\instructions\snyk_rules.instructions.md

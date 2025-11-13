@@ -1,0 +1,36 @@
+{
+  "name": "mygale-art-et-services",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev:web": "cd apps/web && pnpm dev --webpack",
+    "dev:api": "cd apps/api && pnpm start:dev",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "dev": "pnpm db:up && concurrently \"pnpm dev:web\" \"pnpm dev:api\"",
+    "build:web": "cd apps/web && pnpm build",
+    "build:api": "cd apps/api && pnpm build",
+    "build": "pnpm -w turbo run build",
+    "lint": "pnpm -w eslint \"**/*.{ts,tsx,js,jsx}\"",
+    "format": "prettier --write .",
+    "prisma:generate": "pnpm -w prisma generate",
+    "prepare": "husky"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.21.0",
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "turbo": "^2.6.1"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "concurrently": "^9.2.1"
+  }
+}
