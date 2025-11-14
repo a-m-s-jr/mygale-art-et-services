@@ -3,14 +3,17 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Node",
+    "lib": ["ES2022", "DOM"],
     "strict": true,
-    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {
-      "@ui/*": ["packages/ui/*"]
+      "@/*": ["apps/web/src/*"],
+      "@mygale/prisma/*": ["packages/prisma/*"]
     }
-  },
-  "include": ["apps/**/src", "packages/**/src", "prisma"]
+  }
 }

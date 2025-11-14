@@ -1,0 +1,2134 @@
+================================================================================
+PROJECT FILES CONCATENATION
+Generated: 2025-11-14T01:57:28.122Z
+Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
+Total Files: 50
+Extensions: .ts, .tsx, .js, .jsx, .json, .prisma, .yml, .yaml, .md, .mjs, .cjs, .css, .sql, .toml
+================================================================================
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\turbo.json
+RELATIVE: turbo.json
+================================================================================
+
+"""
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": ["tsconfig.json"],
+  "pipeline": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/", ".next/"]
+    },
+    "dev": {
+      "cache": false
+    },
+    "lint": {},
+    "test": {}
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\tsconfig.json
+RELATIVE: tsconfig.json
+================================================================================
+
+"""
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "useDefineForClassFields": false,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["apps/web/src/*"],
+      "@mygale/prisma/*": ["packages/prisma/*"]
+    }
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\pnpm-workspace.yaml
+RELATIVE: pnpm-workspace.yaml
+================================================================================
+
+"""
+packages:
+  - "apps/*"
+  - "packages/*"
+  - 'packages/prisma'
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\package.json
+RELATIVE: package.json
+================================================================================
+
+"""
+{
+  "name": "mygale-art-et-services",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "",
+  "main": "index.js",
+  "exports": {
+    ".": "./src/client/index.js",
+    "./utils/auditLogger": "./src/utils/auditLogger.ts"
+  },
+  "scripts": {
+    "dev:web": "cd apps/web && pnpm dev --webpack",
+    "dev:api": "cd apps/api && pnpm start:dev",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "dev": "pnpm db:up && concurrently \"pnpm dev:web\" \"pnpm dev:api\"",
+    "db:generate": "pnpm --filter @mygale/prisma db:generate",
+    "db:push": "pnpm --filter @mygale/prisma db:push",
+    "db:studio": "pnpm --filter @mygale/prisma db:studio",
+    "db:migrate": "pnpm --filter @mygale/prisma db:migrate",
+    "db:migrate:dev": "pnpm --filter @mygale/prisma exec prisma migrate dev",
+    "db:migrate:deploy": "pnpm --filter @mygale/prisma exec prisma migrate deploy",
+    "build:web": "cd apps/web && pnpm build",
+    "build:api": "cd apps/api && pnpm build",
+    "build": "pnpm -w turbo run build",
+    "lint": "eslint \"**/*.{ts,tsx,js,jsx}\" --fix",
+    "format": "prettier --write .",
+    "prisma:generate": "pnpm -w prisma generate",
+    "prepare": "husky",
+    "test": "pnpm -r test",
+    "test:api": "pnpm --filter api test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.22.0",
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@eslint/js": "^9.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "concurrently": "8.2.2",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.0.0",
+    "prisma": "^6.19.0",
+    "turbo": "^2.6.1"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0",
+    "concurrently": "^8.2.2",
+    "glob": "^11.0.3",
+    "rimraf": "^6.1.0"
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\eslint.config.js
+RELATIVE: eslint.config.js
+================================================================================
+
+"""
+const js = require('@eslint/js')
+const globals = require('globals')
+const tsPlugin = require('@typescript-eslint/eslint-plugin')
+
+module.exports = [
+  // Base JavaScript configuration
+  {
+    files: ['**/*.{js,mjs,cjs}'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      'no-console': 'warn',
+      'prefer-const': 'error',
+    },
+  },
+
+  // TypeScript configuration
+  {
+    files: ['**/*.{ts,tsx}'],
+    languageOptions: {
+      parser: require('@typescript-eslint/parser'),
+      ecmaVersion: 2022,
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tsPlugin,
+    },
+    rules: {
+      ...tsPlugin.configs.recommended.rules,
+      'no-console': 'warn',
+      'prefer-const': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/require-await': 'off',
+    },
+  },
+
+  // Ignore files that shouldn't be linted
+  {
+    ignores: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/.next/**',
+      '**/*.json',
+      '**/*.md',
+    ],
+  },
+]
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\docker-compose.yml
+RELATIVE: docker-compose.yml
+================================================================================
+
+"""
+# docker-compose.yml
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:18
+    container_name: mygale_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./data/postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\concatenate-files.js
+RELATIVE: concatenate-files.js
+================================================================================
+
+"""
+#!/usr/bin/env node
+const fs = require('fs')
+const path = require('path')
+const { globSync } = require('glob')
+
+// =============================================================================
+// CONFIGURATION
+// =============================================================================
+
+// Command-line arguments with sensible defaults
+const ROOT_DIR = process.argv[2] || process.cwd()
+const OUTPUT_FILE = process.argv[3] || 'MyProjectContent.txt'
+const EXTENSIONS = process.argv[4]
+  ? process.argv[4].split(',').map((e) => (e.trim().startsWith('.') ? e.trim() : '.' + e.trim()))
+  : ['.ts', '.tsx', '.js', '.jsx', '.json', '.prisma', '.yml', '.yaml', '.md', '.mjs', '.cjs', '.css', '.sql', '.toml']
+
+// Directories and files to exclude (glob patterns)
+const IGNORE_PATTERNS = [
+  '**/node_modules/**',
+  '**/.next/**',
+  '**/dist/**',
+  '**/build/**',
+  '**/.git/**',
+  '**/.turbo/**',
+  '**/coverage/**',
+  '**/data/postgres/**',
+  '**/.cache/**',
+  '**/tmp/**',
+  '**/temp/**',
+  '**/*.lock',
+  '**/pnpm-lock.yaml',
+  '**/yarn.lock',
+  '**/package-lock.json',
+  `**/${OUTPUT_FILE}`, // Don't include the output file itself
+]
+
+// Output format options
+const FORMAT_OPTIONS = {
+  separator: '='.repeat(80),
+  wrapInQuotes: true, // Wrap content in triple quotes for better parsing
+  includeRelativePath: true,
+}
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+function buildGlobPattern() {
+  // Create a pattern that matches all specified extensions
+  if (EXTENSIONS.length === 1) {
+    return `**/*${EXTENSIONS[0]}`
+  }
+  // Use brace expansion for multiple extensions
+  const exts = EXTENSIONS.map((e) => e.replace('.', '')).join(',')
+  return `**/*.{${exts}}`
+}
+
+function formatFileContent(filePath, content) {
+  const relativePath = path.relative(ROOT_DIR, filePath)
+  const absolutePath = path.resolve(filePath)
+  let output = ''
+
+  // Add file header
+  output += `\n${FORMAT_OPTIONS.separator}\n`
+  output += `FILE: ${absolutePath}\n`
+  if (FORMAT_OPTIONS.includeRelativePath) {
+    output += `RELATIVE: ${relativePath}\n`
+  }
+  output += `${FORMAT_OPTIONS.separator}\n\n`
+
+  // Add content with optional wrapping
+  if (FORMAT_OPTIONS.wrapInQuotes) {
+    output += '"""\n'
+    output += content
+    output += '\n"""\n\n'
+  } else {
+    output += content
+    output += '\n\n'
+  }
+
+  return output
+}
+
+// =============================================================================
+// MAIN FUNCTION
+// =============================================================================
+
+function concatenateFiles() {
+  console.log('\n🚀 Starting file concatenation...\n')
+  console.log(`📁 Root directory: ${ROOT_DIR}`)
+  console.log(`📄 Output file: ${OUTPUT_FILE}`)
+  console.log(`🔍 Extensions: ${EXTENSIONS.join(', ')}`)
+  console.log(`\n${'─'.repeat(80)}\n`)
+
+  // Validate root directory
+  if (!fs.existsSync(ROOT_DIR)) {
+    console.error(`❌ Error: Root directory does not exist: ${ROOT_DIR}`)
+    process.exit(1)
+  }
+
+  // Build glob pattern
+  const globPattern = buildGlobPattern()
+  console.log(`🔎 Glob pattern: ${globPattern}`)
+  console.log(`🚫 Ignoring: ${IGNORE_PATTERNS.length} patterns\n`)
+
+  // Get all files using glob
+  const startTime = Date.now()
+  let files
+
+  try {
+    files = globSync(globPattern, {
+      cwd: ROOT_DIR,
+      ignore: IGNORE_PATTERNS,
+      nodir: true, // Don't match directories
+      dot: true, // Match dotfiles (like .prettierrc)
+      absolute: false, // Return relative paths
+      follow: false, // Don't follow symlinks
+    })
+  } catch (error) {
+    console.error(`❌ Error scanning files: ${error.message}`)
+    process.exit(1)
+  }
+
+  if (files.length === 0) {
+    console.warn('⚠️  No files found matching the criteria.')
+    console.log('\nTip: Check your extensions and ignore patterns.')
+    return
+  }
+
+  console.log(`✅ Found ${files.length} files to process\n`)
+
+  // Create output stream
+  const outputStream = fs.createWriteStream(path.join(ROOT_DIR, OUTPUT_FILE), { flags: 'w' })
+
+  // Write header
+  const header = `${'='.repeat(80)}
+PROJECT FILES CONCATENATION
+Generated: ${new Date().toISOString()}
+Root: ${ROOT_DIR}
+Total Files: ${files.length}
+Extensions: ${EXTENSIONS.join(', ')}
+${'='.repeat(80)}\n\n`
+
+  outputStream.write(header)
+
+  // Process each file
+  let processedCount = 0
+  let errorCount = 0
+  const errors = []
+
+  files.forEach((file, index) => {
+    const fullPath = path.join(ROOT_DIR, file)
+
+    try {
+      const content = fs.readFileSync(fullPath, 'utf8')
+      const formattedOutput = formatFileContent(fullPath, content)
+      outputStream.write(formattedOutput)
+
+      processedCount++
+      const progress = Math.round(((index + 1) / files.length) * 100)
+      const fileName = path.basename(file)
+      process.stdout.write(
+        `\r📝 Processing: [${progress}%] ${index + 1}/${files.length} - ${fileName}${' '.repeat(30)}`,
+      )
+    } catch (error) {
+      errorCount++
+      errors.push({ file: fullPath, error: error.message })
+      console.error(`\n❌ Error reading file ${file}: ${error.message}`)
+    }
+  })
+
+  // Close stream and finish
+  outputStream.end(() => {
+    const endTime = Date.now()
+    const duration = ((endTime - startTime) / 1000).toFixed(2)
+    const outputPath = path.join(ROOT_DIR, OUTPUT_FILE)
+    const outputSize = fs.statSync(outputPath).size
+
+    console.log('\n\n' + '─'.repeat(80))
+    console.log(`\n✨ Done!`)
+    console.log(`📊 Processed: ${processedCount} files`)
+    if (errorCount > 0) {
+      console.log(`⚠️  Errors: ${errorCount} files`)
+      console.log(`\nFailed files:`)
+      errors.forEach((e) => console.log(`  - ${e.file}: ${e.error}`))
+    }
+    console.log(`⏱️  Duration: ${duration}s`)
+    console.log(`💾 Output saved to: ${path.resolve(outputPath)}`)
+    console.log(`📦 File size: ${(outputSize / 1024 / 1024).toFixed(2)} MB\n`)
+  })
+}
+
+// =============================================================================
+// CLI HELP
+// =============================================================================
+
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log(`
+📚 File Concatenator - Combine all project files into one document
+
+Usage: node concatenate-files.js [rootDir] [outputFile] [extensions]
+
+Arguments:
+  rootDir      Root directory to scan (default: current directory)
+  outputFile   Output file name (default: MyProjectContent.txt)
+  extensions   Comma-separated list of extensions (default: .ts,.tsx,.js,.jsx,.json,.prisma,.yml,.yaml,.md,.mjs,.cjs)
+
+Examples:
+  node concatenate-files.js
+  node concatenate-files.js ./my-project output.txt
+  node concatenate-files.js ./MYGALE_ART_AND_SERVICES combined.txt .ts,.js,.json
+  node concatenate-files.js . all-files.txt ts,js,tsx,jsx
+
+Features:
+  ✅ Fast glob-based file scanning
+  ✅ Smart exclusion of build artifacts and dependencies
+  ✅ Progress indicator with percentage
+  ✅ Error handling with detailed reporting
+  ✅ Relative and absolute path tracking
+  ✅ Configurable output format
+  ✅ Memory-efficient streaming
+
+Excluded by default:
+  - node_modules, .next, dist, build, .git
+  - Lock files (pnpm-lock.yaml, yarn.lock, etc.)
+  - Environment files (.env*)
+  - Cache directories
+  `)
+  process.exit(0)
+}
+
+// =============================================================================
+// RUN
+// =============================================================================
+
+try {
+  concatenateFiles()
+} catch (error) {
+  console.error('\n❌ Fatal error:', error.message)
+  console.error(error.stack)
+  process.exit(1)
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\commitlint.config.js
+RELATIVE: commitlint.config.js
+================================================================================
+
+"""
+module.exports = {
+  extends: ['@commitlint/config-conventional'],
+  rules: {
+    'type-enum': [
+      2,
+      'always',
+      [
+        'build',
+        'chore',
+        'ci',
+        'docs',
+        'feat',
+        'fix',
+        'perf',
+        'refactor',
+        'revert',
+        'style',
+        'test',
+      ],
+    ],
+    'type-case': [2, 'always', 'lower-case'],
+    'type-empty': [2, 'never'],
+    'subject-empty': [2, 'never'],
+    'subject-full-stop': [2, 'never', '.'],
+    'header-max-length': [2, 'always', 100],
+  },
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma.config.ts
+RELATIVE: packages\prisma\prisma.config.ts
+================================================================================
+
+"""
+import { defineConfig, env } from 'prisma/config'
+import 'dotenv/config'
+
+export default defineConfig({
+  schema: 'prisma/schema.prisma',
+  migrations: {
+    path: 'prisma/migrations',
+  },
+  engine: 'classic',
+  datasource: {
+    url: env('DATABASE_URL'),
+  },
+})
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\package.json
+RELATIVE: packages\prisma\package.json
+================================================================================
+
+"""
+{
+  "name": "@mygale/prisma",
+  "version": "1.0.0",
+  "main": "src/client/index.js",
+  "types": "src/client/index.d.ts",
+  "scripts": {
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:studio": "prisma studio",
+    "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.0"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.0"
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\seed.ts
+RELATIVE: packages\prisma\prisma\seed.ts
+================================================================================
+
+"""
+import { PrismaClient, SubmissionStatus } from '@prisma/client'
+const prisma = new PrismaClient()
+
+async function main() {
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@mygale.cm' },
+    update: {},
+    create: {
+      name: 'Admin',
+      email: 'admin@mygale.cm',
+      role: 'ADMIN',
+    },
+  })
+
+  const submission = await prisma.contactSubmission.create({
+    data: {
+      name: 'Sample Client',
+      email: 'client@example.com',
+      message: 'Interested in your art services!',
+      status: SubmissionStatus.new,
+      assignedTo: { connect: { id: admin.id } },
+    },
+  })
+
+  await prisma.auditLog.create({
+    data: {
+      submissionId: submission.id,
+      action: 'Submission created',
+      changedById: admin.id,
+    },
+  })
+
+  console.log('✅ Seed data inserted')
+}
+
+main()
+  .catch(console.error)
+  .finally(() => prisma.$disconnect())
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\schema.prisma
+RELATIVE: packages\prisma\prisma\schema.prisma
+================================================================================
+
+"""
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String              @id @default(cuid())
+  name                String
+  email               String              @unique
+  role                String?
+  createdAt           DateTime            @default(now())
+  auditLogs           AuditLog[]
+  assignedSubmissions ContactSubmission[]
+}
+
+model ContactSubmission {
+  id           String           @id @default(cuid())
+  name         String
+  email        String
+  phone        String?
+  message      String
+  source       String?
+  createdAt    DateTime         @default(now())
+  assignedToId String?
+  status       SubmissionStatus @default(new)
+  auditLogs    AuditLog[]
+  assignedTo   User?            @relation(fields: [assignedToId], references: [id])
+  replies      Reply[]
+}
+
+model Reply {
+  id           String            @id @default(cuid())
+  submissionId String
+  body         String
+  sentAt       DateTime          @default(now())
+  meta         Json?
+  channel      ReplyChannel
+  submission   ContactSubmission @relation(fields: [submissionId], references: [id])
+}
+
+model AuditLog {
+  id           String            @id @default(cuid())
+  submissionId String
+  changedById  String?
+  createdAt    DateTime          @default(now())
+  action       String
+  details      Json?
+  changedBy    User?             @relation(fields: [changedById], references: [id])
+  submission   ContactSubmission @relation(fields: [submissionId], references: [id])
+}
+
+enum SubmissionStatus {
+  new
+  in_review
+  responded
+  closed
+}
+
+enum ReplyChannel {
+  email
+  phone
+  watsapp
+  note
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\migration_lock.toml
+RELATIVE: packages\prisma\prisma\migrations\migration_lock.toml
+================================================================================
+
+"""
+# Please do not edit this file manually
+# It should be added in your version-control system (e.g., Git)
+provider = "postgresql"
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251113081816_reform_schema\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251113081816_reform_schema\migration.sql
+================================================================================
+
+"""
+/*
+  Warnings:
+
+  - You are about to drop the column `newStatus` on the `AuditLog` table. All the data in the column will be lost.
+  - You are about to drop the column `note` on the `AuditLog` table. All the data in the column will be lost.
+  - You are about to drop the column `previousStatus` on the `AuditLog` table. All the data in the column will be lost.
+  - You are about to drop the column `phone` on the `User` table. All the data in the column will be lost.
+  - Added the required column `action` to the `AuditLog` table without a default value. This is not possible if the table is not empty.
+  - Made the column `name` on table `User` required. This step will fail if there are existing NULL values in that column.
+
+*/
+-- AlterTable
+ALTER TABLE "AuditLog" DROP COLUMN "newStatus",
+DROP COLUMN "note",
+DROP COLUMN "previousStatus",
+ADD COLUMN     "action" TEXT NOT NULL,
+ADD COLUMN     "details" JSONB;
+
+-- AlterTable
+ALTER TABLE "User" DROP COLUMN "phone",
+ALTER COLUMN "name" SET NOT NULL,
+ALTER COLUMN "role" DROP NOT NULL,
+ALTER COLUMN "role" DROP DEFAULT;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251113073736_new_schema_structure_rel_enum\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251113073736_new_schema_structure_rel_enum\migration.sql
+================================================================================
+
+"""
+/*
+  Warnings:
+
+  - Changed the type of `channel` on the `Reply` table. No cast exists, the column would be dropped and recreated, which cannot be done if there is data, since the column is required.
+
+*/
+-- CreateEnum
+CREATE TYPE "ReplyChannel" AS ENUM ('email', 'phone', 'watsapp', 'note');
+
+-- AlterTable
+ALTER TABLE "Reply" DROP COLUMN "channel",
+ADD COLUMN     "channel" "ReplyChannel" NOT NULL;
+
+-- CreateTable
+CREATE TABLE "AuditLog" (
+    "id" TEXT NOT NULL,
+    "submissionId" TEXT NOT NULL,
+    "previousStatus" "SubmissionStatus",
+    "newStatus" "SubmissionStatus" NOT NULL,
+    "changedById" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "note" TEXT,
+
+    CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "Reply" ADD CONSTRAINT "Reply_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "ContactSubmission"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_submissionId_fkey" FOREIGN KEY ("submissionId") REFERENCES "ContactSubmission"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_changedById_fkey" FOREIGN KEY ("changedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251113062736_init_enum_and_relations\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251113062736_init_enum_and_relations\migration.sql
+================================================================================
+
+"""
+/*
+  Warnings:
+
+  - You are about to drop the column `assignedTo` on the `ContactSubmission` table. All the data in the column will be lost.
+  - The `status` column on the `ContactSubmission` table would be dropped and recreated. This will lead to data loss if there is data in the column.
+
+*/
+-- CreateEnum
+CREATE TYPE "SubmissionStatus" AS ENUM ('new', 'in_review', 'responded', 'closed');
+
+-- AlterTable
+ALTER TABLE "ContactSubmission" DROP COLUMN "assignedTo",
+ADD COLUMN     "assignedToId" TEXT,
+DROP COLUMN "status",
+ADD COLUMN     "status" "SubmissionStatus" NOT NULL DEFAULT 'new';
+
+-- AddForeignKey
+ALTER TABLE "ContactSubmission" ADD CONSTRAINT "ContactSubmission_assignedToId_fkey" FOREIGN KEY ("assignedToId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251113015902_init\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251113015902_init\migration.sql
+================================================================================
+
+"""
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "name" TEXT,
+    "email" TEXT NOT NULL,
+    "phone" TEXT,
+    "role" TEXT NOT NULL DEFAULT 'VIEWER',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "ContactSubmission" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "phone" TEXT,
+    "message" TEXT NOT NULL,
+    "source" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'new',
+    "assignedTo" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "ContactSubmission_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Reply" (
+    "id" TEXT NOT NULL,
+    "submissionId" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "channel" TEXT NOT NULL,
+    "sentAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "meta" JSONB,
+
+    CONSTRAINT "Reply_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\tsconfig.json
+RELATIVE: apps\web\tsconfig.json
+================================================================================
+
+"""
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "forceConsistentCasingInFileNames": true,
+    "paths": {
+      "@/*": ["./src/*"],
+      "@mygale/prisma/*": ["../../packages/prisma/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\README.md
+RELATIVE: apps\web\README.md
+================================================================================
+
+"""
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\postcss.config.mjs
+RELATIVE: apps\web\postcss.config.mjs
+================================================================================
+
+"""
+const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
+
+export default config;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\package.json
+RELATIVE: apps\web\package.json
+================================================================================
+
+"""
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --webpack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "next": "16.0.1"
+  },
+  "devDependencies": {
+    "babel-plugin-react-compiler": "1.0.0",
+    "typescript": "^5",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@tailwindcss/postcss": "^4",
+    "tailwindcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.1"
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\next.config.ts
+RELATIVE: apps\web\next.config.ts
+================================================================================
+
+"""
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+  reactCompiler: true,
+};
+
+export default nextConfig;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\next.config.mjs
+RELATIVE: apps\web\next.config.mjs
+================================================================================
+
+"""
+import path from 'path'
+
+export default {
+  outputFileTracingRoot: path.resolve(process.cwd(), '../../'),
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\next-env.d.ts
+RELATIVE: apps\web\next-env.d.ts
+================================================================================
+
+"""
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+import "./.next/dev/types/routes.d.ts";
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\eslint.config.mjs
+RELATIVE: apps\web\eslint.config.mjs
+================================================================================
+
+"""
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+
+const eslintConfig = defineConfig([
+  ...nextVitals,
+  ...nextTs,
+  // Override default ignores of eslint-config-next.
+  globalIgnores([
+    // Default ignores of eslint-config-next:
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+]);
+
+export default eslintConfig;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\page.tsx
+RELATIVE: apps\web\src\app\page.tsx
+================================================================================
+
+"""
+import Image from "next/image";
+
+export default function Home() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+        <Image
+          className="dark:invert"
+          src="/next.svg"
+          alt="Next.js logo"
+          width={100}
+          height={20}
+          priority
+        />
+        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
+          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+            To get started, edit the page.tsx file.
+          </h1>
+          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+            Looking for a starting point or more instructions? Head over to{" "}
+            <a
+              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+              className="font-medium text-zinc-950 dark:text-zinc-50"
+            >
+              Templates
+            </a>{" "}
+            or the{" "}
+            <a
+              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+              className="font-medium text-zinc-950 dark:text-zinc-50"
+            >
+              Learning
+            </a>{" "}
+            center.
+          </p>
+        </div>
+        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+          <a
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
+            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              className="dark:invert"
+              src="/vercel.svg"
+              alt="Vercel logomark"
+              width={16}
+              height={16}
+            />
+            Deploy Now
+          </a>
+          <a
+            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Documentation
+          </a>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\layout.tsx
+RELATIVE: apps\web\src\app\layout.tsx
+================================================================================
+
+"""
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Create Next App",
+  description: "Generated by create next app",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {children}
+      </body>
+    </html>
+  );
+}
+
+"""
+
+####CHECK TO MAKE SURE JARVIS WENT THROUGH THE WHOLE FILE###
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\globals.css
+RELATIVE: apps\web\src\app\globals.css
+================================================================================
+
+"""
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\tsconfig.json
+RELATIVE: apps\api\tsconfig.json
+================================================================================
+
+"""
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts"],
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "target": "ES2022",
+    "lib": ["ES2022"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "declaration": true,
+    "removeComments": true,
+    "incremental": true,
+    "sourceMap": true,
+    "noImplicitAny": false,
+    "strictPropertyInitialization": false
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\tsconfig.build.json
+RELATIVE: apps\api\tsconfig.build.json
+================================================================================
+
+"""
+{
+  "extends": "../../tsconfig.json",
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\README.md
+RELATIVE: apps\api\README.md
+================================================================================
+
+"""
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+</p>
+
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
+
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+
+## Description
+
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+
+## Project setup
+
+```bash
+$ pnpm install
+```
+
+## Compile and run the project
+
+```bash
+# development
+$ pnpm run start
+
+# watch mode
+$ pnpm run start:dev
+
+# production mode
+$ pnpm run start:prod
+```
+
+## Run tests
+
+```bash
+# unit tests
+$ pnpm run test
+
+# e2e tests
+$ pnpm run test:e2e
+
+# test coverage
+$ pnpm run test:cov
+```
+
+## Deployment
+
+When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+
+If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+
+```bash
+$ pnpm install -g @nestjs/mau
+$ mau deploy
+```
+
+With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+
+## Resources
+
+Check out a few resources that may come in handy when working with NestJS:
+
+- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
+- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
+- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
+- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
+- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
+- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
+- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
+- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+
+## Support
+
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+
+## Stay in touch
+
+- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
+
+## License
+
+Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\package.json
+RELATIVE: apps\api\package.json
+================================================================================
+
+"""
+{
+  "name": "api",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "node -r source-map-support/register dist/main.js",
+    "start:dev": "nest start --watch --exec \"node -r tsconfig-paths/register\"",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "dependencies": {
+    "@mygale/prisma": "workspace:*",
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/jwt": "^11.0.1",
+    "@nestjs/passport": "^11.0.5",
+    "@nestjs/platform-express": "^11.0.1",
+    "@prisma/client": "^6.19.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "passport": "^0.7.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@nestjs/testing": "^11.1.8",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.10.7",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.2",
+    "globals": "^16.0.0",
+    "jest": "^30.2.0",
+    "prettier": "^3.4.2",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.4.5",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
+}
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\nest-cli.json
+RELATIVE: apps\api\nest-cli.json
+================================================================================
+
+"""
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "compilerOptions": {
+    "deleteOutDir": true
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\jest.config.js
+RELATIVE: apps\api\jest.config.js
+================================================================================
+
+"""
+module.exports = {
+  moduleFileExtensions: ['js', 'json', 'ts'],
+  rootDir: 'src',
+  testRegex: '.*\\.spec\\.ts$',
+  transform: {
+    '^.+\\.(t|j)s$': 'ts-jest',
+  },
+  collectCoverageFrom: ['**/*.(t|j)s'],
+  coverageDirectory: '../coverage',
+  testEnvironment: 'node',
+};
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\eslint.config.mjs
+RELATIVE: apps\api\eslint.config.mjs
+================================================================================
+
+"""
+// @ts-check
+import eslint from '@eslint/js';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+
+export default tseslint.config(
+  {
+    ignores: ['eslint.config.mjs'],
+  },
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  eslintPluginPrettierRecommended,
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+      sourceType: 'commonjs',
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+  },
+  {
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      // @ts-ignore
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      // @ts-ignore
+      '@typescript-eslint/no-unsafe-call': 'off',
+      // @ts-ignore
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
+    },
+  },
+);
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\test\jest-e2e.json
+RELATIVE: apps\api\test\jest-e2e.json
+================================================================================
+
+"""
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".e2e-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\test\app.e2e-spec.ts
+RELATIVE: apps\api\test\app.e2e-spec.ts
+================================================================================
+
+"""
+import { Test, TestingModule } from '@nestjs/testing';
+import { INestApplication } from '@nestjs/common';
+import request from 'supertest';
+import { App } from 'supertest/types';
+import { AppModule } from './../src/app.module';
+
+describe('AppController (e2e)', () => {
+  let app: INestApplication<App>;
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  it('/ (GET)', () => {
+    return request(app.getHttpServer())
+      .get('/')
+      .expect(200)
+      .expect('Hello World!');
+  });
+});
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\main.ts
+RELATIVE: apps\api\src\main.ts
+================================================================================
+
+"""
+ 
+ 
+ 
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from '@nestjs/common';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  const config = app.get(ConfigService);
+  const port = Number(config.get('PORT') ?? 4000);
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
+  await app.listen(port);
+  console.log(`API listening on http://localhost:${port}`);
+}
+bootstrap();
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\app.service.ts
+RELATIVE: apps\api\src\app.service.ts
+================================================================================
+
+"""
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+
+@Injectable()
+export class AppService {
+  constructor(private config: ConfigService) {}
+  getHello(): string {
+    const port = this.config.get<number>('PORT');
+    return `The API runs good on port ${port}`;
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\app.module.ts
+RELATIVE: apps\api\src\app.module.ts
+================================================================================
+
+"""
+import { Module } from '@nestjs/common';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './prisma/prisma.module';
+import { ContactModule } from './contact/contact.module';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    ContactModule,
+  ],
+  controllers: [AppController],
+  providers: [AppService],
+})
+export class AppModule {}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\app.controller.ts
+RELATIVE: apps\api\src\app.controller.ts
+================================================================================
+
+"""
+import { Controller, Get } from '@nestjs/common';
+import { AppService } from './app.service';
+import { PrismaService } from './prisma/prisma.service';
+import { User } from '@prisma/client';
+
+@Controller()
+export class AppController {
+  constructor(
+    private readonly appService: AppService,
+    private prisma: PrismaService,
+  ) {}
+
+  @Get()
+  getHello(): string {
+    return this.appService.getHello();
+  }
+
+  @Get('users')
+  async getUsers(): Promise<User[]> {
+    const users: User[] = await this.prisma.user.findMany();
+    return users;
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\app.controller.spec.ts
+RELATIVE: apps\api\src\app.controller.spec.ts
+================================================================================
+
+"""
+import { Test, TestingModule } from '@nestjs/testing';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+
+describe('AppController', () => {
+  let appController: AppController;
+
+  beforeEach(async () => {
+    const app: TestingModule = await Test.createTestingModule({
+      controllers: [AppController],
+      providers: [AppService],
+    }).compile();
+
+    appController = app.get<AppController>(AppController);
+  });
+
+  describe('root', () => {
+    it('should return "Hello World!"', () => {
+      expect(appController.getHello()).toBe('Hello World!');
+    });
+  });
+});
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\utils\auditLogger.ts
+RELATIVE: apps\api\src\utils\auditLogger.ts
+================================================================================
+
+"""
+import { PrismaClient } from '@prisma/client'
+const prisma = new PrismaClient()
+
+export async function logAudit({
+  submissionId,
+  action,
+  changedById,
+  details,
+}: {
+  submissionId: string
+  action: string
+  changedById?: string | null
+  details?: Record<string, any>
+}) {
+  return prisma.auditLog.create({
+    data: { submissionId, action, changedById, details },
+  })
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\prisma\prisma.service.ts
+RELATIVE: apps\api\src\prisma\prisma.service.ts
+================================================================================
+
+"""
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { PrismaClient } from '@prisma/client';
+
+@Injectable()
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
+  auditLogs: any;
+  async onModuleInit() {
+    await this.$connect();
+  }
+
+  async onModuleDestroy() {
+    await this.$disconnect();
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\prisma\prisma.module.ts
+RELATIVE: apps\api\src\prisma\prisma.module.ts
+================================================================================
+
+"""
+import { Global, Module } from '@nestjs/common';
+import { PrismaService } from './prisma.service';
+
+@Global()
+@Module({
+  providers: [PrismaService],
+  exports: [PrismaService],
+})
+export class PrismaModule {}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\contact.service.ts
+RELATIVE: apps\api\src\contact\contact.service.ts
+================================================================================
+
+"""
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import type { ContactSubmission, SubmissionStatus } from '@prisma/client';
+import { logAudit } from '../utils/auditLogger';
+
+@Injectable()
+export class ContactService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async createContact(data: {
+    name: string;
+    email: string;
+    phone?: string;
+    message: string;
+    source?: string;
+  }): Promise<ContactSubmission> {
+    const created = await this.prisma.contactSubmission.create({ data });
+    await logAudit({
+      submissionId: created.id,
+      action: 'Submission created',
+      details: { source: data.source ?? 'unknown' },
+    });
+    return created;
+  }
+
+  async listContacts(): Promise<ContactSubmission[]> {
+    return this.prisma.contactSubmission.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async getContactById(id: string): Promise<ContactSubmission | null> {
+    return this.prisma.contactSubmission.findUnique({
+      where: { id },
+      include: {
+        assignedTo: true,
+        replies: true,
+        auditLogs: {
+          orderBy: { createdAt: 'desc' },
+          include: { changedBy: true },
+        },
+      },
+    });
+  }
+
+  async getContactWithHistory(
+    id: string,
+  ): Promise<ContactSubmission & { auditLogs: any[] }> {
+    const contactWithHistory = await this.prisma.contactSubmission.findUnique({
+      where: { id },
+      include: {
+        auditLogs: {
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!contactWithHistory) {
+      throw new Error('Contact submission not found');
+    }
+
+    return contactWithHistory;
+  }
+
+  async updateStatus(
+    id: string,
+    status: SubmissionStatus,
+    assignedToId?: string,
+    changedById?: string,
+  ): Promise<ContactSubmission> {
+    const updated = await this.prisma.contactSubmission.update({
+      where: { id },
+      data: {
+        status,
+        ...(assignedToId
+          ? { assignedTo: { connect: { id: assignedToId } } }
+          : { assignedTo: { disconnect: true } }),
+      },
+    });
+
+    await logAudit({
+      submissionId: id,
+      action: `Status changed to ${status}`,
+      changedById,
+    });
+
+    return updated;
+  }
+
+  async deleteContact(id: string): Promise<ContactSubmission> {
+    const deleted: ContactSubmission =
+      await this.prisma.contactSubmission.delete({
+        where: { id },
+      });
+    return deleted;
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\contact.module.ts
+RELATIVE: apps\api\src\contact\contact.module.ts
+================================================================================
+
+"""
+import { Module } from '@nestjs/common';
+import { ContactController } from './contact.controller';
+import { ContactService } from './contact.service';
+
+@Module({
+  controllers: [ContactController],
+  providers: [ContactService],
+  exports: [ContactService],
+})
+export class ContactModule {}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\contact.controller.ts
+RELATIVE: apps\api\src\contact\contact.controller.ts
+================================================================================
+
+"""
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { ContactService } from './contact.service';
+import { CreateContactDto } from './dto/create-contact.dto';
+import { ContactSubmission, SubmissionStatus } from '@prisma/client';
+
+class UpdateStatusDto {
+  @IsEnum(SubmissionStatus)
+  status!: SubmissionStatus;
+
+  @IsOptional()
+  @IsString()
+  assignedToId?: string;
+}
+
+@Controller('contact-submissions')
+export class ContactController {
+  constructor(private readonly contactService: ContactService) {}
+
+  // Public endpoint used by the website form
+  @Post()
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async submitContact(
+    @Body() body: CreateContactDto,
+  ): Promise<ContactSubmission> {
+    const contact = await this.contactService.createContact(body);
+    return contact;
+  }
+
+  // Admin / staff view
+  @Get()
+  async getAll(): Promise<ContactSubmission[]> {
+    const contacts = await this.contactService.listContacts();
+    return contacts;
+  }
+
+  // Get one submission
+  @Get(':id')
+  async getOne(@Param('id') id: string): Promise<ContactSubmission | null> {
+    const contact = await this.contactService.getContactById(id);
+    return contact;
+  }
+
+  // Admin action: update status or assignment
+  @Put(':id')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() body: UpdateStatusDto,
+  ): Promise<ContactSubmission> {
+    const updatedContact = await this.contactService.updateStatus(
+      id,
+      body.status,
+      body.assignedToId,
+    );
+    return updatedContact;
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\dto\create-contact.dto.ts
+RELATIVE: apps\api\src\contact\dto\create-contact.dto.ts
+================================================================================
+
+"""
+import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
+
+export class CreateContactDto {
+  @IsString()
+  @Length(1, 255)
+  name!: string;
+
+  @IsEmail()
+  email!: string;
+
+  @IsOptional()
+  @IsString()
+  @Length(0, 30)
+  phone?: string;
+
+  @IsString()
+  @Length(1, 5000)
+  message!: string;
+
+  @IsOptional()
+  @IsString()
+  source?: string;
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\.github\instructions\snyk_rules.instructions.md
+RELATIVE: .github\instructions\snyk_rules.instructions.md
+================================================================================
+
+"""
+---
+alwaysApply: true
+always_on: true
+trigger: always_on
+applyTo: "**"
+description: Snyk Security At Inception
+---
+
+# Project security best practices
+
+- Always run snyk_code_scan tool for new first party code that is generated in a Snyk-supported language.
+- If any security issues are found based on newly introduced or modified code or dependencies, attempt to fix the issues using the results context from Snyk.
+- Rescan the code after fixing the issues to ensure that the issues were fixed and that there are no newly introduced issues.
+- Repeat this process until no new issues are found.
+
+"""
+

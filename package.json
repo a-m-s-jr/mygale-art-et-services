@@ -4,8 +4,11 @@
   "type": "commonjs",
   "description": "",
   "main": "index.js",
+  "exports": {
+    ".": "./src/client/index.js",
+    "./utils/auditLogger": "./src/utils/auditLogger.ts"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev:web": "cd apps/web && pnpm dev --webpack",
     "dev:api": "cd apps/api && pnpm start:dev",
     "db:up": "docker compose up -d postgres",
@@ -23,12 +26,14 @@
     "lint": "eslint \"**/*.{ts,tsx,js,jsx}\" --fix",
     "format": "prettier --write .",
     "prisma:generate": "pnpm -w prisma generate",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "pnpm -r test",
+    "test:api": "pnpm --filter api test"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.21.0",
+  "packageManager": "pnpm@10.22.0",
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [
       "eslint --fix"
@@ -41,8 +46,9 @@
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@eslint/js": "^9.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "concurrently": "8.2.2",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^9.0.0",
     "husky": "^9.1.7",
@@ -53,6 +59,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
-    "concurrently": "^9.2.1"
+    "concurrently": "^8.2.2",
+    "glob": "^11.0.3",
+    "rimraf": "^6.1.0"
   }
 }

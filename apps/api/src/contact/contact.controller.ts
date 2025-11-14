@@ -15,7 +15,7 @@ import { ContactSubmission, SubmissionStatus } from '@prisma/client';
 
 class UpdateStatusDto {
   @IsEnum(SubmissionStatus)
-  status: SubmissionStatus;
+  status!: SubmissionStatus;
 
   @IsOptional()
   @IsString()
@@ -32,21 +32,22 @@ export class ContactController {
   async submitContact(
     @Body() body: CreateContactDto,
   ): Promise<ContactSubmission> {
-    return this.contactService.createContact(body);
+    const contact = await this.contactService.createContact(body);
+    return contact;
   }
 
   // Admin / staff view
   @Get()
   async getAll(): Promise<ContactSubmission[]> {
-    return this.contactService.listContacts();
+    const contacts = await this.contactService.listContacts();
+    return contacts;
   }
 
-  // Get one submission + full audit history
+  // Get one submission
   @Get(':id')
-  async getOneWithHistory(
-    @Param('id') id: string,
-  ): Promise<ContactSubmission & { auditLogs: any[] }> {
-    return this.contactService.getContactWithHistory(id);
+  async getOne(@Param('id') id: string): Promise<ContactSubmission | null> {
+    const contact = await this.contactService.getContactById(id);
+    return contact;
   }
 
   // Admin action: update status or assignment
@@ -56,6 +57,11 @@ export class ContactController {
     @Param('id') id: string,
     @Body() body: UpdateStatusDto,
   ): Promise<ContactSubmission> {
-    return this.contactService.updateStatus(id, body.status, body.assignedToId);
+    const updatedContact = await this.contactService.updateStatus(
+      id,
+      body.status,
+      body.assignedToId,
+    );
+    return updatedContact;
   }
 }
