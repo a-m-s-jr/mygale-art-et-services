@@ -1,8 +1,8 @@
 ================================================================================
 PROJECT FILES CONCATENATION
-Generated: 2025-11-14T01:57:28.122Z
+Generated: 2025-11-14T04:43:59.923Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
-Total Files: 50
+Total Files: 58
 Extensions: .ts, .tsx, .js, .jsx, .json, .prisma, .yml, .yaml, .md, .mjs, .cjs, .css, .sql, .toml
 ================================================================================
 
@@ -145,6 +145,329 @@ RELATIVE: package.json
     "glob": "^11.0.3",
     "rimraf": "^6.1.0"
   }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\generate-structure.js
+RELATIVE: generate-structure.js
+================================================================================
+
+"""
+#!/usr/bin/env node
+const fs = require('fs')
+const path = require('path')
+
+// =============================================================================
+// CONFIGURATION
+// =============================================================================
+
+// Command-line arguments
+const ROOT_DIR = process.argv[2] || process.cwd()
+const OUTPUT_FILE = process.argv[3] || 'project-structure.txt'
+const MAX_DEPTH = process.argv[4] ? parseInt(process.argv[4]) : Infinity
+
+// Directories to exclude completely (won't show at all)
+const EXCLUDE_DIRS = ['.git', '.vscode', '.idea']
+
+// Directories to show but not expand (collapsed)
+const COLLAPSE_DIRS = [
+  'node_modules',
+  '.next',
+  'dist',
+  'build',
+  '.turbo',
+  'coverage',
+  '.cache',
+  'tmp',
+  'temp',
+  'docker',
+]
+
+// Files to exclude
+const EXCLUDE_FILES = ['.DS_Store', 'Thumbs.db', '.gitkeep']
+
+// Optional: Show file sizes
+const SHOW_FILE_SIZES = false
+
+// Optional: Show file counts
+const SHOW_FILE_COUNTS = true
+
+// Optional: Add descriptions for common files/folders
+const ADD_DESCRIPTIONS = true
+
+const DESCRIPTIONS = {
+  // Root level files
+  'package.json': 'Package configuration and dependencies',
+  'tsconfig.json': 'TypeScript configuration',
+  'turbo.json': 'Turborepo configuration for monorepo build system',
+  'docker-compose.yml': 'Defines and runs multi-container Docker applications',
+  'eslint.config.js': 'ESLint configuration for code quality',
+  'commitlint.config.js': 'Configuration for linting commit messages',
+  'pnpm-workspace.yaml': 'Defines the project as a pnpm monorepo workspace',
+  '.prettierrc': 'Prettier configuration for code formatting',
+  '.env': 'Environment variables (not tracked in git)',
+  '.gitignore': 'Git ignore patterns',
+  'README.md': 'Project documentation',
+
+  // Directories
+  src: 'Source code directory',
+  apps: 'Directory for independent applications',
+  packages: 'Directory for shared packages/libraries',
+  public: 'Static assets',
+  api: 'Backend application (NestJS)',
+  web: 'Frontend application (Next.js)',
+  prisma: 'Shared Prisma/database package',
+  migrations: 'Database migrations',
+  node_modules: 'Dependencies (collapsed)',
+  '.next': 'Next.js build output (collapsed)',
+  dist: 'Build output (collapsed)',
+  build: 'Build output (collapsed)',
+  postgres: 'PostgreSQL data directory (collapsed)',
+  data: 'Data directory (collapsed)',
+  '.husky': 'Git hooks configuration',
+  '.github': 'GitHub configuration',
+  test: 'Test files',
+  config: 'Shared configuration files',
+  ui: 'Shared UI components package',
+
+  // Common files
+  'schema.prisma': 'Prisma database schema',
+  'next.config.js': 'Next.js configuration',
+  'nest-cli.json': 'NestJS CLI configuration',
+  'jest.config.js': 'Jest testing configuration',
+  'main.ts': 'Application entry point',
+  'app.module.ts': 'Root application module',
+  'layout.tsx': 'Root layout component',
+  'page.tsx': 'Page component',
+  'globals.css': 'Global styles',
+}
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
+
+function shouldExclude(name, isDirectory) {
+  if (isDirectory) {
+    return EXCLUDE_DIRS.includes(name)
+  }
+  return EXCLUDE_FILES.includes(name)
+}
+
+function shouldCollapse(name) {
+  return COLLAPSE_DIRS.includes(name)
+}
+
+function getFileSize(filePath) {
+  try {
+    const stats = fs.statSync(filePath)
+    const bytes = stats.size
+    if (bytes < 1024) return `${bytes}B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)}MB`
+  } catch {
+    return ''
+  }
+}
+
+function getDescription(name, isDirectory) {
+  if (!ADD_DESCRIPTIONS) return ''
+  const desc = DESCRIPTIONS[name]
+  return desc ? ` ← ${desc}` : ''
+}
+
+function countFiles(dirPath, depth = 0) {
+  if (depth > MAX_DEPTH) return 0
+
+  let count = 0
+  try {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true })
+
+    for (const entry of entries) {
+      if (shouldExclude(entry.name, entry.isDirectory())) continue
+
+      if (entry.isDirectory()) {
+        count += countFiles(path.join(dirPath, entry.name), depth + 1)
+      } else {
+        count++
+      }
+    }
+  } catch {}
+
+  return count
+}
+
+function generateTree(dirPath, prefix = '', depth = 0, isLast = true) {
+  if (depth > MAX_DEPTH) return ''
+
+  let output = ''
+  const dirName = path.basename(dirPath)
+
+  // Root directory
+  if (depth === 0) {
+    output += `${dirName}/\n`
+  }
+
+  try {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true })
+
+    // Filter and sort entries
+    const filteredEntries = entries.filter(
+      (entry) => !shouldExclude(entry.name, entry.isDirectory()),
+    )
+
+    // Sort: directories first, then files, alphabetically
+    filteredEntries.sort((a, b) => {
+      if (a.isDirectory() && !b.isDirectory()) return -1
+      if (!a.isDirectory() && b.isDirectory()) return 1
+      return a.name.localeCompare(b.name)
+    })
+
+    filteredEntries.forEach((entry, index) => {
+      const isLastEntry = index === filteredEntries.length - 1
+      const fullPath = path.join(dirPath, entry.name)
+
+      // Build the tree characters
+      const connector = isLastEntry ? '└── ' : '├── '
+      const extension = isLastEntry ? '    ' : '│   '
+
+      if (entry.isDirectory()) {
+        const shouldCollapseDir = shouldCollapse(entry.name)
+        const fileCount =
+          SHOW_FILE_COUNTS && !shouldCollapseDir ? countFiles(fullPath, depth + 1) : 0
+        const countStr = SHOW_FILE_COUNTS && fileCount > 0 ? ` (${fileCount} files)` : ''
+        const collapsedIndicator = shouldCollapseDir ? ' [collapsed]' : ''
+        const desc = getDescription(entry.name, true)
+
+        output += `${prefix}${connector}${entry.name}/${countStr}${collapsedIndicator}${desc}\n`
+
+        // Recursively process subdirectory only if not collapsed
+        if (!shouldCollapseDir && depth + 1 <= MAX_DEPTH) {
+          output += generateTree(fullPath, prefix + extension, depth + 1, isLastEntry)
+        }
+      } else {
+        const size = SHOW_FILE_SIZES ? ` [${getFileSize(fullPath)}]` : ''
+        const desc = getDescription(entry.name, false)
+        output += `${prefix}${connector}${entry.name}${size}${desc}\n`
+      }
+    })
+  } catch (error) {
+    output += `${prefix}[Error reading directory: ${error.message}]\n`
+  }
+
+  return output
+}
+
+// =============================================================================
+// MAIN FUNCTION
+// =============================================================================
+
+function generateProjectStructure() {
+  console.log('\n🌲 Generating project directory structure...\n')
+  console.log(`📁 Root directory: ${ROOT_DIR}`)
+  console.log(`📄 Output file: ${OUTPUT_FILE}`)
+  console.log(`📏 Max depth: ${MAX_DEPTH === Infinity ? 'Unlimited' : MAX_DEPTH}`)
+  console.log(`\n${'─'.repeat(80)}\n`)
+
+  // Validate root directory
+  if (!fs.existsSync(ROOT_DIR)) {
+    console.error(`❌ Error: Root directory does not exist: ${ROOT_DIR}`)
+    process.exit(1)
+  }
+
+  const startTime = Date.now()
+
+  // Generate the tree
+  console.log('🔄 Scanning directory structure...\n')
+  const tree = generateTree(ROOT_DIR)
+
+  // Create header
+  const header = `${'='.repeat(80)}
+PROJECT DIRECTORY STRUCTURE
+Generated: ${new Date().toISOString()}
+Root: ${ROOT_DIR}
+${'='.repeat(80)}
+
+`
+
+  // Write to file
+  const output = header + tree
+  fs.writeFileSync(OUTPUT_FILE, output)
+
+  // Also display in console
+  console.log(tree)
+
+  const endTime = Date.now()
+  const duration = ((endTime - startTime) / 1000).toFixed(2)
+  const outputSize = fs.statSync(OUTPUT_FILE).size
+
+  console.log('─'.repeat(80))
+  console.log(`\n✨ Done!`)
+  console.log(`⏱️  Duration: ${duration}s`)
+  console.log(`💾 Output saved to: ${path.resolve(OUTPUT_FILE)}`)
+  console.log(`📦 File size: ${(outputSize / 1024).toFixed(2)} KB\n`)
+}
+
+// =============================================================================
+// CLI HELP
+// =============================================================================
+
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+  console.log(`
+🌲 Project Directory Structure Generator
+
+Usage: node generate-structure.js [rootDir] [outputFile] [maxDepth]
+
+Arguments:
+  rootDir      Root directory to scan (default: current directory)
+  outputFile   Output file name (default: project-structure.txt)
+  maxDepth     Maximum depth to traverse (default: unlimited)
+
+Examples:
+  node generate-structure.js
+  node generate-structure.js ./my-project
+  node generate-structure.js ./MYGALE_ART_AND_SERVICES structure.txt
+  node generate-structure.js . tree.txt 3
+
+Configuration (edit the script):
+  EXCLUDE_DIRS       - Directories to completely hide
+  COLLAPSE_DIRS      - Directories to show but not expand
+  EXCLUDE_FILES      - Files to skip
+  SHOW_FILE_SIZES    - Display file sizes (default: false)
+  SHOW_FILE_COUNTS   - Show file counts in directories (default: true)
+  ADD_DESCRIPTIONS   - Add descriptions for known files/folders (default: true)
+
+Features:
+  ✅ Beautiful tree-style visualization
+  ✅ Collapse large folders (node_modules, .next, data, etc.)
+  ✅ Smart exclusion of unnecessary directories (.git, .vscode)
+  ✅ Optional file sizes and counts
+  ✅ Automatic descriptions for common files
+  ✅ Configurable depth limit
+  ✅ Fast and efficient scanning
+
+Collapsed by default (shows folder but not contents):
+  - node_modules, .next, dist, build
+  - data, postgres, .cache, tmp, coverage
+
+Excluded completely (hidden):
+  - .git, .vscode, .idea
+  `)
+  process.exit(0)
+}
+
+// =============================================================================
+// RUN
+// =============================================================================
+
+try {
+  generateProjectStructure()
+} catch (error) {
+  console.error('\n❌ Fatal error:', error.message)
+  console.error(error.stack)
+  process.exit(1)
 }
 
 """
@@ -671,8 +994,11 @@ model User {
   email               String              @unique
   role                String?
   createdAt           DateTime            @default(now())
+  
   auditLogs           AuditLog[]
   assignedSubmissions ContactSubmission[]
+  accounts Account[]
+  sessions Session[]
 }
 
 model ContactSubmission {
@@ -711,6 +1037,51 @@ model AuditLog {
   submission   ContactSubmission @relation(fields: [submissionId], references: [id])
 }
 
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
+}
+
 enum SubmissionStatus {
   new
   in_review
@@ -721,10 +1092,9 @@ enum SubmissionStatus {
 enum ReplyChannel {
   email
   phone
-  watsapp
+  whatsapp
   note
 }
-
 """
 
 
@@ -737,6 +1107,84 @@ RELATIVE: packages\prisma\prisma\migrations\migration_lock.toml
 # Please do not edit this file manually
 # It should be added in your version-control system (e.g., Git)
 provider = "postgresql"
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251114040428_add_auth_models\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251114040428_add_auth_models\migration.sql
+================================================================================
+
+"""
+/*
+  Warnings:
+
+  - The values [watsapp] on the enum `ReplyChannel` will be removed. If these variants are still used in the database, this will fail.
+
+*/
+-- AlterEnum
+BEGIN;
+CREATE TYPE "ReplyChannel_new" AS ENUM ('email', 'phone', 'whatsapp', 'note');
+ALTER TABLE "Reply" ALTER COLUMN "channel" TYPE "ReplyChannel_new" USING ("channel"::text::"ReplyChannel_new");
+ALTER TYPE "ReplyChannel" RENAME TO "ReplyChannel_old";
+ALTER TYPE "ReplyChannel_new" RENAME TO "ReplyChannel";
+DROP TYPE "public"."ReplyChannel_old";
+COMMIT;
+
+-- CreateTable
+CREATE TABLE "session" (
+    "id" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "token" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "ipAddress" TEXT,
+    "userAgent" TEXT,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "session_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "account" (
+    "id" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
+    "providerId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "accessToken" TEXT,
+    "refreshToken" TEXT,
+    "idToken" TEXT,
+    "accessTokenExpiresAt" TIMESTAMP(3),
+    "refreshTokenExpiresAt" TIMESTAMP(3),
+    "scope" TEXT,
+    "password" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "account_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "verification" (
+    "id" TEXT NOT NULL,
+    "identifier" TEXT NOT NULL,
+    "value" TEXT NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3),
+    "updatedAt" TIMESTAMP(3),
+
+    CONSTRAINT "verification_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "session_token_key" ON "session"("token");
+
+-- AddForeignKey
+ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 """
 
@@ -904,25 +1352,28 @@ RELATIVE: apps\web\tsconfig.json
 
 """
 {
-  "extends": "../../tsconfig.json",
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "ESNext",
+    "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
-    "forceConsistentCasingInFileNames": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@mygale/prisma/*": ["../../packages/prisma/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
@@ -1018,20 +1469,25 @@ RELATIVE: apps\web\package.json
     "lint": "eslint"
   },
   "dependencies": {
+    "@next-auth/prisma-adapter": "^1.0.7",
+    "jsonwebtoken": "^9.0.2",
+    "next": "16.0.1",
+    "next-auth": "^4.24.13",
+    "nodemailer": "^7.0.10",
     "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "next": "16.0.1"
+    "react-dom": "19.2.0"
   },
   "devDependencies": {
-    "babel-plugin-react-compiler": "1.0.0",
-    "typescript": "^5",
+    "@tailwindcss/postcss": "^4",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
-    "tailwindcss": "^4",
+    "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
-    "eslint-config-next": "16.0.1"
+    "eslint-config-next": "16.0.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
 
@@ -1111,6 +1567,92 @@ const eslintConfig = defineConfig([
 ]);
 
 export default eslintConfig;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\auth\nextauth.ts
+RELATIVE: apps\web\src\pages\api\auth\nextauth.ts
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import NextAuth from 'next-auth'
+import EmailProvider from 'next-auth/providers/email'
+import GoogleProvider from 'next-auth/providers/google'
+import { PrismaAdapter } from '@next-auth/prisma-adapter'
+import { PrismaClient } from '@prisma/client'
+import jwt from 'jsonwebtoken'
+
+const prisma = new PrismaClient()
+
+export default NextAuth({
+  // Use Prisma adapter if you want DB-backed sessions & accounts
+  adapter: PrismaAdapter(prisma),
+
+  providers: [
+    EmailProvider({
+      server: {
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT ?? 587),
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      },
+      from: `no-reply@${process.env.NEXTAUTH_URL?.replace(/^https?:\/\//, '')}`,
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+  ],
+
+  session: { strategy: 'jwt' }, // keep session in a secure JWT on web side
+  secret: process.env.NEXTAUTH_SECRET,
+
+  callbacks: {
+    // include user info in the NextAuth JWT
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = (user as any).id
+        token.role = (user as any).role ?? 'VIEWER'
+      }
+      return token
+    },
+
+    // When NextAuth returns session to client, include the API token
+    async session({ session, token }) {
+      // sign an API JWT using our private key so Nest can validate
+      const apiToken = jwt.sign(
+        {
+          sub: token.id,
+          email: token.email,
+          role: token.role,
+        },
+        process.env.JWT_PRIVATE_KEY!,
+        {
+          algorithm: 'RS256',
+          expiresIn: Number(process.env.JWT_EXPIRES_IN ?? 900),
+          issuer: process.env.JWT_ISSUER ?? 'mygale',
+          audience: process.env.JWT_AUD ?? 'api',
+        },
+      )
+
+      return {
+        ...session,
+        user: { ...session.user, id: token.id, role: token.role },
+        apiToken, // exposed to the client
+      }
+    },
+  },
+
+  // Security settings
+  cookies: {
+    // defaults are fine but set secure cookies in prod (NEXTAUTH_URL must be https)
+  },
+})
 
 """
 
@@ -1233,7 +1775,6 @@ export default function RootLayout({
 
 """
 
-####CHECK TO MAKE SURE JARVIS WENT THROUGH THE WHOLE FILE###
 
 ================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\globals.css
@@ -1278,9 +1819,8 @@ RELATIVE: apps\api\tsconfig.json
 
 """
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "../../tsconfig.json",
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts"],
   "compilerOptions": {
     "module": "CommonJS",
     "moduleResolution": "Node",
@@ -1292,9 +1832,18 @@ RELATIVE: apps\api\tsconfig.json
     "removeComments": true,
     "incremental": true,
     "sourceMap": true,
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "strict": true,
     "noImplicitAny": false,
-    "strictPropertyInitialization": false
-  }
+    "strictPropertyInitialization": false,
+    "resolveJsonModule": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts", "jest.config.js"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts"]
 }
 
 """
@@ -1461,6 +2010,7 @@ RELATIVE: apps\api\package.json
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "zod": "^4.1.12"
@@ -1474,6 +2024,7 @@ RELATIVE: apps\api\package.json
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
+    "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
@@ -1577,7 +2128,6 @@ export default tseslint.config(
       },
       sourceType: 'commonjs',
       parserOptions: {
-        projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -1589,13 +2139,10 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      // @ts-ignore
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      // @ts-ignore
-      '@typescript-eslint/no-unsafe-call': 'off',
-      // @ts-ignore
-      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      'eslint-disable @typescript-eslint/no-unsafe-return': 'off',
+      'eslint-disable @typescript-eslint/no-unsafe-argument': 'off',
+      'eslint-disable @typescript-eslint/no-explicit-any': 'off',
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
@@ -1603,6 +2150,7 @@ export default tseslint.config(
 
 """
 
+###MESSAGE###
 
 ================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\test\jest-e2e.json
@@ -1804,8 +2352,8 @@ RELATIVE: apps\api\src\utils\auditLogger.ts
 ================================================================================
 
 """
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 export async function logAudit({
   submissionId,
@@ -1813,14 +2361,14 @@ export async function logAudit({
   changedById,
   details,
 }: {
-  submissionId: string
-  action: string
-  changedById?: string | null
-  details?: Record<string, any>
+  submissionId: string;
+  action: string;
+  changedById?: string | null;
+  details?: Record<string, any>;
 }) {
   return prisma.auditLog.create({
     data: { submissionId, action, changedById, details },
-  })
+  });
 }
 
 """
@@ -2105,6 +2653,123 @@ export class CreateContactDto {
   @IsString()
   source?: string;
 }
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\auth\roles.guard.ts
+RELATIVE: apps\api\src\auth\roles.guard.ts
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+  canActivate(ctx: ExecutionContext): boolean {
+    const required = this.reflector.get<string[]>('roles', ctx.getHandler());
+    if (!required) return true;
+    const req = ctx.switchToHttp().getRequest();
+    const user = req.user;
+    return required.includes(user?.role);
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\auth\roles.decorator.ts
+RELATIVE: apps\api\src\auth\roles.decorator.ts
+================================================================================
+
+"""
+import { SetMetadata } from '@nestjs/common';
+export const Roles = (...roles: string[]) => SetMetadata('roles', roles);
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\auth\jwt.strategy.ts
+RELATIVE: apps\api\src\auth\jwt.strategy.ts
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Injectable } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { Strategy } from 'passport-jwt';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+  constructor() {
+    super({
+      jwtFromRequest: (req: { headers: { authorization: any } }) => {
+        // From Authorization header: Bearer <token>
+        const auth = req?.headers?.authorization;
+        if (!auth) return null;
+        const [, token] = auth.split(' ');
+        return token;
+      },
+      // use public key
+      secretOrKey: process.env.JWT_PUBLIC_KEY,
+      algorithms: ['RS256'],
+      audience: process.env.JWT_AUD || 'api',
+      issuer: process.env.JWT_ISSUER || 'mygale',
+      passReqToCallback: false,
+    } as any);
+  }
+
+  validate(payload: any) {
+    // payload.sub, payload.role, payload.email
+    // return a user object attached to request.user
+    return {
+      id: payload.sub,
+      email: payload.email,
+      role: payload.role ?? 'VIEWER',
+    };
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\auth\jwt-auth.guard.ts
+RELATIVE: apps\api\src\auth\jwt-auth.guard.ts
+================================================================================
+
+"""
+import { AuthGuard } from '@nestjs/passport';
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\auth\auth.module.ts
+RELATIVE: apps\api\src\auth\auth.module.ts
+================================================================================
+
+"""
+import { Module } from '@nestjs/common';
+import { JwtStrategy } from './jwt.strategy';
+
+@Module({
+  providers: [JwtStrategy],
+  exports: [],
+})
+export class AuthModule {}
 
 """
 

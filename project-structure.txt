@@ -1,0 +1,145 @@
+================================================================================
+PROJECT DIRECTORY STRUCTURE
+Generated: 2025-11-14T04:42:54.732Z
+Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
+================================================================================
+
+MYGALE_ART_AND_SERVICES/
+├── .github/ (1 files) ← GitHub configuration
+│   └── instructions/ (1 files)
+│       └── snyk_rules.instructions.md
+├── .husky/ (19 files) ← Git hooks configuration
+│   ├── _/ (17 files)
+│   │   ├── .gitignore ← Git ignore patterns
+│   │   ├── applypatch-msg
+│   │   ├── commit-msg
+│   │   ├── h
+│   │   ├── husky.sh
+│   │   ├── post-applypatch
+│   │   ├── post-checkout
+│   │   ├── post-commit
+│   │   ├── post-merge
+│   │   ├── post-rewrite
+│   │   ├── pre-applypatch
+│   │   ├── pre-auto-gc
+│   │   ├── pre-commit
+│   │   ├── pre-merge-commit
+│   │   ├── pre-push
+│   │   ├── pre-rebase
+│   │   └── prepare-commit-msg
+│   ├── commit-msg
+│   └── pre-commit
+├── apps/ (185 files) ← Directory for independent applications
+│   ├── api/ (112 files) ← Backend application (NestJS)
+│   │   ├── node_modules/ [collapsed] ← Dependencies (collapsed)
+│   │   ├── src/ (17 files) ← Source code directory
+│   │   │   ├── auth/ (5 files)
+│   │   │   │   ├── auth.module.ts
+│   │   │   │   ├── jwt-auth.guard.ts
+│   │   │   │   ├── jwt.strategy.ts
+│   │   │   │   ├── roles.decorator.ts
+│   │   │   │   └── roles.guard.ts
+│   │   │   ├── contact/ (4 files)
+│   │   │   │   ├── dto/ (1 files)
+│   │   │   │   │   └── create-contact.dto.ts
+│   │   │   │   ├── contact.controller.ts
+│   │   │   │   ├── contact.module.ts
+│   │   │   │   └── contact.service.ts
+│   │   │   ├── prisma/ (2 files) ← Shared Prisma/database package
+│   │   │   │   ├── prisma.module.ts
+│   │   │   │   └── prisma.service.ts
+│   │   │   ├── utils/ (1 files)
+│   │   │   │   └── auditLogger.ts
+│   │   │   ├── app.controller.spec.ts
+│   │   │   ├── app.controller.ts
+│   │   │   ├── app.module.ts ← Root application module
+│   │   │   ├── app.service.ts
+│   │   │   └── main.ts ← Application entry point
+│   │   ├── test/ (2 files) ← Test files
+│   │   │   ├── app.e2e-spec.ts
+│   │   │   └── jest-e2e.json
+│   │   ├── .env ← Environment variables (not tracked in git)
+│   │   ├── .gitignore ← Git ignore patterns
+│   │   ├── .prettierrc ← Prettier configuration for code formatting
+│   │   ├── eslint.config.mjs
+│   │   ├── jest.config.js ← Jest testing configuration
+│   │   ├── jwt_private.pem
+│   │   ├── jwt_public.pem
+│   │   ├── nest-cli.json ← NestJS CLI configuration
+│   │   ├── package.json ← Package configuration and dependencies
+│   │   ├── README.md ← Project documentation
+│   │   ├── tsconfig.build.json
+│   │   └── tsconfig.json ← TypeScript configuration
+│   └── web/ (73 files) ← Frontend application (Next.js)
+│       ├── .next/ [collapsed] ← Next.js build output (collapsed)
+│       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
+│       ├── public/ (5 files) ← Static assets
+│       │   ├── file.svg
+│       │   ├── globe.svg
+│       │   ├── next.svg
+│       │   ├── vercel.svg
+│       │   └── window.svg
+│       ├── src/ (5 files) ← Source code directory
+│       │   ├── app/ (4 files)
+│       │   │   ├── favicon.ico
+│       │   │   ├── globals.css ← Global styles
+│       │   │   ├── layout.tsx ← Root layout component
+│       │   │   └── page.tsx ← Page component
+│       │   └── pages/ (1 files)
+│       │       └── api/ (1 files) ← Backend application (NestJS)
+│       │           └── auth/ (1 files)
+│       │               └── nextauth.ts
+│       ├── .env.local
+│       ├── .gitignore ← Git ignore patterns
+│       ├── eslint.config.mjs
+│       ├── next-env.d.ts
+│       ├── next.config.mjs
+│       ├── next.config.ts
+│       ├── package-lock.json
+│       ├── package.json ← Package configuration and dependencies
+│       ├── postcss.config.mjs
+│       ├── README.md ← Project documentation
+│       └── tsconfig.json ← TypeScript configuration
+├── data/ (1273 files) ← Data directory (collapsed)
+│   └── postgres/ (1273 files) ← PostgreSQL data directory (collapsed)
+│       └── 18/ (1273 files)
+│           └── docker/ [collapsed]
+├── node_modules/ [collapsed] ← Dependencies (collapsed)
+├── packages/ (24 files) ← Directory for shared packages/libraries
+│   └── prisma/ (24 files) ← Shared Prisma/database package
+│       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
+│       ├── prisma/ (8 files) ← Shared Prisma/database package
+│       │   ├── migrations/ (6 files) ← Database migrations
+│       │   │   ├── 20251113015902_init/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251113062736_init_enum_and_relations/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251113073736_new_schema_structure_rel_enum/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251113081816_reform_schema/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251114040428_add_auth_models/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   └── migration_lock.toml
+│       │   ├── schema.prisma ← Prisma database schema
+│       │   └── seed.ts
+│       ├── .env ← Environment variables (not tracked in git)
+│       ├── .gitignore ← Git ignore patterns
+│       ├── package.json ← Package configuration and dependencies
+│       └── prisma.config.ts
+├── .env ← Environment variables (not tracked in git)
+├── .gitignore ← Git ignore patterns
+├── .prettierrc ← Prettier configuration for code formatting
+├── commitlint.config.js ← Configuration for linting commit messages
+├── concatenate-files.js
+├── docker-compose.yml ← Defines and runs multi-container Docker applications
+├── eslint.config.js ← ESLint configuration for code quality
+├── generate-structure.js
+├── MyProjectContent.txt
+├── openssl
+├── package.json ← Package configuration and dependencies
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml ← Defines the project as a pnpm monorepo workspace
+├── project-structure.txt
+├── tsconfig.json ← TypeScript configuration
+└── turbo.json ← Turborepo configuration for monorepo build system
