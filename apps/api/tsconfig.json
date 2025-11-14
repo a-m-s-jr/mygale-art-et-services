@@ -1,7 +1,5 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src"],
-  "exclude": ["node_modules", "dist", "**/*.spec.ts"],
   "compilerOptions": {
     "module": "CommonJS",
     "moduleResolution": "Node",
@@ -13,7 +11,16 @@
     "removeComments": true,
     "incremental": true,
     "sourceMap": true,
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "strict": true,
     "noImplicitAny": false,
-    "strictPropertyInitialization": false
-  }
+    "strictPropertyInitialization": false,
+    "resolveJsonModule": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "**/*.spec.ts"]
 }
