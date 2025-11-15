@@ -1,8 +1,8 @@
 ================================================================================
 PROJECT FILES CONCATENATION
-Generated: 2025-11-14T04:43:59.923Z
+Generated: 2025-11-15T07:44:54.693Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
-Total Files: 58
+Total Files: 86
 Extensions: .ts, .tsx, .js, .jsx, .json, .prisma, .yml, .yaml, .md, .mjs, .cjs, .css, .sql, .toml
 ================================================================================
 
@@ -46,6 +46,7 @@ RELATIVE: tsconfig.json
     "lib": ["ES2022", "DOM"],
     "strict": true,
     "experimentalDecorators": true,
+    "noEmit": true,
     "emitDecoratorMetadata": true,
     "useDefineForClassFields": false,
     "skipLibCheck": true,
@@ -55,7 +56,8 @@ RELATIVE: tsconfig.json
       "@/*": ["apps/web/src/*"],
       "@mygale/prisma/*": ["packages/prisma/*"]
     }
-  }
+  },
+  "references": [{ "path": "./apps/api" }, { "path": "./apps/web" }]
 }
 
 """
@@ -95,13 +97,16 @@ RELATIVE: package.json
     "dev:api": "cd apps/api && pnpm start:dev",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
-    "dev": "pnpm db:up && concurrently \"pnpm dev:web\" \"pnpm dev:api\"",
+    "dev": "node scripts/dev-with-cleanup.js",
+    "dev:old": "concurrently \"pnpm db:up\" \"pnpm dev:web\" \"pnpm dev:api\"",
     "db:generate": "pnpm --filter @mygale/prisma db:generate",
     "db:push": "pnpm --filter @mygale/prisma db:push",
     "db:studio": "pnpm --filter @mygale/prisma db:studio",
     "db:migrate": "pnpm --filter @mygale/prisma db:migrate",
     "db:migrate:dev": "pnpm --filter @mygale/prisma exec prisma migrate dev",
     "db:migrate:deploy": "pnpm --filter @mygale/prisma exec prisma migrate deploy",
+    "db:reset": "pnpm db:down && pnpm db:up && timeout /t 3 /nobreak > nul && pnpm db:migrate:deploy && pnpm db:generate && pnpm --filter @mygale/prisma exec prisma db seed",
+    "db:seed": "pnpm --filter @mygale/prisma exec prisma db seed",
     "build:web": "cd apps/web && pnpm build",
     "build:api": "cd apps/api && pnpm build",
     "build": "pnpm -w turbo run build",
@@ -128,6 +133,7 @@ RELATIVE: package.json
     "@commitlint/cli": "^20.1.0",
     "@commitlint/config-conventional": "^20.0.0",
     "@eslint/js": "^9.0.0",
+    "@playwright/test": "^1.56.1",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "concurrently": "8.2.2",
@@ -143,7 +149,8 @@ RELATIVE: package.json
     "@prisma/client": "^6.19.0",
     "concurrently": "^8.2.2",
     "glob": "^11.0.3",
-    "rimraf": "^6.1.0"
+    "rimraf": "^6.1.0",
+    "socket.io-client": "^4.8.1"
   }
 }
 
@@ -272,7 +279,7 @@ function getFileSize(filePath) {
   }
 }
 
-function getDescription(name, isDirectory) {
+function getDescription(name) {
   if (!ADD_DESCRIPTIONS) return ''
   const desc = DESCRIPTIONS[name]
   return desc ? ` ← ${desc}` : ''
@@ -294,12 +301,14 @@ function countFiles(dirPath, depth = 0) {
         count++
       }
     }
-  } catch {}
+  } catch (error) {
+    console.error('\n❌ Error counting files::', error.message)
+  }
 
   return count
 }
 
-function generateTree(dirPath, prefix = '', depth = 0, isLast = true) {
+function generateTree(dirPath, prefix = '', depth = 0) {
   if (depth > MAX_DEPTH) return ''
 
   let output = ''
@@ -874,6 +883,144 @@ module.exports = {
 
 
 ================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\scripts\dev-with-cleanup.js
+RELATIVE: scripts\dev-with-cleanup.js
+================================================================================
+
+"""
+#!/usr/bin/env node
+const { spawn } = require('child_process')
+const { execSync } = require('child_process')
+const path = require('path')
+
+console.log('🚀 Starting development environment...\n')
+
+let isShuttingDown = false
+let webProcess = null
+let apiProcess = null
+
+// Start Docker database
+console.log('📦 Starting PostgreSQL database...')
+try {
+  execSync('pnpm db:up', { stdio: 'inherit' })
+  console.log('✅ Database started\n')
+} catch (error) {
+  console.error('❌ Failed to start database')
+  process.exit(1)
+}
+
+// Delay to ensure database is ready
+setTimeout(() => {
+  console.log('🔄 Starting web and api servers...\n')
+
+  // Determine shell based on platform
+  const isWindows = process.platform === 'win32'
+  const shell = isWindows ? true : '/bin/sh'
+
+  // Start web server
+  webProcess = spawn('pnpm', ['dev'], {
+    cwd: path.join(process.cwd(), 'apps', 'web'),
+    stdio: ['inherit', 'inherit', 'inherit'],
+    shell: shell,
+  })
+
+  // Start api server
+  apiProcess = spawn('pnpm', ['start:dev'], {
+    cwd: path.join(process.cwd(), 'apps', 'api'),
+    stdio: ['inherit', 'inherit', 'inherit'],
+    shell: shell,
+  })
+
+  // Handle web process exit
+  webProcess.on('exit', (code) => {
+    if (!isShuttingDown) {
+      console.log(`\n⚠️  Web server exited with code ${code}`)
+      cleanup()
+    }
+  })
+
+  // Handle api process exit
+  apiProcess.on('exit', (code) => {
+    if (!isShuttingDown) {
+      console.log(`\n⚠️  API server exited with code ${code}`)
+      cleanup()
+    }
+  })
+}, 1000)
+
+// Cleanup function
+async function cleanup() {
+  if (isShuttingDown) return
+  isShuttingDown = true
+
+  console.log('\n\n🛑 Shutting down...')
+
+  // Kill the processes
+  console.log('⏹️  Stopping web and api servers...')
+
+  try {
+    if (webProcess && !webProcess.killed) {
+      webProcess.kill('SIGTERM')
+      // Force kill if needed on Windows
+      if (process.platform === 'win32') {
+        setTimeout(() => {
+          if (!webProcess.killed) webProcess.kill('SIGKILL')
+        }, 2000)
+      }
+    }
+  } catch (error) {
+    console.error('⚠️  Error stopping web server:', error.message)
+  }
+
+  try {
+    if (apiProcess && !apiProcess.killed) {
+      apiProcess.kill('SIGTERM')
+      // Force kill if needed on Windows
+      if (process.platform === 'win32') {
+        setTimeout(() => {
+          if (!apiProcess.killed) apiProcess.kill('SIGKILL')
+        }, 2000)
+      }
+    }
+  } catch (error) {
+    console.error('⚠️  Error stopping api server:', error.message)
+  }
+
+  // Give processes time to shut down gracefully
+  await new Promise((resolve) => setTimeout(resolve, 2000))
+
+  // Stop Docker database
+  console.log('🗄️  Stopping database...')
+  try {
+    execSync('pnpm db:down', { stdio: 'inherit' })
+    console.log('✅ Database stopped')
+  } catch (error) {
+    console.error('⚠️  Error stopping database:', error.message)
+  }
+
+  console.log('\n👋 Goodbye!\n')
+  process.exit(0)
+}
+
+// Handle various termination signals
+process.on('SIGINT', cleanup) // Ctrl+C
+process.on('SIGTERM', cleanup) // Kill command
+
+// Windows-specific handling
+if (process.platform === 'win32') {
+  const readline = require('readline')
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  })
+
+  rl.on('SIGINT', cleanup)
+}
+
+"""
+
+
+================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma.config.ts
 RELATIVE: packages\prisma\prisma.config.ts
 ================================================================================
@@ -988,18 +1135,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/* ----------------------------
+   USER & AUTH MODELS
+----------------------------- */
+
 model User {
   id                  String              @id @default(cuid())
   name                String
   email               String              @unique
-  role                String?
+  role                UserRole?
+  phone               String?
   createdAt           DateTime            @default(now())
-  
+
   auditLogs           AuditLog[]
   assignedSubmissions ContactSubmission[]
+
   accounts Account[]
   sessions Session[]
 }
+
+enum UserRole {
+  ADMIN
+  STAFF
+  VIEWER
+}
+
+/* ----------------------------
+   CONTACT SUBMISSIONS
+----------------------------- */
 
 model ContactSubmission {
   id           String           @id @default(cuid())
@@ -1009,38 +1172,72 @@ model ContactSubmission {
   message      String
   source       String?
   createdAt    DateTime         @default(now())
-  assignedToId String?
+
   status       SubmissionStatus @default(new)
-  auditLogs    AuditLog[]
+
+  assignedToId String?
   assignedTo   User?            @relation(fields: [assignedToId], references: [id])
+
+  auditLogs    AuditLog[]
   replies      Reply[]
 }
 
-model Reply {
-  id           String            @id @default(cuid())
-  submissionId String
-  body         String
-  sentAt       DateTime          @default(now())
-  meta         Json?
-  channel      ReplyChannel
-  submission   ContactSubmission @relation(fields: [submissionId], references: [id])
+enum SubmissionStatus {
+  new
+  in_review
+  responded
+  closed
 }
 
+/* ----------------------------
+   AUDIT LOGS
+----------------------------- */
+
 model AuditLog {
-  id           String            @id @default(cuid())
-  submissionId String
-  changedById  String?
-  createdAt    DateTime          @default(now())
-  action       String
-  details      Json?
-  changedBy    User?             @relation(fields: [changedById], references: [id])
-  submission   ContactSubmission @relation(fields: [submissionId], references: [id])
+  id                  String            @id @default(cuid())
+  contactSubmissionId String?
+  contactSubmission   ContactSubmission? @relation(fields: [contactSubmissionId], references: [id])
+
+  actorId             String?
+  actor               User?             @relation(fields: [actorId], references: [id])
+
+  action              String
+  createdAt           DateTime          @default(now())
+
+  meta                Json?
 }
+
+/* ----------------------------
+   REPLIES
+----------------------------- */
+
+model Reply {
+  id                  String            @id @default(cuid())
+  submissionId        String
+  submission          ContactSubmission @relation(fields: [submissionId], references: [id])
+
+  body                String
+  channel             ReplyChannel
+  sentAt              DateTime          @default(now())
+
+  meta                Json?
+}
+
+enum ReplyChannel {
+  email
+  phone
+  whatsapp
+  note
+}
+
+/* ----------------------------
+   NEXTAUTH MODELS
+----------------------------- */
 
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime
   updatedAt DateTime
   ipAddress String?
@@ -1048,7 +1245,6 @@ model Session {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@map("session")
 }
 
@@ -1058,6 +1254,7 @@ model Account {
   providerId            String
   userId                String
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -1065,6 +1262,7 @@ model Account {
   refreshTokenExpiresAt DateTime?
   scope                 String?
   password              String?
+
   createdAt             DateTime
   updatedAt             DateTime
 
@@ -1082,19 +1280,6 @@ model Verification {
   @@map("verification")
 }
 
-enum SubmissionStatus {
-  new
-  in_review
-  responded
-  closed
-}
-
-enum ReplyChannel {
-  email
-  phone
-  whatsapp
-  note
-}
 """
 
 
@@ -1107,6 +1292,150 @@ RELATIVE: packages\prisma\prisma\migrations\migration_lock.toml
 # Please do not edit this file manually
 # It should be added in your version-control system (e.g., Git)
 provider = "postgresql"
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251115023638_make_contact_submission_id_optional\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251115023638_make_contact_submission_id_optional\migration.sql
+================================================================================
+
+"""
+-- This is an empty migration.
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251115023503_make_contact_submission_id_optional\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251115023503_make_contact_submission_id_optional\migration.sql
+================================================================================
+
+"""
+-- DropForeignKey
+ALTER TABLE "AuditLog" DROP CONSTRAINT "AuditLog_contactSubmissionId_fkey";
+
+-- AlterTable
+ALTER TABLE "AuditLog" ALTER COLUMN "contactSubmissionId" DROP NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_contactSubmissionId_fkey" FOREIGN KEY ("contactSubmissionId") REFERENCES "ContactSubmission"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251115022949_make_contact_submission_id_required\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251115022949_make_contact_submission_id_required\migration.sql
+================================================================================
+
+"""
+/*
+  Warnings:
+
+  - Made the column `contactSubmissionId` on table `AuditLog` required. This step will fail if there are existing NULL values in that column.
+
+*/
+-- DropForeignKey
+ALTER TABLE "AuditLog" DROP CONSTRAINT "AuditLog_contactSubmissionId_fkey";
+
+-- AlterTable
+ALTER TABLE "AuditLog" ALTER COLUMN "contactSubmissionId" SET NOT NULL;
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_contactSubmissionId_fkey" FOREIGN KEY ("contactSubmissionId") REFERENCES "ContactSubmission"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251115021026_phase_6_refine\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251115021026_phase_6_refine\migration.sql
+================================================================================
+
+"""
+/*
+  Warnings:
+
+  - You are about to drop the column `changedById` on the `AuditLog` table. All the data in the column will be lost.
+  - You are about to drop the column `details` on the `AuditLog` table. All the data in the column will be lost.
+  - You are about to drop the column `newStatus` on the `AuditLog` table. All the data in the column will be lost.
+  - You are about to drop the column `previousStatus` on the `AuditLog` table. All the data in the column will be lost.
+  - You are about to drop the column `submissionId` on the `AuditLog` table. All the data in the column will be lost.
+  - The `role` column on the `User` table would be dropped and recreated. This will lead to data loss if there is data in the column.
+
+*/
+-- DropForeignKey
+ALTER TABLE "AuditLog" DROP CONSTRAINT "AuditLog_changedById_fkey";
+
+-- DropForeignKey
+ALTER TABLE "AuditLog" DROP CONSTRAINT "AuditLog_submissionId_fkey";
+
+-- AlterTable
+ALTER TABLE "AuditLog" DROP COLUMN "changedById",
+DROP COLUMN "details",
+DROP COLUMN "newStatus",
+DROP COLUMN "previousStatus",
+DROP COLUMN "submissionId",
+ADD COLUMN     "actorId" TEXT,
+ADD COLUMN     "contactSubmissionId" TEXT,
+ADD COLUMN     "meta" JSONB;
+
+-- AlterTable
+ALTER TABLE "User" DROP COLUMN "role",
+ADD COLUMN     "role" "UserRole";
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_contactSubmissionId_fkey" FOREIGN KEY ("contactSubmissionId") REFERENCES "ContactSubmission"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_actorId_fkey" FOREIGN KEY ("actorId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251114060119\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251114060119\migration.sql
+================================================================================
+
+"""
+/*
+  Warnings:
+
+  - You are about to drop the column `timestamp` on the `AuditLog` table. All the data in the column will be lost.
+
+*/
+-- AlterTable
+ALTER TABLE "AuditLog" DROP COLUMN "timestamp",
+ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\packages\prisma\prisma\migrations\20251114055539_restore_schema\migration.sql
+RELATIVE: packages\prisma\prisma\migrations\20251114055539_restore_schema\migration.sql
+================================================================================
+
+"""
+/*
+  Warnings:
+
+  - You are about to drop the column `createdAt` on the `AuditLog` table. All the data in the column will be lost.
+
+*/
+-- CreateEnum
+CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'STAFF', 'VIEWER');
+
+-- AlterTable
+ALTER TABLE "AuditLog" DROP COLUMN "createdAt",
+ADD COLUMN     "newStatus" "SubmissionStatus",
+ADD COLUMN     "previousStatus" "SubmissionStatus",
+ADD COLUMN     "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "phone" TEXT;
 
 """
 
@@ -1356,10 +1685,12 @@ RELATIVE: apps\web\tsconfig.json
   "compilerOptions": {
     "target": "ES2017",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
+    "allowJs": false,
     "skipLibCheck": true,
     "strict": true,
-    "noEmit": true,
+    "outDir": "./dist",
+    "composite": true,
+    "noEmit": false,
     "esModuleInterop": true,
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -1367,13 +1698,15 @@ RELATIVE: apps\web\tsconfig.json
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,
+    "baseUrl": "src",
+    "typeRoots": ["./src/types", "./node_modules/@types"],
     "plugins": [
       {
         "name": "next"
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["*"]
     }
   },
   "include": [
@@ -1381,10 +1714,32 @@ RELATIVE: apps\web\tsconfig.json
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "src",
+    "src/types",
+    "src/**/*",
+    "src/types/**/*"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".next"]
 }
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\tailwind.config.mjs
+RELATIVE: apps\web\tailwind.config.mjs
+================================================================================
+
+"""
+const config = {
+  content: ['./src/**/*.{js,ts,jsx,tsx}', './src/app/**/*.{js,ts,jsx,tsx}'],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+export default config
 
 """
 
@@ -1442,12 +1797,31 @@ RELATIVE: apps\web\postcss.config.mjs
 
 """
 const config = {
-  plugins: {
-    "@tailwindcss/postcss": {},
-  },
-};
+  plugins: ['@tailwindcss/postcss'],
+}
+export default config
 
-export default config;
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\playwright.config.ts
+RELATIVE: apps\web\playwright.config.ts
+================================================================================
+
+"""
+import { defineConfig, devices } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './tests/e2e',
+  timeout: 30_000,
+  use: {
+    headless: true,
+    viewport: { width: 1280, height: 720 },
+    actionTimeout: 10_000,
+  },
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+})
 
 """
 
@@ -1470,23 +1844,31 @@ RELATIVE: apps\web\package.json
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
+    "clsx": "^2.1.1",
     "jsonwebtoken": "^9.0.2",
     "next": "16.0.1",
     "next-auth": "^4.24.13",
+    "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.10",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "react-hot-toast": "^2.6.0",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@playwright/test": "^1.56.1",
+    "@tailwindcss/postcss": "^4.1.17",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.22",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
-    "tailwindcss": "^4",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5"
   }
 }
@@ -1535,10 +1917,35 @@ RELATIVE: apps\web\next-env.d.ts
 """
 /// <reference types="next" />
 /// <reference types="next/image-types/global" />
+/// <reference types="next/navigation-types/compat/navigation" />
 import "./.next/dev/types/routes.d.ts";
 
 // NOTE: This file should not be edited
 // see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\middleware.ts
+RELATIVE: apps\web\middleware.ts
+================================================================================
+
+"""
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+
+// Protect routes under /contact-submissions (redirect to /login)
+export function middleware(req: NextRequest) {
+  const protectedPrefix = '/contact-submissions'
+  if (req.nextUrl.pathname.startsWith(protectedPrefix)) {
+    // we can't access session here; rely on client to re-direct if needed,
+    // but we can allow navigation — we choose *not* to redirect at middleware
+    // to keep server components fetching session with getServerSession.
+    return NextResponse.next()
+  }
+  return NextResponse.next()
+}
 
 """
 
@@ -1572,25 +1979,213 @@ export default eslintConfig;
 
 
 ================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\auth\nextauth.ts
-RELATIVE: apps\web\src\pages\api\auth\nextauth.ts
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\tests\e2e\realtime.spec.ts
+RELATIVE: apps\web\tests\e2e\realtime.spec.ts
+================================================================================
+
+"""
+import { test, expect } from '@playwright/test'
+
+test('realtime new submission shows in inbox and optimistic status update', async ({
+  page,
+  request,
+}) => {
+  // 1) go to login
+  await page.goto('http://localhost:3000/login')
+  // NOTE: in CI you can mock login; here we assume a test user exists and we can programmatically create/get a session cookie.
+  // For local dev, you may have a test flow or bypass; this test will check UI behavior once logged in.
+
+  // For demonstration: visit the inbox (if unauthenticated you'll see login)
+  await page.goto('http://localhost:3000/contact-submissions')
+  await expect(page.locator('text=Contact Submissions')).toBeVisible()
+
+  // 2) Create a submission using backend API directly
+  const apiBase = process.env.TEST_API_BASE ?? 'http://localhost:4000'
+  const createResp = await request.post(`${apiBase}/contact-submissions`, {
+    data: { name: 'E2E Tester', email: 'e2e@test.local', message: 'hello realtime' },
+  })
+  expect(createResp.ok()).toBeTruthy()
+  const created = await createResp.json()
+
+  // Wait briefly and assert inbox shows new item
+  await page.waitForTimeout(400) // socket propagation
+  await expect(page.locator(`text=${created.email}`)).toBeVisible()
+
+  // 3) Click into it and hit status change
+  await page.click(`a[href="/contact-submissions/${created.id}"]`)
+  await expect(page.locator('text=Message')).toBeVisible()
+
+  // Click "Mark In Review" (optimistic)
+  await page.click('text=Mark In Review')
+  // optimistic UI: status should update immediately
+  await expect(page.locator('text=Status:')).toContainText('in_review')
+
+  // Clean up if needed
+  // await request.delete(`${apiBase}/contact-submissions/${created.id}`)
+})
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\types\next-auth.d.ts
+RELATIVE: apps\web\src\types\next-auth.d.ts
+================================================================================
+
+"""
+import 'next-auth'
+
+declare module 'next-auth' {
+  interface Session {
+    apiToken?: string
+    user?: {
+      id?: string
+      role?: string
+      email?: string | null
+      name?: string | null
+    }
+  }
+
+  interface JWT {
+    apiToken?: string
+    role?: string
+    id?: string
+    email?: string
+  }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\proxy\contact-submissions\index.ts
+RELATIVE: apps\web\src\pages\api\proxy\contact-submissions\index.ts
 ================================================================================
 
 """
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import NextAuth from 'next-auth'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import type { Session } from 'next-auth'
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const session = (await getServerSession(req, res, authOptions as any)) as Session | null
+  const apiToken = session?.apiToken
+  if (!apiToken) return res.status(401).json({ error: 'Unauthorized' })
+
+  const backend = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
+  const r = await fetch(`${backend}/contact-submissions`, {
+    headers: { Authorization: `Bearer ${apiToken}` },
+  })
+
+  const data = await r.json()
+  return res.status(r.status).json(data)
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\proxy\contact-submissions\[id]\status.ts
+RELATIVE: apps\web\src\pages\api\proxy\contact-submissions\[id]\status.ts
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import type { Session } from 'next-auth'
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'PUT') return res.status(405).end()
+  const session = (await getServerSession(req, res, authOptions as any)) as Session | null
+  const apiToken = session?.apiToken
+  if (!apiToken) return res.status(401).json({ error: 'Unauthorized' })
+
+  const backend = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
+  const r = await fetch(`${backend}/contact-submissions/${req.query.id}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiToken}` },
+    body: JSON.stringify(req.body),
+  })
+  const data = await r.json()
+  return res.status(r.status).json(data)
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\proxy\contact-submissions\[id]\reply.ts
+RELATIVE: apps\web\src\pages\api\proxy\contact-submissions\[id]\reply.ts
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import type { Session } from 'next-auth'
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') return res.status(405).end()
+
+  const session = (await getServerSession(req, res, authOptions as any)) as Session | null
+  const apiToken = session?.apiToken
+  if (!apiToken) return res.status(401).json({ error: 'Unauthorized' })
+
+  const backend = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
+  const r = await fetch(`${backend}/contact-submissions/${req.query.id}/reply`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiToken}` },
+    body: JSON.stringify(req.body),
+  })
+
+  const data = await r.json()
+  return res.status(r.status).json(data)
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\auth\[...nextauth].ts
+RELATIVE: apps\web\src\pages\api\auth\[...nextauth].ts
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import NextAuth, { type NextAuthOptions } from 'next-auth'
 import EmailProvider from 'next-auth/providers/email'
 import GoogleProvider from 'next-auth/providers/google'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
+import fs from 'fs'
+import path from 'path'
 
-const prisma = new PrismaClient()
+/**
+ * Use a dev singleton to avoid multiple PrismaClient instances during HMR.
+ */
+declare global {
+  var __prismaClient: PrismaClient | undefined
+}
+const prisma = global.__prismaClient ?? new PrismaClient()
+if (process.env.NODE_ENV !== 'production') global.__prismaClient = prisma
 
-export default NextAuth({
-  // Use Prisma adapter if you want DB-backed sessions & accounts
-  adapter: PrismaAdapter(prisma),
+const PRIVATE_KEY =
+  process.env.JWT_PRIVATE_KEY ||
+  (() => {
+    // fallback: if env points to a pem file path, try to load it
+    const p = path.resolve(process.cwd(), 'apps', 'api', 'jwt_private.pem')
+    if (fs.existsSync(p)) return fs.readFileSync(p, 'utf8')
+    return undefined
+  })()
 
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma as any),
   providers: [
     EmailProvider({
       server: {
@@ -1604,55 +2199,252 @@ export default NextAuth({
       from: `no-reply@${process.env.NEXTAUTH_URL?.replace(/^https?:\/\//, '')}`,
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
     }),
   ],
 
-  session: { strategy: 'jwt' }, // keep session in a secure JWT on web side
-  secret: process.env.NEXTAUTH_SECRET,
+  session: { strategy: 'jwt' },
+  secret: process.env.NEXTAUTH_SECRET ?? 'change_this_in_prod',
 
   callbacks: {
-    // include user info in the NextAuth JWT
+    // Persist identifying info into the token when user signs in
     async jwt({ token, user }) {
       if (user) {
         token.id = (user as any).id
         token.role = (user as any).role ?? 'VIEWER'
+        token.email = (user as any).email ?? token.email
       }
+
+      // Ensure apiToken is available in the token (signed with your API private key).
+      // If you do not have PRIVATE_KEY available, apiToken won't be created.
+      if (PRIVATE_KEY && token.id) {
+        try {
+          token.apiToken = jwt.sign(
+            {
+              sub: token.id,
+              email: token.email,
+              role: token.role,
+            },
+            PRIVATE_KEY,
+            {
+              algorithm: 'RS256',
+              expiresIn: Number(process.env.JWT_EXPIRES_IN ?? 900),
+              issuer: process.env.JWT_ISSUER ?? 'mygale',
+              audience: process.env.JWT_AUD ?? 'api',
+            },
+          )
+        } catch (e) {
+          // fall through without breaking auth if signing fails
+          console.warn("Failed signing apiToken:", e);
+        }
+      }
+
       return token
     },
 
-    // When NextAuth returns session to client, include the API token
+    // Expose apiToken and user id/role in session
     async session({ session, token }) {
-      // sign an API JWT using our private key so Nest can validate
-      const apiToken = jwt.sign(
-        {
-          sub: token.id,
-          email: token.email,
-          role: token.role,
-        },
-        process.env.JWT_PRIVATE_KEY!,
-        {
-          algorithm: 'RS256',
-          expiresIn: Number(process.env.JWT_EXPIRES_IN ?? 900),
-          issuer: process.env.JWT_ISSUER ?? 'mygale',
-          audience: process.env.JWT_AUD ?? 'api',
-        },
-      )
-
       return {
         ...session,
-        user: { ...session.user, id: token.id, role: token.role },
-        apiToken, // exposed to the client
-      }
+        apiToken: token.apiToken as string | undefined,
+        user: {
+          ...(session.user ?? {}),
+          id: token.id,
+          role: token.role,
+          email: token.email ?? session.user?.email,
+        },
+      } as any
     },
   },
+}
 
-  // Security settings
-  cookies: {
-    // defaults are fine but set secure cookies in prod (NEXTAUTH_URL must be https)
-  },
-})
+export default NextAuth(authOptions)
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\lib\socket.ts
+RELATIVE: apps\web\src\lib\socket.ts
+================================================================================
+
+"""
+import { io, type Socket } from 'socket.io-client'
+
+let socket: Socket | null = null
+
+export function getSocket(token?: string): Socket {
+  if (socket && socket.connected) return socket
+
+  const url = process.env.NEXT_PUBLIC_API_WS_URL ?? 'http://localhost:4000'
+
+  socket = io(url, {
+    autoConnect: true,
+    transports: ['websocket'],
+    auth: token ? { token } : undefined,
+  })
+
+  socket.on('connect_error', (err) => {
+    console.warn("Socket connect_error", err);
+  })
+
+  return socket
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\hooks\useSocket.ts
+RELATIVE: apps\web\src\hooks\useSocket.ts
+================================================================================
+
+"""
+/* eslint-disable react-hooks/refs */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client'
+import { useEffect, useRef } from 'react'
+import { getSocket } from '@/lib/socket'
+
+type Handler = (data: any) => void
+
+export default function useSocket(event: string, handler: Handler, token?: string) {
+  const handlerRef = useRef(handler)
+  handlerRef.current = handler
+
+  useEffect(() => {
+    const socket = getSocket(token)
+
+    const wrapper = (d: any) => handlerRef.current(d)
+    socket.on(event, wrapper)
+
+    return () => {
+      socket.off(event, wrapper)
+    }
+  }, [event, token])
+}
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\components\ToastProvider.tsx
+RELATIVE: apps\web\src\components\ToastProvider.tsx
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// apps/web/src/components/ToastProvider.tsx
+'use client'
+import React, { createContext, useContext, useState } from 'react'
+import clsx from 'clsx'
+
+type Toast = { id: string; message: string; type?: 'info' | 'success' | 'error' }
+const ToastContext = createContext(null as any)
+
+export const useToast = () => useContext(ToastContext)
+
+export default function ToastProvider({ children }: { children: React.ReactNode }) {
+  const [toasts, setToasts] = useState<Toast[]>([])
+
+  function push(message: string, type: Toast['type'] = 'info') {
+    const t = { id: String(Date.now()) + Math.random().toString(36).slice(2), message, type }
+    setToasts((s) => [t, ...s])
+    setTimeout(() => setToasts((s) => s.filter((x) => x.id !== t.id)), 5000)
+  }
+
+  return (
+    <ToastContext.Provider value={{ push }}>
+      {children}
+      <div className="fixed right-6 bottom-6 z-50 flex flex-col gap-2">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={clsx(
+              'px-4 py-2 rounded shadow text-sm max-w-xs',
+              t.type === 'success'
+                ? 'bg-green-50 text-green-800'
+                : t.type === 'error'
+                  ? 'bg-red-50 text-red-800'
+                  : 'bg-white text-gray-800',
+            )}
+          >
+            {t.message}
+          </div>
+        ))}
+      </div>
+    </ToastContext.Provider>
+  )
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\components\Navbar.tsx
+RELATIVE: apps\web\src\components\Navbar.tsx
+================================================================================
+
+"""
+'use client'
+import React from 'react'
+import Link from 'next/link'
+import LinklegacyBehavior from 'next/link.js'
+import { signIn, signOut, useSession } from 'next-auth/react'
+
+export default function Navbar() {
+  const { data: session, status } = useSession()
+
+  return (
+    <nav className="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-40 px-4 py-3">
+      <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div>
+            <LinklegacyBehavior className="font-bold" href={'/'}>
+              MyGale
+            </LinklegacyBehavior>
+        </div>
+
+        <div className="flex items-center gap-4">
+            <LinklegacyBehavior className="text-sm" href={'/contact-submissions'}>
+              Submissions
+            </LinklegacyBehavior>
+
+          {status === 'loading' ? (
+            <span>Loading...</span>
+          ) : session ? (
+            <>
+              <span className="text-sm">Hi {session.user?.name ?? session.user?.email}</span>
+              <button className="px-3 py-1 border rounded" onClick={() => signOut()}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <button className="px-3 py-1 border rounded" onClick={() => signIn()}>
+              Sign in
+            </button>
+          )}
+        </div>
+      </div>
+    </nav>
+  )
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\providers.tsx
+RELATIVE: apps\web\src\app\providers.tsx
+================================================================================
+
+"""
+'use client'
+
+import { SessionProvider } from 'next-auth/react'
+
+export default function Providers({ children }: { children: React.ReactNode }) {
+  return <SessionProvider>{children}</SessionProvider>
+}
 
 """
 
@@ -1738,39 +2530,28 @@ RELATIVE: apps\web\src\app\layout.tsx
 ================================================================================
 
 """
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import './globals.css'
+import React from 'react'
+import Navbar from '@/components/Navbar'
+import { SessionProvider } from 'next-auth/react'
+import Providers from './providers'
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+export const metadata = {
+  title: 'MyGale',
+  description: 'MyGale Art and Services',
+}
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-export const metadata: Metadata = {
-  title: "Create Next App",
-  description: "Generated by create next app",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+      <body>
+        <Providers>
+          <Navbar />
+          <main className="max-w-5xl mx-auto p-4">{children}</main>
+        </Providers>
       </body>
     </html>
-  );
+  )
 }
 
 """
@@ -1813,6 +2594,506 @@ body {
 
 
 ================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\login\page.tsx
+RELATIVE: apps\web\src\app\login\page.tsx
+================================================================================
+
+"""
+'use client'
+import React from 'react'
+import { signIn } from 'next-auth/react'
+
+export default function LoginPage() {
+  return (
+    <div className="max-w-md mx-auto p-8">
+      <h1 className="text-2xl font-semibold mb-4">Sign in</h1>
+
+      <div className="space-y-3">
+        <button onClick={() => signIn('google')} className="w-full px-4 py-2 border rounded">
+          Continue with Google
+        </button>
+
+        <div className="text-center text-sm text-gray-500">Or sign in with email (magic link)</div>
+
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            const form = e.target as HTMLFormElement
+            const email = (form.elements.namedItem('email') as HTMLInputElement).value
+            signIn('email', { email, callbackUrl: '/' })
+          }}
+        >
+          <input
+            name="email"
+            type="email"
+            required
+            placeholder="you@example.com"
+            className="w-full border px-3 py-2 rounded"
+          />
+          <button className="mt-3 w-full px-4 py-2 bg-black text-white rounded">
+            Send magic link
+          </button>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\page.tsx
+RELATIVE: apps\web\src\app\contact-submissions\page.tsx
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
+import ContactListClient from './ContactListClient'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '../../pages/api/auth/[...nextauth]'
+import type { Session } from 'next-auth'
+
+export default async function ContactSubmissionsPage() {
+  const session = (await getServerSession(authOptions as any)) as Session | null
+
+  if (!session?.apiToken) {
+    return <div className="p-8">You must be logged in to view submissions.</div>
+  }
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'}/contact-submissions`,
+    {
+      headers: { Authorization: `Bearer ${session.apiToken}` },
+      cache: 'no-store',
+    },
+  )
+
+  const submissions = await res.json()
+  return (
+    <div className="p-4 space-y-6">
+      <h1 className="text-2xl font-bold">Contact Submissions</h1>
+      <ContactListClient initialData={submissions} token={session.apiToken} />
+    </div>
+  )
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\index.ts
+RELATIVE: apps\web\src\app\contact-submissions\index.ts
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { NextApiRequest, NextApiResponse } from 'next'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import type { Session } from 'next-auth'
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const session = (await getServerSession(req, res, authOptions as any)) as Session | null
+  const apiToken = session?.apiToken
+  if (!apiToken) return res.status(401).json({ error: 'Unauthorized' })
+
+  const backend = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
+  const r = await fetch(`${backend}/contact-submissions`, {
+    headers: { Authorization: `Bearer ${apiToken}` },
+  })
+
+  const data = await r.json()
+  return res.status(r.status).json(data)
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\ContactListClient.tsx
+RELATIVE: apps\web\src\app\contact-submissions\ContactListClient.tsx
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client'
+import React, { useState, useCallback } from 'react'
+import useSocket from '@/hooks/useSocket'
+import { getSocket } from '@/lib/socket'
+
+type Submission = {
+  id: string
+  name: string
+  email: string
+  message: string
+  status?: string
+  createdAt?: string
+}
+
+export default function ContactListClient({
+  initialData,
+  token,
+}: {
+  initialData: Submission[]
+  token?: string
+}) {
+  const [submissions, setSubmissions] = useState<Submission[]>(initialData ?? [])
+  const [loading, setLoading] = useState(false)
+  const [optimistic, setOptimistic] = useState<Record<string, string | null>>({})
+
+  // subscribe to socket events
+  useSocket(
+    'contact:created',
+    (payload) => {
+      setSubmissions((prev) => [payload, ...prev])
+    },
+    token?.toString(),
+  )
+
+  useSocket(
+    'contact:updated',
+    (payload) => {
+      setSubmissions((prev) => prev.map((p) => (p.id === payload.id ? payload : p)))
+      setOptimistic((o) => {
+        const copy = { ...o }
+        delete copy[payload.id]
+        return copy
+      })
+    },
+    token?.toString(),
+  )
+
+  const refresh = useCallback(async () => {
+    setLoading(true)
+    try {
+      const r = await fetch('/api/proxy/contact-submissions')
+      if (!r.ok) throw new Error('Failed')
+      const data = await r.json()
+      setSubmissions(data)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  // optimistic status update
+  async function updateStatus(id: string, newStatus: string) {
+    // remember previous
+    const prev = submissions.find((s) => s.id === id)
+    if (!prev) return
+
+    // optimistic
+    setOptimistic((o) => ({ ...o, [id]: newStatus }))
+    setSubmissions((s) => s.map((x) => (x.id === id ? { ...x, status: newStatus } : x)))
+
+    try {
+      const r = await fetch(`/api/proxy/contact-submissions/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!r.ok) {
+        throw new Error('update failed')
+      }
+      const updated = await r.json()
+      setSubmissions((s) => s.map((x) => (x.id === id ? updated : x)))
+    } catch (e) {
+      // rollback on error
+      setSubmissions((s) => s.map((x) => (x.id === id ? prev : x)))
+    } finally {
+      setOptimistic((o) => {
+        const c = { ...o }
+        delete c[id]
+        return c
+      })
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex gap-2">
+        <button onClick={refresh} className="px-4 py-2 bg-black text-white rounded">
+          {loading ? 'Refreshing...' : 'Refresh'}
+        </button>
+      </div>
+
+      <ul className="space-y-2">
+        {submissions.map((s) => (
+          <li key={s.id} className="border p-4 rounded">
+            <div className="flex justify-between items-start">
+              <div>
+                <p>
+                  <strong>{s.name}</strong>
+                </p>
+                <p className="text-sm text-gray-500">{s.email}</p>
+                <p className="mt-2">{s.message}</p>
+              </div>
+              <div className="text-right space-y-2">
+                <div>
+                  <small className="text-xs text-gray-500">Status</small>
+                  <div className="mt-1 flex gap-2">
+                    <select
+                      value={optimistic[s.id] ?? s.status ?? 'new'}
+                      onChange={(e) => updateStatus(s.id, e.target.value)}
+                      className="border px-2 py-1 rounded"
+                    >
+                      <option value="new">new</option>
+                      <option value="in_review">in_review</option>
+                      <option value="responded">responded</option>
+                      <option value="closed">closed</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="text-xs text-gray-400">
+                  {s.createdAt ? new Date(s.createdAt).toLocaleString() : null}
+                </div>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\[id]\page.tsx
+RELATIVE: apps\web\src\app\contact-submissions\[id]\page.tsx
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React from 'react'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/pages/api/auth/[...nextauth]'
+import type { Session } from 'next-auth'
+import ContactDetailClient from './ContactDetailClient'
+
+type Props = { params: { id: string } }
+
+export default async function SubmissionPage({ params }: Props) {
+  const session = (await getServerSession(authOptions as any)) as Session | null
+  if (!session?.apiToken) {
+    return <div className="p-8">You must be logged in to view this submission.</div>
+  }
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'}/contact-submissions/${params.id}`,
+    {
+      headers: { Authorization: `Bearer ${session.apiToken}` },
+      cache: 'no-store',
+    },
+  )
+
+  if (!res.ok) {
+    return <div className="p-8">Failed to load submission</div>
+  }
+
+  const submission = await res.json()
+  return <ContactDetailClient initialData={submission} token={session.apiToken} />
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\[id]\ContactDetailClient.tsx
+RELATIVE: apps\web\src\app\contact-submissions\[id]\ContactDetailClient.tsx
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client'
+import React, { useState } from 'react'
+import useSocket from '@/hooks/useSocket'
+import { useToast } from '../../../components/ToastProvider'
+
+type Reply = { id: string; body: string; channel: string; sentAt: string }
+type Submission = {
+  id: string
+  name: string
+  email: string
+  message: string
+  status: string
+  createdAt: string
+  replies?: Reply[]
+  auditLogs?: any[]
+}
+
+export default function ContactDetailClient({
+  initialData,
+  token,
+}: {
+  initialData: Submission
+  token: string
+}) {
+  const [submission, setSubmission] = useState<Submission>(initialData)
+  const toast = useToast()
+  const [saving, setSaving] = useState(false)
+  const [newReply, setNewReply] = useState('')
+
+  // Receive server updates for this submission
+  useSocket('contact:event', (evt: any) => {
+    if (!evt) return
+    if (evt.type === 'updated' && evt.payload?.id === submission.id) {
+      setSubmission(evt.payload)
+      toast.push('Submission updated', 'info')
+    }
+    if (evt.type === 'status_changed' && evt.payload?.id === submission.id) {
+      setSubmission((s) => ({ ...s, status: evt.payload.status }))
+      toast.push(`Status changed: ${evt.payload.status}`, 'success')
+    }
+  })
+
+  async function changeStatusOptimistic(newStatus: string) {
+    const prev = submission.status
+    setSubmission({ ...submission, status: newStatus } as Submission) // optimistic
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/contact-submissions/${submission.id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      if (!res.ok) throw new Error('Failed')
+      toast.push('Status updated', 'success')
+    } catch (err) {
+      setSubmission({ ...submission, status: prev })
+      toast.push('Status update failed', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function submitReply() {
+    if (!newReply.trim()) return
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/contact-submissions/${submission.id}/reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ body: newReply, channel: 'email' }),
+      })
+      if (!res.ok) throw new Error('Reply failed')
+      const updated = await res.json()
+      setSubmission(updated)
+      setNewReply('')
+      toast.push('Reply added', 'success')
+    } catch (err) {
+      toast.push('Reply failed', 'error')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-xl font-semibold">{submission.name}</h1>
+          <div className="text-sm text-gray-500">{submission.email}</div>
+          <div className="text-xs text-gray-400">
+            Submitted: {new Date(submission.createdAt).toLocaleString()}
+          </div>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <div className="text-sm">
+            Status: <strong>{submission.status}</strong>
+          </div>
+          <div className="flex gap-2">
+            <button
+              disabled={saving}
+              onClick={() => changeStatusOptimistic('in_review')}
+              className="px-2 py-1 border rounded text-sm"
+            >
+              Mark In Review
+            </button>
+            <button
+              disabled={saving}
+              onClick={() => changeStatusOptimistic('responded')}
+              className="px-2 py-1 border rounded text-sm"
+            >
+              Mark Responded
+            </button>
+            <button
+              disabled={saving}
+              onClick={() => changeStatusOptimistic('closed')}
+              className="px-2 py-1 border rounded text-sm"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <section className="border p-4 rounded">
+        <h2 className="font-medium">Message</h2>
+        <p className="mt-2 whitespace-pre-line">{submission.message}</p>
+      </section>
+
+      <section>
+        <h3 className="font-medium">Replies</h3>
+        <div className="space-y-3 mt-3">
+          {(submission.replies ?? []).map((r) => (
+            <div key={r.id} className="p-3 border rounded">
+              <div className="text-sm text-gray-500">
+                {r.channel} · {new Date(r.sentAt).toLocaleString()}
+              </div>
+              <div className="mt-1">{r.body}</div>
+            </div>
+          ))}
+
+          <div className="mt-2 flex gap-2">
+            <input
+              className="flex-1 border px-3 py-2 rounded"
+              value={newReply}
+              onChange={(e) => setNewReply(e.target.value)}
+              placeholder="Write a reply..."
+            />
+            <button
+              onClick={submitReply}
+              disabled={saving}
+              className="px-3 py-2 bg-black text-white rounded"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h3 className="font-medium">Audit Timeline</h3>
+        <div className="mt-3 space-y-2">
+          {submission.auditLogs?.length ? (
+            submission.auditLogs.map((a: any) => (
+              <div key={a.id} className="text-sm text-gray-700 border-l pl-3">
+                <div className="text-xs text-gray-400">
+                  {new Date(a.createdAt).toLocaleString()}
+                </div>
+                <div className="mt-1">{a.action}</div>
+                {a.details && (
+                  <pre className="text-xs text-gray-500 mt-1">{JSON.stringify(a.details)}</pre>
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="text-sm text-gray-500">No audit entries</div>
+          )}
+        </div>
+      </section>
+    </div>
+  )
+}
+
+"""
+
+
+================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\tsconfig.json
 RELATIVE: apps\api\tsconfig.json
 ================================================================================
@@ -1824,12 +3105,14 @@ RELATIVE: apps\api\tsconfig.json
   "compilerOptions": {
     "module": "CommonJS",
     "moduleResolution": "Node",
-    "target": "ES2022",
+    "target": "ES2019",
+    "composite": true,
     "lib": ["ES2022"],
-    "outDir": "dist",
+    "outDir": "./dist",
     "rootDir": "src",
     "declaration": true,
     "removeComments": true,
+    "noEmit": false,
     "incremental": true,
     "sourceMap": true,
     "esModuleInterop": true,
@@ -1857,7 +3140,14 @@ RELATIVE: apps\api\tsconfig.build.json
 """
 {
   "extends": "../../tsconfig.json",
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"],
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": "dist",
+    "module": "commonjs",
+    "moduleResolution": "node"
+  },
+  "include": ["src/**/*"]
 }
 
 """
@@ -1984,11 +3274,14 @@ RELATIVE: apps\api\package.json
   "author": "",
   "private": true,
   "license": "UNLICENSED",
+  "prisma": {
+    "schema": "../../packages/prisma/prisma/schema.prisma"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "node -r source-map-support/register dist/main.js",
-    "start:dev": "nest start --watch --exec \"node -r tsconfig-paths/register\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "build": "nest build",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -2005,7 +3298,9 @@ RELATIVE: apps\api\package.json
     "@nestjs/core": "^11.0.1",
     "@nestjs/jwt": "^11.0.1",
     "@nestjs/passport": "^11.0.5",
-    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-express": "^11.1.8",
+    "@nestjs/platform-socket.io": "^11.1.9",
+    "@nestjs/websockets": "^11.1.9",
     "@prisma/client": "^6.19.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
@@ -2013,6 +3308,7 @@ RELATIVE: apps\api\package.json
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.8.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {
@@ -2059,6 +3355,7 @@ RELATIVE: apps\api\package.json
     "testEnvironment": "node"
   }
 }
+
 """
 
 
@@ -2072,7 +3369,9 @@ RELATIVE: apps\api\nest-cli.json
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
+  "entryFile": "main",
   "compilerOptions": {
+    "tsConfigPath": "tsconfig.build.json",
     "deleteOutDir": true
   }
 }
@@ -2150,7 +3449,6 @@ export default tseslint.config(
 
 """
 
-###MESSAGE###
 
 ================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\test\jest-e2e.json
@@ -2313,6 +3611,7 @@ export class AppController {
 
 """
 
+--CHECK TO MAKE SURE JARVIS GOES THROUGH WHOLE FILE--
 
 ================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\app.controller.spec.ts
@@ -2353,6 +3652,7 @@ RELATIVE: apps\api\src\utils\auditLogger.ts
 
 """
 import { PrismaClient } from '@prisma/client';
+
 const prisma = new PrismaClient();
 
 export async function logAudit({
@@ -2364,10 +3664,16 @@ export async function logAudit({
   submissionId: string;
   action: string;
   changedById?: string | null;
-  details?: Record<string, any>;
-}) {
+  details?: Record<string, any> | null;
+  }) {
+  
   return prisma.auditLog.create({
-    data: { submissionId, action, changedById, details },
+    data: {
+      contactSubmissionId: submissionId,
+      action,
+      changedById: changedById ?? null,
+      meta: details ?? null,
+    } as any,
   });
 }
 
@@ -2421,6 +3727,31 @@ export class PrismaModule {}
 
 
 ================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\schemas.ts
+RELATIVE: apps\api\src\contact\schemas.ts
+================================================================================
+
+"""
+// apps/api/src/contact/schemas.ts
+import { z } from 'zod';
+
+export const CreateContactSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  phone: z.string().optional().nullable(),
+  message: z.string().min(1),
+  source: z.string().optional().nullable(),
+});
+
+export const UpdateStatusSchema = z.object({
+  status: z.enum(['new', 'in_review', 'responded', 'closed']),
+  assignedToId: z.string().optional().nullable(),
+});
+
+"""
+
+
+================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\contact.service.ts
 RELATIVE: apps\api\src\contact\contact.service.ts
 ================================================================================
@@ -2429,11 +3760,23 @@ RELATIVE: apps\api\src\contact\contact.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ContactSubmission, SubmissionStatus } from '@prisma/client';
-import { logAudit } from '../utils/auditLogger';
+import { Subject, ReplaySubject } from 'rxjs';
+
+export type ContactEvent =
+  | { type: 'created'; payload: any }
+  | { type: 'updated'; payload: any }
+  | { type: 'status_changed'; payload: any };
 
 @Injectable()
 export class ContactService {
   constructor(private readonly prisma: PrismaService) {}
+
+  // SSE/RxJS subject
+  private events$ = new ReplaySubject<ContactEvent>(10);
+
+  getEventsSubject() {
+    return this.events$;
+  }
 
   async createContact(data: {
     name: string;
@@ -2443,11 +3786,8 @@ export class ContactService {
     source?: string;
   }): Promise<ContactSubmission> {
     const created = await this.prisma.contactSubmission.create({ data });
-    await logAudit({
-      submissionId: created.id,
-      action: 'Submission created',
-      details: { source: data.source ?? 'unknown' },
-    });
+    // emit created
+    this.events$.next({ type: 'created', payload: created });
     return created;
   }
 
@@ -2457,7 +3797,7 @@ export class ContactService {
     });
   }
 
-  async getContactById(id: string): Promise<ContactSubmission | null> {
+  async getContactById(id: string) {
     return this.prisma.contactSubmission.findUnique({
       where: { id },
       include: {
@@ -2465,16 +3805,14 @@ export class ContactService {
         replies: true,
         auditLogs: {
           orderBy: { createdAt: 'desc' },
-          include: { changedBy: true },
+          include: { actor: true },
         },
       },
     });
   }
 
-  async getContactWithHistory(
-    id: string,
-  ): Promise<ContactSubmission & { auditLogs: any[] }> {
-    const contactWithHistory = await this.prisma.contactSubmission.findUnique({
+  async getContactWithHistory(id: string) {
+    const contact = await this.prisma.contactSubmission.findUnique({
       where: { id },
       include: {
         auditLogs: {
@@ -2482,12 +3820,7 @@ export class ContactService {
         },
       },
     });
-
-    if (!contactWithHistory) {
-      throw new Error('Contact submission not found');
-    }
-
-    return contactWithHistory;
+    return contact;
   }
 
   async updateStatus(
@@ -2495,7 +3828,12 @@ export class ContactService {
     status: SubmissionStatus,
     assignedToId?: string,
     changedById?: string,
-  ): Promise<ContactSubmission> {
+  ) {
+    const prev = await this.prisma.contactSubmission.findUnique({
+      where: { id },
+    });
+    if (!prev) throw new Error('Not found');
+
     const updated = await this.prisma.contactSubmission.update({
       where: { id },
       data: {
@@ -2506,20 +3844,52 @@ export class ContactService {
       },
     });
 
-    await logAudit({
-      submissionId: id,
-      action: `Status changed to ${status}`,
-      changedById,
+    // create audit log with schema that matches your prisma
+    await this.prisma.auditLog.create({
+      data: {
+        contactSubmissionId: id,
+        action: 'status_changed',
+        createdAt: new Date(),
+        meta: { from: prev.status, to: status },
+        // actor id field name may vary in your schema: use changedById or actorId depending on your model
+        // if your schema has 'changedById':
+        changedById: changedById ?? null,
+      } as any,
     });
+
+    this.events$.next({ type: 'status_changed', payload: { id, status } });
+    this.events$.next({ type: 'updated', payload: updated });
 
     return updated;
   }
 
-  async deleteContact(id: string): Promise<ContactSubmission> {
-    const deleted: ContactSubmission =
-      await this.prisma.contactSubmission.delete({
-        where: { id },
-      });
+  async addReplyLog(id: string, replyData: any, assignedToId?: string) {
+    await this.prisma.reply.create({
+      data: {
+        submissionId: id,
+        ...replyData,
+      },
+    });
+
+    await this.prisma.auditLog.create({
+      data: {
+        contactSubmissionId: id,
+        action: 'reply_added',
+        meta: replyData,
+        createdAt: new Date(),
+      } as any,
+    });
+
+    const updated = await this.getContactById(id);
+    this.events$.next({ type: 'updated', payload: updated });
+    return updated;
+  }
+
+  async deleteContact(id: string) {
+    const deleted = await this.prisma.contactSubmission.delete({
+      where: { id },
+    });
+    this.events$.next({ type: 'updated', payload: deleted });
     return deleted;
   }
 }
@@ -2533,16 +3903,93 @@ RELATIVE: apps\api\src\contact\contact.module.ts
 ================================================================================
 
 """
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ContactController } from './contact.controller';
 import { ContactService } from './contact.service';
+import { PrismaModule } from '../prisma/prisma.module';
+import { ContactGateway } from './contact.gateway';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [ContactController],
-  providers: [ContactService],
+  providers: [ContactService, ContactGateway],
   exports: [ContactService],
 })
 export class ContactModule {}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\contact.gateway.ts
+RELATIVE: apps\api\src\contact\contact.gateway.ts
+================================================================================
+
+"""
+import {
+  WebSocketGateway,
+  WebSocketServer,
+  OnGatewayInit,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+} from '@nestjs/websockets';
+import { Server } from 'socket.io';
+import { ContactService, ContactEvent } from './contact.service';
+import { Logger, Inject, forwardRef, Injectable } from '@nestjs/common';
+
+@WebSocketGateway({
+  cors: {
+    origin: '*', // adjust in production
+  },
+})
+@Injectable()
+export class ContactGateway
+  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
+  private readonly logger = new Logger(ContactGateway.name);
+
+  @WebSocketServer()
+  server!: Server;
+
+  constructor(
+    @Inject(forwardRef(() => ContactService))
+    private readonly contactService: ContactService,
+  ) {}
+
+  // 🔥 Correct lifecycle method name
+  afterInit() {
+    this.logger.log('WebSocket Gateway initialized');
+
+    // Subscribe to service events and broadcast to clients
+      this.contactService.getEventsSubject().subscribe((event: ContactEvent) => {
+        switch (event.type) {
+          case 'created':
+            this.server.emit('contact:created', event.payload);
+            break;
+
+          case 'updated':
+            this.server.emit('contact:updated', event.payload);
+            break;
+
+          case 'status_changed':
+            this.server.emit('contact:status_changed', event.payload);
+            break;
+        }
+      this.logger.log(`Broadcasting event type=${event.type}`);
+      this.server.emit('contact:event', event);
+    });
+  }
+
+  // Correct connection handler
+  handleConnection(client: any) {
+    this.logger.log(`Client connected: ${client.id}`);
+  }
+
+  // Correct disconnect handler
+  handleDisconnect(client: any) {
+    this.logger.log(`Client disconnected: ${client.id}`);
+  }
+}
 
 """
 
@@ -2562,12 +4009,25 @@ import {
   Put,
   UsePipes,
   ValidationPipe,
+  UseGuards,
+  Req,
+  Sse,
 } from '@nestjs/common';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { ContactService } from './contact.service';
-import { CreateContactDto } from './dto/create-contact.dto';
-import { ContactSubmission, SubmissionStatus } from '@prisma/client';
 
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { ContactService, ContactEvent } from './contact.service';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { SubmissionStatus } from '@prisma/client';
+import { CreateContactDto } from './dto/create-contact.dto';
+import { Prisma } from '@prisma/client';
+
+/* ------------------------------
+   DTO for Status Update
+--------------------------------*/
 class UpdateStatusDto {
   @IsEnum(SubmissionStatus)
   status!: SubmissionStatus;
@@ -2579,45 +4039,63 @@ class UpdateStatusDto {
 
 @Controller('contact-submissions')
 export class ContactController {
-  constructor(private readonly contactService: ContactService) {}
+  constructor(private readonly service: ContactService) {}
 
-  // Public endpoint used by the website form
+  /* --------------------------------------------
+    PUBLIC CONTACT FORM
+  -------------------------------------------- */
   @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async submitContact(
-    @Body() body: CreateContactDto,
-  ): Promise<ContactSubmission> {
-    const contact = await this.contactService.createContact(body);
-    return contact;
+  async submitContact(@Body() body: CreateContactDto) {
+    return this.service.createContact(body);
   }
 
-  // Admin / staff view
+  /* --------------------------------------------
+    LIST ALL (ADMIN/STAFF)
+  -------------------------------------------- */
   @Get()
-  async getAll(): Promise<ContactSubmission[]> {
-    const contacts = await this.contactService.listContacts();
-    return contacts;
+  async getAll() {
+    return this.service.listContacts();
   }
 
-  // Get one submission
+  /* --------------------------------------------
+    GET ONE + HISTORY
+  -------------------------------------------- */
   @Get(':id')
-  async getOne(@Param('id') id: string): Promise<ContactSubmission | null> {
-    const contact = await this.contactService.getContactById(id);
-    return contact;
+  async getOne(@Param('id') id: string) {
+    return this.service.getContactById(id);
   }
 
-  // Admin action: update status or assignment
-  @Put(':id')
+  /* --------------------------------------------
+    STATUS UPDATE (ADMIN)
+  -------------------------------------------- */
+  @Put(':id/status')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('ADMIN')
+  @Put(':id/status')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async updateStatus(
     @Param('id') id: string,
     @Body() body: UpdateStatusDto,
-  ): Promise<ContactSubmission> {
-    const updatedContact = await this.contactService.updateStatus(
+    @Req() req: any,
+  ) {
+    const actorId = req.user?.sub ?? req.user?.id ?? null;
+    return this.service.updateStatus(
       id,
       body.status,
       body.assignedToId,
+      actorId,
     );
-    return updatedContact;
+  }
+
+  /* --------------------------------------------
+    REALTIME STREAM (SSE)
+  -------------------------------------------- */
+  @Sse('stream')
+  stream(): Observable<MessageEvent> {
+    return this.service
+      .getEventsSubject()
+      .pipe(map((evt: ContactEvent) => ({ data: evt }) as MessageEvent));
   }
 }
 
@@ -2663,7 +4141,7 @@ RELATIVE: apps\api\src\auth\roles.guard.ts
 ================================================================================
 
 """
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+ 
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
@@ -2689,6 +4167,7 @@ RELATIVE: apps\api\src\auth\roles.decorator.ts
 
 """
 import { SetMetadata } from '@nestjs/common';
+
 export const Roles = (...roles: string[]) => SetMetadata('roles', roles);
 
 """
@@ -2700,8 +4179,8 @@ RELATIVE: apps\api\src\auth\jwt.strategy.ts
 ================================================================================
 
 """
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+ 
+ 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';

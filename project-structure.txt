@@ -1,6 +1,6 @@
 ================================================================================
 PROJECT DIRECTORY STRUCTURE
-Generated: 2025-11-14T04:42:54.732Z
+Generated: 2025-11-15T07:45:28.554Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
 ================================================================================
 
@@ -29,22 +29,25 @@ MYGALE_ART_AND_SERVICES/
 │   │   └── prepare-commit-msg
 │   ├── commit-msg
 │   └── pre-commit
-├── apps/ (185 files) ← Directory for independent applications
-│   ├── api/ (112 files) ← Backend application (NestJS)
+├── apps/ (453 files) ← Directory for independent applications
+│   ├── api/ (135 files) ← Backend application (NestJS)
+│   │   ├── dist/ [collapsed] ← Build output (collapsed)
 │   │   ├── node_modules/ [collapsed] ← Dependencies (collapsed)
-│   │   ├── src/ (17 files) ← Source code directory
+│   │   ├── src/ (19 files) ← Source code directory
 │   │   │   ├── auth/ (5 files)
 │   │   │   │   ├── auth.module.ts
 │   │   │   │   ├── jwt-auth.guard.ts
 │   │   │   │   ├── jwt.strategy.ts
 │   │   │   │   ├── roles.decorator.ts
 │   │   │   │   └── roles.guard.ts
-│   │   │   ├── contact/ (4 files)
+│   │   │   ├── contact/ (6 files)
 │   │   │   │   ├── dto/ (1 files)
 │   │   │   │   │   └── create-contact.dto.ts
 │   │   │   │   ├── contact.controller.ts
+│   │   │   │   ├── contact.gateway.ts
 │   │   │   │   ├── contact.module.ts
-│   │   │   │   └── contact.service.ts
+│   │   │   │   ├── contact.service.ts
+│   │   │   │   └── schemas.ts
 │   │   │   ├── prisma/ (2 files) ← Shared Prisma/database package
 │   │   │   │   ├── prisma.module.ts
 │   │   │   │   └── prisma.service.ts
@@ -70,7 +73,7 @@ MYGALE_ART_AND_SERVICES/
 │   │   ├── README.md ← Project documentation
 │   │   ├── tsconfig.build.json
 │   │   └── tsconfig.json ← TypeScript configuration
-│   └── web/ (73 files) ← Frontend application (Next.js)
+│   └── web/ (318 files) ← Frontend application (Next.js)
 │       ├── .next/ [collapsed] ← Next.js build output (collapsed)
 │       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
 │       ├── public/ (5 files) ← Static assets
@@ -79,37 +82,68 @@ MYGALE_ART_AND_SERVICES/
 │       │   ├── next.svg
 │       │   ├── vercel.svg
 │       │   └── window.svg
-│       ├── src/ (5 files) ← Source code directory
-│       │   ├── app/ (4 files)
+│       ├── src/ (20 files) ← Source code directory
+│       │   ├── app/ (11 files)
+│       │   │   ├── contact-submissions/ (5 files)
+│       │   │   │   ├── [id]/ (2 files)
+│       │   │   │   │   ├── ContactDetailClient.tsx
+│       │   │   │   │   └── page.tsx ← Page component
+│       │   │   │   ├── ContactListClient.tsx
+│       │   │   │   ├── index.ts
+│       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── login/ (1 files)
+│       │   │   │   └── page.tsx ← Page component
 │       │   │   ├── favicon.ico
 │       │   │   ├── globals.css ← Global styles
 │       │   │   ├── layout.tsx ← Root layout component
-│       │   │   └── page.tsx ← Page component
-│       │   └── pages/ (1 files)
-│       │       └── api/ (1 files) ← Backend application (NestJS)
-│       │           └── auth/ (1 files)
-│       │               └── nextauth.ts
+│       │   │   ├── page.tsx ← Page component
+│       │   │   └── providers.tsx
+│       │   ├── components/ (2 files)
+│       │   │   ├── Navbar.tsx
+│       │   │   └── ToastProvider.tsx
+│       │   ├── hooks/ (1 files)
+│       │   │   └── useSocket.ts
+│       │   ├── lib/ (1 files)
+│       │   │   └── socket.ts
+│       │   ├── pages/ (4 files)
+│       │   │   └── api/ (4 files) ← Backend application (NestJS)
+│       │   │       ├── auth/ (1 files)
+│       │   │       │   └── [...nextauth].ts
+│       │   │       └── proxy/ (3 files)
+│       │   │           └── contact-submissions/ (3 files)
+│       │   │               ├── [id]/ (2 files)
+│       │   │               │   ├── reply.ts
+│       │   │               │   └── status.ts
+│       │   │               └── index.ts
+│       │   └── types/ (1 files)
+│       │       └── next-auth.d.ts
+│       ├── tests/ (1 files)
+│       │   └── e2e/ (1 files)
+│       │       └── realtime.spec.ts
 │       ├── .env.local
 │       ├── .gitignore ← Git ignore patterns
 │       ├── eslint.config.mjs
+│       ├── middleware.ts
 │       ├── next-env.d.ts
 │       ├── next.config.mjs
 │       ├── next.config.ts
 │       ├── package-lock.json
 │       ├── package.json ← Package configuration and dependencies
+│       ├── playwright.config.ts
 │       ├── postcss.config.mjs
 │       ├── README.md ← Project documentation
+│       ├── tailwind.config.mjs
 │       └── tsconfig.json ← TypeScript configuration
 ├── data/ (1273 files) ← Data directory (collapsed)
 │   └── postgres/ (1273 files) ← PostgreSQL data directory (collapsed)
 │       └── 18/ (1273 files)
 │           └── docker/ [collapsed]
 ├── node_modules/ [collapsed] ← Dependencies (collapsed)
-├── packages/ (24 files) ← Directory for shared packages/libraries
-│   └── prisma/ (24 files) ← Shared Prisma/database package
+├── packages/ (30 files) ← Directory for shared packages/libraries
+│   └── prisma/ (30 files) ← Shared Prisma/database package
 │       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
-│       ├── prisma/ (8 files) ← Shared Prisma/database package
-│       │   ├── migrations/ (6 files) ← Database migrations
+│       ├── prisma/ (14 files) ← Shared Prisma/database package
+│       │   ├── migrations/ (12 files) ← Database migrations
 │       │   │   ├── 20251113015902_init/ (1 files)
 │       │   │   │   └── migration.sql
 │       │   │   ├── 20251113062736_init_enum_and_relations/ (1 files)
@@ -120,6 +154,18 @@ MYGALE_ART_AND_SERVICES/
 │       │   │   │   └── migration.sql
 │       │   │   ├── 20251114040428_add_auth_models/ (1 files)
 │       │   │   │   └── migration.sql
+│       │   │   ├── 20251114055539_restore_schema/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251114060119/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251115021026_phase_6_refine/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251115022949_make_contact_submission_id_required/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251115023503_make_contact_submission_id_optional/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251115023638_make_contact_submission_id_optional/ (1 files)
+│       │   │   │   └── migration.sql
 │       │   │   └── migration_lock.toml
 │       │   ├── schema.prisma ← Prisma database schema
 │       │   └── seed.ts
@@ -127,6 +173,8 @@ MYGALE_ART_AND_SERVICES/
 │       ├── .gitignore ← Git ignore patterns
 │       ├── package.json ← Package configuration and dependencies
 │       └── prisma.config.ts
+├── scripts/ (1 files)
+│   └── dev-with-cleanup.js
 ├── .env ← Environment variables (not tracked in git)
 ├── .gitignore ← Git ignore patterns
 ├── .prettierrc ← Prettier configuration for code formatting
