@@ -1,39 +1,58 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { test, expect } from '@playwright/test'
+import { connectSocket } from './utils/ws'
 
-test('realtime new submission shows in inbox and optimistic status update', async ({
-  page,
-  request,
-}) => {
-  // 1) go to login
-  await page.goto('http://localhost:3000/login')
-  // NOTE: in CI you can mock login; here we assume a test user exists and we can programmatically create/get a session cookie.
-  // For local dev, you may have a test flow or bypass; this test will check UI behavior once logged in.
-
-  // For demonstration: visit the inbox (if unauthenticated you'll see login)
-  await page.goto('http://localhost:3000/contact-submissions')
-  await expect(page.locator('text=Contact Submissions')).toBeVisible()
-
-  // 2) Create a submission using backend API directly
-  const apiBase = process.env.TEST_API_BASE ?? 'http://localhost:4000'
-  const createResp = await request.post(`${apiBase}/contact-submissions`, {
-    data: { name: 'E2E Tester', email: 'e2e@test.local', message: 'hello realtime' },
+test('Realtime: admin receives live contact submission', async ({ page }) => {
+  // Make browser accessible setter
+  await page.exposeFunction('setReceivedPayload', (p: any) => {
+    ;(global as any).__receivedPayload = p
   })
-  expect(createResp.ok()).toBeTruthy()
-  const created = await createResp.json()
 
-  // Wait briefly and assert inbox shows new item
-  await page.waitForTimeout(400) // socket propagation
-  await expect(page.locator(`text=${created.email}`)).toBeVisible()
+  // Step 1 — login
+  await page.goto('http://localhost:3000/login')
+  await page.getByLabel('Email').fill('admin@example.com')
+  await page.getByRole('button', { name: 'Sign in' }).click()
 
-  // 3) Click into it and hit status change
-  await page.click(`a[href="/contact-submissions/${created.id}"]`)
-  await expect(page.locator('text=Message')).toBeVisible()
+  // dashboard loaded
+  await page.waitForURL('**/contact-submissions')
 
-  // Click "Mark In Review" (optimistic)
-  await page.click('text=Mark In Review')
-  // optimistic UI: status should update immediately
-  await expect(page.locator('text=Status:')).toContainText('in_review')
+  const session = await page.evaluate(() => {
+    return window.__NEXT_AUTH_SESSION
+  })
 
-  // Clean up if needed
-  // await request.delete(`${apiBase}/contact-submissions/${created.id}`)
+  expect(session?.apiToken).toBeTruthy()
+
+  const socket = connectSocket(session.apiToken)
+
+  // Wait for websocket ready
+  await new Promise<void>((resolve) => {
+    socket.on('connect', () => resolve())
+  })
+
+  // Listen for event
+  socket.on('contact:created', async (payload) => {
+    await page.evaluate((p) => {
+      window.__receivedPayload = p
+    }, payload)
+  })
+
+  // Trigger a new submission
+  const res = await fetch('http://localhost:4000/contact-submissions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: 'WS Test',
+      email: 'ws@example.com',
+      message: 'Hello from test',
+    }),
+  })
+  expect(res.status).toBe(201)
+
+  // Wait up to 5s for websocket event
+  const result = await page.waitForFunction(() => window.__receivedPayload !== undefined, null, {
+    timeout: 5000,
+  })
+
+  const received = await page.evaluate(() => window.__receivedPayload)
+  expect(received.email).toBe('ws@example.com')
 })

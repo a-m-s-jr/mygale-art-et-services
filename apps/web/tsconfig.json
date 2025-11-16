@@ -37,7 +37,9 @@
     "src/types",
     "src/**/*",
     "src/types/**/*",
-    "next-auth.d.ts"
+    "next-auth.d.ts",
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
   ],
   "exclude": ["node_modules", ".next"]
 }

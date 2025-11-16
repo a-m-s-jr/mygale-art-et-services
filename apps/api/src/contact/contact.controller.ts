@@ -22,6 +22,8 @@ import { Roles } from '../auth/roles.decorator';
 import { SubmissionStatus } from '@prisma/client';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { Prisma } from '@prisma/client';
+import { ReplySchema, DraftSchema } from './schemas';
+import { ZodError } from 'zod';
 
 /* ------------------------------
    DTO for Status Update
@@ -37,7 +39,58 @@ class UpdateStatusDto {
 
 @Controller('contact-submissions')
 export class ContactController {
-  constructor(private readonly service: ContactService) {}
+  constructor(public readonly service: ContactService) {}
+
+  @Post(':id/reply')
+  @UseGuards(JwtAuthGuard, RolesGuard) // require login to reply
+  @Roles('ADMIN', 'STAFF')
+  async replyToSubmission(
+    @Param('id') id: string,
+    @Body() body: any,
+    @Req() req: any,
+  ) {
+    // validate with zod
+    try {
+      const dto = ReplySchema.parse(body);
+      const actorId = req.user?.sub ?? req.user?.id ?? null;
+      const result = await this.service.sendReply(id, dto, actorId);
+      return { success: true, result };
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return { success: false, errors: err };
+      }
+      // nodemailer or prisma errors
+      throw err;
+    }
+  }
+
+  @Post(':id/draft')
+  @UseGuards(JwtAuthGuard)
+  @Roles('ADMIN', 'STAFF')
+  async saveDraft(
+    @Param('id') id: string,
+    @Body() body: { draft: string },
+    @Req() req: any,
+  ) {
+    try {
+      const dto = DraftSchema.parse(body);
+      const actorId = req.user?.sub ?? req.user?.id ?? null;
+      return this.service.saveDraft(id, dto.draft ?? null, actorId);
+    } catch (error) {
+      if (error instanceof ZodError)
+        return { success: false, errors: error };
+      throw error;
+    }
+  }
+
+  @Get(':id/draft')
+  @UseGuards(JwtAuthGuard)
+  @Roles('ADMIN', 'STAFF')
+  async getDraft(@Param('id') id: string) {
+    // get latest draft audit log
+    const draft = await this.service.getLatestDraft(id);
+    return { draft: draft ?? null };
+  }
 
   /* --------------------------------------------
     PUBLIC CONTACT FORM

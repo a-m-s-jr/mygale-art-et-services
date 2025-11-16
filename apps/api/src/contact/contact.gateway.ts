@@ -4,8 +4,9 @@ import {
   OnGatewayInit,
   OnGatewayConnection,
   OnGatewayDisconnect,
+  SubscribeMessage,
 } from '@nestjs/websockets';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import { ContactService, ContactEvent } from './contact.service';
 import { Logger, Inject, forwardRef, Injectable } from '@nestjs/common';
 
@@ -33,23 +34,28 @@ export class ContactGateway
     this.logger.log('WebSocket Gateway initialized');
 
     // Subscribe to service events and broadcast to clients
-      this.contactService.getEventsSubject().subscribe((event: ContactEvent) => {
-        switch (event.type) {
-          case 'created':
-            this.server.emit('contact:created', event.payload);
-            break;
+    this.contactService.getEventsSubject().subscribe((event: ContactEvent) => {
+      switch (event.type) {
+        case 'created':
+          this.server.emit('contact:created', event.payload);
+          break;
 
-          case 'updated':
-            this.server.emit('contact:updated', event.payload);
-            break;
+        case 'updated':
+          this.server.emit('contact:updated', event.payload);
+          break;
 
-          case 'status_changed':
-            this.server.emit('contact:status_changed', event.payload);
-            break;
-        }
+        case 'status_changed':
+          this.server.emit('contact:status_changed', event.payload);
+          break;
+      }
       this.logger.log(`Broadcasting event type=${event.type}`);
       this.server.emit('contact:event', event);
     });
+  }
+
+  @SubscribeMessage('health:ping')
+  handleHealthPing(client: Socket, payload: any) {
+    client.emit('health:pong', { ts: Date.now(), received: payload });
   }
 
   // Correct connection handler

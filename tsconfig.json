@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM"],
     "strict": true,
     "experimentalDecorators": true,
@@ -12,10 +12,17 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowJs": false,
     "paths": {
       "@/*": ["apps/web/src/*"],
-      "@mygale/prisma/*": ["packages/prisma/*"]
+      "@mygale/prisma/*": ["packages/prisma/*"],
+      "@shared/prisma/*": ["packages/shared-prisma/src/*"],
+      "@shared/webhooks/*": ["packages/shared-webhooks/src/*"]
     }
   },
-  "references": [{ "path": "./apps/api" }, { "path": "./apps/web" }]
+  "references": [{ "path": "./apps/api" }, { "path": "./apps/web" }],
+  "include": ["apps/**/*", "packages/**/*"],
+  "exclude": ["node_modules", "dist"]
 }

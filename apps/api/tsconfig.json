@@ -24,6 +24,6 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "jest.config.js"],
+  "include": ["src/**/*.ts", "jest.config.js", "src/**/*", "src/types/**/*"],
   "exclude": ["node_modules", "dist", "**/*.spec.ts"]
 }

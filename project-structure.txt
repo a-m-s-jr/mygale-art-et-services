@@ -1,6 +1,6 @@
 ================================================================================
 PROJECT DIRECTORY STRUCTURE
-Generated: 2025-11-15T07:45:28.554Z
+Generated: 2025-11-16T03:42:14.019Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
 ================================================================================
 
@@ -29,17 +29,19 @@ MYGALE_ART_AND_SERVICES/
 │   │   └── prepare-commit-msg
 │   ├── commit-msg
 │   └── pre-commit
-├── apps/ (453 files) ← Directory for independent applications
-│   ├── api/ (135 files) ← Backend application (NestJS)
+├── apps/ (414 files) ← Directory for independent applications
+│   ├── api/ (190 files) ← Backend application (NestJS)
 │   │   ├── dist/ [collapsed] ← Build output (collapsed)
 │   │   ├── node_modules/ [collapsed] ← Dependencies (collapsed)
-│   │   ├── src/ (19 files) ← Source code directory
+│   │   ├── src/ (23 files) ← Source code directory
 │   │   │   ├── auth/ (5 files)
 │   │   │   │   ├── auth.module.ts
 │   │   │   │   ├── jwt-auth.guard.ts
 │   │   │   │   ├── jwt.strategy.ts
 │   │   │   │   ├── roles.decorator.ts
 │   │   │   │   └── roles.guard.ts
+│   │   │   ├── common/ (1 files)
+│   │   │   │   └── rate-limiter.middleware.ts
 │   │   │   ├── contact/ (6 files)
 │   │   │   │   ├── dto/ (1 files)
 │   │   │   │   │   └── create-contact.dto.ts
@@ -53,6 +55,10 @@ MYGALE_ART_AND_SERVICES/
 │   │   │   │   └── prisma.service.ts
 │   │   │   ├── utils/ (1 files)
 │   │   │   │   └── auditLogger.ts
+│   │   │   ├── webhooks/ (3 files)
+│   │   │   │   ├── webhooks.controller.ts
+│   │   │   │   ├── webhooks.module.ts
+│   │   │   │   └── webhooks.service.ts
 │   │   │   ├── app.controller.spec.ts
 │   │   │   ├── app.controller.ts
 │   │   │   ├── app.module.ts ← Root application module
@@ -73,7 +79,7 @@ MYGALE_ART_AND_SERVICES/
 │   │   ├── README.md ← Project documentation
 │   │   ├── tsconfig.build.json
 │   │   └── tsconfig.json ← TypeScript configuration
-│   └── web/ (318 files) ← Frontend application (Next.js)
+│   └── web/ (224 files) ← Frontend application (Next.js)
 │       ├── .next/ [collapsed] ← Next.js build output (collapsed)
 │       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
 │       ├── public/ (5 files) ← Static assets
@@ -82,12 +88,16 @@ MYGALE_ART_AND_SERVICES/
 │       │   ├── next.svg
 │       │   ├── vercel.svg
 │       │   └── window.svg
-│       ├── src/ (20 files) ← Source code directory
-│       │   ├── app/ (11 files)
-│       │   │   ├── contact-submissions/ (5 files)
-│       │   │   │   ├── [id]/ (2 files)
+│       ├── src/ (28 files) ← Source code directory
+│       │   ├── app/ (13 files)
+│       │   │   ├── admin/ (1 files)
+│       │   │   │   └── webhooks/ (1 files)
+│       │   │   │       └── page.tsx ← Page component
+│       │   │   ├── contact-submissions/ (6 files)
+│       │   │   │   ├── [id]/ (3 files)
 │       │   │   │   │   ├── ContactDetailClient.tsx
-│       │   │   │   │   └── page.tsx ← Page component
+│       │   │   │   │   ├── page.tsx ← Page component
+│       │   │   │   │   └── RichTextComposer.tsx
 │       │   │   │   ├── ContactListClient.tsx
 │       │   │   │   ├── index.ts
 │       │   │   │   └── page.tsx ← Page component
@@ -98,32 +108,45 @@ MYGALE_ART_AND_SERVICES/
 │       │   │   ├── layout.tsx ← Root layout component
 │       │   │   ├── page.tsx ← Page component
 │       │   │   └── providers.tsx
-│       │   ├── components/ (2 files)
+│       │   ├── components/ (7 files)
+│       │   │   ├── AssigneeSelector.tsx
 │       │   │   ├── Navbar.tsx
+│       │   │   ├── Pagination.tsx
+│       │   │   ├── SearchBar.tsx
+│       │   │   ├── StatusChip.tsx
+│       │   │   ├── StatusFilter.tsx
 │       │   │   └── ToastProvider.tsx
 │       │   ├── hooks/ (1 files)
 │       │   │   └── useSocket.ts
 │       │   ├── lib/ (1 files)
 │       │   │   └── socket.ts
-│       │   ├── pages/ (4 files)
-│       │   │   └── api/ (4 files) ← Backend application (NestJS)
+│       │   ├── pages/ (5 files)
+│       │   │   └── api/ (5 files) ← Backend application (NestJS)
 │       │   │       ├── auth/ (1 files)
 │       │   │       │   └── [...nextauth].ts
-│       │   │       └── proxy/ (3 files)
-│       │   │           └── contact-submissions/ (3 files)
-│       │   │               ├── [id]/ (2 files)
+│       │   │       └── proxy/ (4 files)
+│       │   │           └── contact-submissions/ (4 files)
+│       │   │               ├── [id]/ (3 files)
+│       │   │               │   ├── draft.ts
 │       │   │               │   ├── reply.ts
 │       │   │               │   └── status.ts
 │       │   │               └── index.ts
 │       │   └── types/ (1 files)
 │       │       └── next-auth.d.ts
-│       ├── tests/ (1 files)
-│       │   └── e2e/ (1 files)
-│       │       └── realtime.spec.ts
+│       ├── tests/ (6 files)
+│       │   └── e2e/ (6 files)
+│       │       ├── utils/ (1 files)
+│       │       │   └── ws.ts
+│       │       ├── auth-protect.spec.ts
+│       │       ├── global.d.ts
+│       │       ├── login.spec.ts
+│       │       ├── realtime.spec.ts
+│       │       └── status-update.spec.ts
 │       ├── .env.local
 │       ├── .gitignore ← Git ignore patterns
 │       ├── eslint.config.mjs
 │       ├── middleware.ts
+│       ├── next-auth.d.ts
 │       ├── next-env.d.ts
 │       ├── next.config.mjs
 │       ├── next.config.ts
@@ -139,11 +162,11 @@ MYGALE_ART_AND_SERVICES/
 │       └── 18/ (1273 files)
 │           └── docker/ [collapsed]
 ├── node_modules/ [collapsed] ← Dependencies (collapsed)
-├── packages/ (30 files) ← Directory for shared packages/libraries
-│   └── prisma/ (30 files) ← Shared Prisma/database package
+├── packages/ (40 files) ← Directory for shared packages/libraries
+│   └── prisma/ (40 files) ← Shared Prisma/database package
 │       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
-│       ├── prisma/ (14 files) ← Shared Prisma/database package
-│       │   ├── migrations/ (12 files) ← Database migrations
+│       ├── prisma/ (16 files) ← Shared Prisma/database package
+│       │   ├── migrations/ (13 files) ← Database migrations
 │       │   │   ├── 20251113015902_init/ (1 files)
 │       │   │   │   └── migration.sql
 │       │   │   ├── 20251113062736_init_enum_and_relations/ (1 files)
@@ -166,7 +189,10 @@ MYGALE_ART_AND_SERVICES/
 │       │   │   │   └── migration.sql
 │       │   │   ├── 20251115023638_make_contact_submission_id_optional/ (1 files)
 │       │   │   │   └── migration.sql
+│       │   │   ├── 20251115145654_added_webhook_attempt/ (1 files)
+│       │   │   │   └── migration.sql
 │       │   │   └── migration_lock.toml
+│       │   ├── prisma.service.ts
 │       │   ├── schema.prisma ← Prisma database schema
 │       │   └── seed.ts
 │       ├── .env ← Environment variables (not tracked in git)
@@ -178,15 +204,14 @@ MYGALE_ART_AND_SERVICES/
 ├── .env ← Environment variables (not tracked in git)
 ├── .gitignore ← Git ignore patterns
 ├── .prettierrc ← Prettier configuration for code formatting
+├── bun.lock
 ├── commitlint.config.js ← Configuration for linting commit messages
 ├── concatenate-files.js
 ├── docker-compose.yml ← Defines and runs multi-container Docker applications
 ├── eslint.config.js ← ESLint configuration for code quality
 ├── generate-structure.js
 ├── MyProjectContent.txt
-├── openssl
 ├── package.json ← Package configuration and dependencies
-├── pnpm-lock.yaml
 ├── pnpm-workspace.yaml ← Defines the project as a pnpm monorepo workspace
 ├── project-structure.txt
 ├── tsconfig.json ← TypeScript configuration

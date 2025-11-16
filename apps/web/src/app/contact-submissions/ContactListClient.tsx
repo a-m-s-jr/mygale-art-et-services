@@ -1,141 +1,99 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/set-state-in-effect */
 'use client'
-import React, { useState, useCallback } from 'react'
-import useSocket from '@/hooks/useSocket'
-import { getSocket } from '@/lib/socket'
+import { useState, useEffect } from 'react'
+import StatusFilter from '@/components/StatusFilter'
+import SearchBar from '@/components/SearchBar'
+import StatusChip from '@/components/StatusChip'
+import Pagination from '@/components/Pagination'
 
-type Submission = {
+export type Submission = {
   id: string
   name: string
   email: string
   message: string
-  status?: string
-  createdAt?: string
+  status: string
+  createdAt: string
 }
 
-export default function ContactListClient({
-  initialData,
-  token,
-}: {
-  initialData: Submission[]
-  token?: string
-}) {
-  const [submissions, setSubmissions] = useState<Submission[]>(initialData ?? [])
-  const [loading, setLoading] = useState(false)
-  const [optimistic, setOptimistic] = useState<Record<string, string | null>>({})
+export default function ContactListClient({ token }: { token: string }) {
+  const [data, setData] = useState<Submission[]>([])
+  const [filtered, setFiltered] = useState<Submission[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // subscribe to socket events
-  useSocket(
-    'contact:created',
-    (payload) => {
-      setSubmissions((prev) => [payload, ...prev])
-    },
-    token?.toString(),
-  )
+  // filters
+  const [status, setStatus] = useState('all')
+  const [search, setSearch] = useState('')
 
-  useSocket(
-    'contact:updated',
-    (payload) => {
-      setSubmissions((prev) => prev.map((p) => (p.id === payload.id ? payload : p)))
-      setOptimistic((o) => {
-        const copy = { ...o }
-        delete copy[payload.id]
-        return copy
+  // pagination
+  const [page, setPage] = useState(1)
+  const pageSize = 10
+
+  useEffect(() => {
+    async function load() {
+      const res = await fetch(`/api/contact-submissions`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-    },
-    token?.toString(),
-  )
-
-  const refresh = useCallback(async () => {
-    setLoading(true)
-    try {
-      const r = await fetch('/api/proxy/contact-submissions')
-      if (!r.ok) throw new Error('Failed')
-      const data = await r.json()
-      setSubmissions(data)
-    } finally {
+      const list = await res.json()
+      setData(list)
       setLoading(false)
     }
-  }, [])
+    load()
+  }, [token])
 
-  // optimistic status update
-  async function updateStatus(id: string, newStatus: string) {
-    // remember previous
-    const prev = submissions.find((s) => s.id === id)
-    if (!prev) return
+  useEffect(() => {
+    let items = data
 
-    // optimistic
-    setOptimistic((o) => ({ ...o, [id]: newStatus }))
-    setSubmissions((s) => s.map((x) => (x.id === id ? { ...x, status: newStatus } : x)))
-
-    try {
-      const r = await fetch(`/api/proxy/contact-submissions/${id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      })
-
-      if (!r.ok) {
-        throw new Error('update failed')
-      }
-      const updated = await r.json()
-      setSubmissions((s) => s.map((x) => (x.id === id ? updated : x)))
-    } catch (e) {
-      // rollback on error
-      setSubmissions((s) => s.map((x) => (x.id === id ? prev : x)))
-    } finally {
-      setOptimistic((o) => {
-        const c = { ...o }
-        delete c[id]
-        return c
-      })
+    if (status !== 'all') {
+      items = items.filter((s) => s.status === status)
     }
-  }
+
+    if (search.trim()) {
+      const q = search.toLowerCase()
+      items = items.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.email.toLowerCase().includes(q) ||
+          s.message.toLowerCase().includes(q),
+      )
+    }
+
+    setFiltered(items)
+    setPage(1)
+  }, [status, search, data])
+
+  if (loading) return <div>Loading…</div>
+
+  const start = (page - 1) * pageSize
+  const slice = filtered.slice(start, start + pageSize)
+  const totalPages = Math.ceil(filtered.length / pageSize)
 
   return (
-    <div className="space-y-4">
-      <div className="flex gap-2">
-        <button onClick={refresh} className="px-4 py-2 bg-black text-white rounded">
-          {loading ? 'Refreshing...' : 'Refresh'}
-        </button>
+    <div className="space-y-6">
+      <StatusFilter active={status} onChange={setStatus} />
+      <SearchBar value={search} onChange={setSearch} />
+
+      <div className="space-y-2">
+        {slice.map((s) => (
+          <a
+            key={s.id}
+            href={`/contact-submissions/${s.id}`}
+            className="block p-3 border rounded hover:bg-gray-50"
+          >
+            <div className="flex justify-between">
+              <div>
+                <div className="font-medium">{s.name}</div>
+                <div className="text-sm text-gray-500">{s.email}</div>
+              </div>
+              <StatusChip status={s.status} />
+            </div>
+
+            <div className="text-sm mt-1 line-clamp-1">{s.message}</div>
+            <div className="text-xs text-gray-400">{new Date(s.createdAt).toLocaleString()}</div>
+          </a>
+        ))}
       </div>
 
-      <ul className="space-y-2">
-        {submissions.map((s) => (
-          <li key={s.id} className="border p-4 rounded">
-            <div className="flex justify-between items-start">
-              <div>
-                <p>
-                  <strong>{s.name}</strong>
-                </p>
-                <p className="text-sm text-gray-500">{s.email}</p>
-                <p className="mt-2">{s.message}</p>
-              </div>
-              <div className="text-right space-y-2">
-                <div>
-                  <small className="text-xs text-gray-500">Status</small>
-                  <div className="mt-1 flex gap-2">
-                    <select
-                      value={optimistic[s.id] ?? s.status ?? 'new'}
-                      onChange={(e) => updateStatus(s.id, e.target.value)}
-                      className="border px-2 py-1 rounded"
-                    >
-                      <option value="new">new</option>
-                      <option value="in_review">in_review</option>
-                      <option value="responded">responded</option>
-                      <option value="closed">closed</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="text-xs text-gray-400">
-                  {s.createdAt ? new Date(s.createdAt).toLocaleString() : null}
-                </div>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <Pagination page={page} totalPages={totalPages} onPage={setPage} />
     </div>
   )
 }
