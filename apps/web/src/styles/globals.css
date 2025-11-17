@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/* base */
+html,body,#__next { height: 100%; }
+
+/* spider float animation */
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* input/button helpers */
+.input {
+  @apply w-full px-4 py-3 border border-gray-200 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3399FF];
+}
+.btn-primary {
+  @apply inline-flex items-center justify-center px-6 py-3 rounded-lg bg-gradient-to-r from-[#003366] to-[#3399FF] text-white font-semibold shadow;
+}
+
+/* small utility for subtle card bg */
+.card {
+  @apply bg-white rounded-xl shadow-sm border p-4;
+}

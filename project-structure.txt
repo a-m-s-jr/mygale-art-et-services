@@ -1,6 +1,6 @@
 ================================================================================
 PROJECT DIRECTORY STRUCTURE
-Generated: 2025-11-16T03:42:14.019Z
+Generated: 2025-11-17T01:00:50.212Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
 ================================================================================
 
@@ -29,7 +29,7 @@ MYGALE_ART_AND_SERVICES/
 │   │   └── prepare-commit-msg
 │   ├── commit-msg
 │   └── pre-commit
-├── apps/ (414 files) ← Directory for independent applications
+├── apps/ (776 files) ← Directory for independent applications
 │   ├── api/ (190 files) ← Backend application (NestJS)
 │   │   ├── dist/ [collapsed] ← Build output (collapsed)
 │   │   ├── node_modules/ [collapsed] ← Dependencies (collapsed)
@@ -79,7 +79,7 @@ MYGALE_ART_AND_SERVICES/
 │   │   ├── README.md ← Project documentation
 │   │   ├── tsconfig.build.json
 │   │   └── tsconfig.json ← TypeScript configuration
-│   └── web/ (224 files) ← Frontend application (Next.js)
+│   └── web/ (586 files) ← Frontend application (Next.js)
 │       ├── .next/ [collapsed] ← Next.js build output (collapsed)
 │       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
 │       ├── public/ (5 files) ← Static assets
@@ -88,11 +88,26 @@ MYGALE_ART_AND_SERVICES/
 │       │   ├── next.svg
 │       │   ├── vercel.svg
 │       │   └── window.svg
-│       ├── src/ (28 files) ← Source code directory
-│       │   ├── app/ (13 files)
-│       │   │   ├── admin/ (1 files)
-│       │   │   │   └── webhooks/ (1 files)
+│       ├── src/ (41 files) ← Source code directory
+│       │   ├── app/ (22 files)
+│       │   │   ├── about/ (1 files)
+│       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── admin/ (5 files)
+│       │   │   │   ├── contact-submissions/ (2 files)
+│       │   │   │   │   ├── [id]/ (1 files)
+│       │   │   │   │   │   └── page.tsx ← Page component
+│       │   │   │   │   └── page.tsx ← Page component
+│       │   │   │   ├── webhooks/ (1 files)
+│       │   │   │   │   └── page.tsx ← Page component
+│       │   │   │   ├── layout.tsx ← Root layout component
+│       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── auth/ (2 files)
+│       │   │   │   ├── signin/ (1 files)
+│       │   │   │   │   └── page.tsx ← Page component
+│       │   │   │   └── signup/ (1 files)
 │       │   │   │       └── page.tsx ← Page component
+│       │   │   ├── contact/ (1 files)
+│       │   │   │   └── page.tsx ← Page component
 │       │   │   ├── contact-submissions/ (6 files)
 │       │   │   │   ├── [id]/ (3 files)
 │       │   │   │   │   ├── ContactDetailClient.tsx
@@ -103,15 +118,21 @@ MYGALE_ART_AND_SERVICES/
 │       │   │   │   └── page.tsx ← Page component
 │       │   │   ├── login/ (1 files)
 │       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── privacy/ (1 files)
+│       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── terms/ (1 files)
+│       │   │   │   └── page.tsx ← Page component
 │       │   │   ├── favicon.ico
-│       │   │   ├── globals.css ← Global styles
 │       │   │   ├── layout.tsx ← Root layout component
 │       │   │   ├── page.tsx ← Page component
 │       │   │   └── providers.tsx
-│       │   ├── components/ (7 files)
+│       │   ├── components/ (10 files)
+│       │   │   ├── AdminSidebar.tsx
 │       │   │   ├── AssigneeSelector.tsx
+│       │   │   ├── Footer.tsx
 │       │   │   ├── Navbar.tsx
 │       │   │   ├── Pagination.tsx
+│       │   │   ├── RichTextComposer.tsx
 │       │   │   ├── SearchBar.tsx
 │       │   │   ├── StatusChip.tsx
 │       │   │   ├── StatusFilter.tsx
@@ -131,6 +152,8 @@ MYGALE_ART_AND_SERVICES/
 │       │   │               │   ├── reply.ts
 │       │   │               │   └── status.ts
 │       │   │               └── index.ts
+│       │   ├── styles/ (1 files)
+│       │   │   └── globals.css ← Global styles
 │       │   └── types/ (1 files)
 │       │       └── next-auth.d.ts
 │       ├── tests/ (6 files)

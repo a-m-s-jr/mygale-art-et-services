@@ -1,14 +1,16 @@
-export default function StatusChip({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    new: 'bg-blue-100 text-blue-800',
-    in_review: 'bg-yellow-100 text-yellow-800',
-    responded: 'bg-green-100 text-green-800',
-    closed: 'bg-gray-200 text-gray-700',
-  }
+import React from 'react'
 
+export default function StatusChip({ status }: { status?: string }) {
+  const s = status ?? 'new'
+  const map: Record<string, string> = {
+    new: 'bg-amber-500 text-neutral-900',
+    in_review: 'bg-yellow-400 text-neutral-900',
+    responded: 'bg-green-500 text-neutral-900',
+    closed: 'bg-gray-600 text-white',
+  }
   return (
-    <span className={`px-2 py-1 rounded text-xs font-medium ${colors[status]}`}>
-      {status.replace('_', ' ')}
+    <span className={`px-2 py-1 rounded text-xs ${map[s] ?? 'bg-gray-600'}`}>
+      {s.replace('_', ' ')}
     </span>
   )
 }

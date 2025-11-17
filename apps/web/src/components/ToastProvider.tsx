@@ -1,43 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// apps/web/src/components/ToastProvider.tsx
 'use client'
 import React, { createContext, useContext, useState } from 'react'
-import clsx from 'clsx'
 
-type Toast = { id: string; message: string; type?: 'info' | 'success' | 'error' }
-const ToastContext = createContext(null as any)
+type Toast = { id: string; title: string; tone?: 'info' | 'success' | 'error' }
 
-export const useToast = () => useContext(ToastContext)
+const ToastCtx = createContext<{ push: (t: string, tone?: Toast['tone']) => void } | null>(null)
 
 export default function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
-
-  function push(message: string, type: Toast['type'] = 'info') {
-    const t = { id: String(Date.now()) + Math.random().toString(36).slice(2), message, type }
-    setToasts((s) => [t, ...s])
-    setTimeout(() => setToasts((s) => s.filter((x) => x.id !== t.id)), 5000)
+  function push(title: string, tone: Toast['tone'] = 'info') {
+    const t = { id: String(Date.now()), title, tone }
+    setToasts((s) => [...s, t])
+    setTimeout(() => setToasts((s) => s.filter((x) => x.id !== t.id)), 4000)
   }
-
   return (
-    <ToastContext.Provider value={{ push }}>
+    <ToastCtx.Provider value={{ push }}>
       {children}
-      <div className="fixed right-6 bottom-6 z-50 flex flex-col gap-2">
+      <div className="fixed bottom-6 right-6 space-y-2 z-50">
         {toasts.map((t) => (
-          <div
-            key={t.id}
-            className={clsx(
-              'px-4 py-2 rounded shadow text-sm max-w-xs',
-              t.type === 'success'
-                ? 'bg-green-50 text-green-800'
-                : t.type === 'error'
-                  ? 'bg-red-50 text-red-800'
-                  : 'bg-white text-gray-800',
-            )}
-          >
-            {t.message}
+          <div key={t.id} className="p-3 rounded bg-neutral-800 border border-neutral-700 text-sm">
+            {t.title}
           </div>
         ))}
       </div>
-    </ToastContext.Provider>
+    </ToastCtx.Provider>
   )
+}
+
+export function useToast() {
+  const ctx = useContext(ToastCtx)
+  if (!ctx) throw new Error('useToast must be used inside ToastProvider')
+  return ctx
 }

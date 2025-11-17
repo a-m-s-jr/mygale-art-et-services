@@ -1,33 +1,22 @@
-'use client'
+import React from 'react'
 
 export default function Pagination({
   page,
-  totalPages,
   onPage,
 }: {
   page: number
-  totalPages: number
   onPage: (p: number) => void
 }) {
   return (
-    <div className="flex justify-center gap-3 my-4">
+    <div className="flex items-center gap-2">
       <button
-        disabled={page <= 1}
-        onClick={() => onPage(page - 1)}
-        className="border px-3 py-1 rounded disabled:opacity-40"
+        onClick={() => onPage(Math.max(1, page - 1))}
+        className="px-3 py-1 bg-neutral-800 rounded"
       >
         Prev
       </button>
-
-      <div className="px-3 py-1">
-        {page} / {totalPages}
-      </div>
-
-      <button
-        disabled={page >= totalPages}
-        onClick={() => onPage(page + 1)}
-        className="border px-3 py-1 rounded disabled:opacity-40"
-      >
+      <div className="px-3 py-1 bg-neutral-900 rounded">Page {page}</div>
+      <button onClick={() => onPage(page + 1)} className="px-3 py-1 bg-neutral-800 rounded">
         Next
       </button>
     </div>
