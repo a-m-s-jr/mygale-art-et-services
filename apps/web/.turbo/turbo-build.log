@@ -1,0 +1,45 @@
+$ next build
+   ▲ Next.js 16.0.1 (Turbopack)
+   - Environments: .env.local
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 13.3s
+   Running TypeScript ...
+ ⚠ TypeScript project references are not fully supported. Attempting to build in incremental mode.
+   Collecting page data ...
+   Generating static pages (0/14) ...
+ ⚠ metadataBase property in metadata export is not set for resolving social open graph or twitter images, using "http://localhost:3000". See https://nextjs.org/docs/app/api-reference/functions/generate-metadata#metadatabase
+   Generating static pages (3/14) 
+   Generating static pages (6/14) 
+   Generating static pages (10/14) 
+ ✓ Generating static pages (14/14) in 3.0s
+   Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /about
+├ ○ /auth/signin
+├ ○ /auth/signup
+├ ○ /contact
+├ ƒ /contact-submissions
+├ ƒ /contact-submissions/[id]
+├ ○ /login
+├ ○ /privacy
+├ ○ /services
+├ ƒ /services/[slug]
+└ ○ /terms
+
+Route (pages)
+┌ ƒ /api/auth/[...nextauth]
+├ ƒ /api/contact
+├ ƒ /api/proxy/contact-submissions
+├ ƒ /api/proxy/contact-submissions/[id]/draft
+├ ƒ /api/proxy/contact-submissions/[id]/reply
+└ ƒ /api/proxy/contact-submissions/[id]/status
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

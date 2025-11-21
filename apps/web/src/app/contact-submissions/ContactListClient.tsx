@@ -15,10 +15,15 @@ export type Submission = {
   createdAt: string
 }
 
-export default function ContactListClient({ token }: { token: string }) {
-  const [data, setData] = useState<Submission[]>([])
-  const [filtered, setFiltered] = useState<Submission[]>([])
-  const [loading, setLoading] = useState(true)
+interface ContactListClientProps {
+  token: string
+  initialData?: Submission[]
+}
+
+export default function ContactListClient({ token, initialData = [] }: ContactListClientProps) {
+  const [data, setData] = useState<Submission[]>(initialData)
+  const [filtered, setFiltered] = useState<Submission[]>(initialData)
+  const [loading, setLoading] = useState(initialData.length === 0)
 
   // filters
   const [status, setStatus] = useState('all')
@@ -29,6 +34,9 @@ export default function ContactListClient({ token }: { token: string }) {
   const pageSize = 10
 
   useEffect(() => {
+    // Skip fetching if we already have initial data
+    if (initialData.length > 0) return
+
     async function load() {
       const res = await fetch(`/api/contact-submissions`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -38,7 +46,7 @@ export default function ContactListClient({ token }: { token: string }) {
       setLoading(false)
     }
     load()
-  }, [token])
+  }, [token, initialData.length])
 
   useEffect(() => {
     let items = data
@@ -93,7 +101,7 @@ export default function ContactListClient({ token }: { token: string }) {
         ))}
       </div>
 
-      <Pagination page={page} totalPages={totalPages} onPage={setPage} />
+      <Pagination page={page} onPage={setPage} />
     </div>
   )
 }

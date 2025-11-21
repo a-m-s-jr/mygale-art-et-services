@@ -3,12 +3,25 @@ import React from 'react'
 import { LocaleProvider } from '@/lib/locale'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import LogoSpider from '@/components/LogoSpider'
+import Image from 'next/image'
+import PageTransitions from '@/components/PageTransitions' // client wrapper for AnimatePresence
 
 export const metadata = {
-  title: 'Mygale Art et Services',
-  description: 'Agence d’architecture, stylisme, imprimerie, art des vitraux — Yaoundé, Cameroon',
+  title: 'Mygale Art & Services – Architecture, Stylisme, Vitraux, Imprimerie',
+  description:
+    'Agence basée à Yaoundé spécialisée en architecture, stylisme, vitreries et impression textile.',
+  openGraph: {
+    title: 'Mygale Art & Services',
+    description: 'Architecture, stylisme, art des vitraux, impression textile – Yaoundé.',
+    images: ['/LOGO MYGALE 2.png'],
+    url: 'https://mygale.vercel.app',
+    siteName: 'Mygale Art & Services',
+  },
+  icons: {
+    icon: '/LOGO MYGALE 2.png',
+  },
 }
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -17,17 +30,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LocaleProvider>
           <div className="min-h-screen flex flex-col">
             <Navbar />
-            <main className="flex-1">{children}</main>
+            {/* PageTransitions handles the AnimatePresence keyed by pathname */}
+            <PageTransitions>
+              <main className="flex-1">{children}</main>
+            </PageTransitions>
             <Footer />
           </div>
         </LocaleProvider>
 
-        {/* loading overlay */}
+        {/* loading overlay - page loader (hidden by default) */}
         <div
           id="page-loader"
           className="fixed inset-0 z-50 hidden items-center justify-center bg-white/80"
         >
-          <LogoSpider className="w-28 h-28 animate-float" />
+          <Image
+            className="w-28 h-28 animate-float"
+            src="/LOGO MYGALE 2.png"
+            alt="MYGALE ART ET SERVICES logo"
+            width={100}
+            height={20}
+            priority
+          />
         </div>
       </body>
     </html>

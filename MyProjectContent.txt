@@ -1,10 +1,41 @@
 ================================================================================
 PROJECT FILES CONCATENATION
-Generated: 2025-11-17T03:12:00.429Z
+Generated: 2025-11-19T09:14:13.338Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
-Total Files: 124
+Total Files: 127
 Extensions: .ts, .tsx, .js, .jsx, .json, .prisma, .yml, .yaml, .md, .mjs, .cjs, .css, .sql, .toml
 ================================================================================
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\vercel.json
+RELATIVE: vercel.json
+================================================================================
+
+"""
+{
+  "version": 2,
+  "builds": [
+    { "src": "apps/web/next.config.mjs", "use": "@vercel/next" },
+    {
+      "src": "apps/api/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_BASE": "http://localhost:4000",
+    "NEXT_PUBLIC_API_WS_URL": "http://localhost:4000",
+    "NEXTAUTH_URL": "http://localhost:3000",
+    "NEXTAUTH_SECRET": "LUp2+5Cpq/zU732NiT1TFqsMOtLjKsCkOPMA/2V1hpc="
+  }
+}
+
+"""
 
 
 ================================================================================
@@ -558,7 +589,6 @@ RELATIVE: docker-compose.yml
 
 """
 # docker-compose.yml
-version: '3.9'
 
 services:
   postgres:
@@ -1913,6 +1943,7 @@ RELATIVE: apps\web\package.json
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
     "add": "^2.0.6",
+    "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "dompurify": "^3.3.0",
     "jsonwebtoken": "^9.0.2",
@@ -1970,6 +2001,7 @@ RELATIVE: apps\web\next.config.mjs
 ================================================================================
 
 """
+/* eslint-disable import/no-anonymous-default-export */
 import path from 'path'
 
 export default {
@@ -2320,6 +2352,255 @@ html,body,#__next { height: 100%; }
 /* small utility for subtle card bg */
 .card {
   @apply bg-white rounded-xl shadow-sm border p-4;
+}
+/* --- base utility tweaks --- */
+:root {
+  --brand: #003366;
+  --accent: #3399FF;
+}
+
+/* basic input & button tokens if you don't have them already */
+.input {
+  @apply w-full border rounded px-3 py-2 bg-white transition;
+}
+.btn-primary {
+  @apply inline-flex items-center justify-center px-4 py-2 rounded bg-[#003366] text-white font-medium transition hover:scale-[1.02] hover:shadow-lg;
+}
+
+/* floating logo animation */
+@keyframes floaty {
+  0% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-8px) rotate(1deg); }
+  100% { transform: translateY(0) rotate(-1deg); }
+}
+.animate-float {
+  animation: floaty 5s ease-in-out infinite;
+}
+
+/* Fade-up reveal animations */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px) scale(0.97);
+  filter: blur(6px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease,
+    filter 0.7s ease;
+}
+
+.reveal-visible {
+  opacity: 1 !important;
+  transform: translateY(0) scale(1) !important;
+  filter: blur(0) !important;
+}
+
+/* Soft shake animation for invalid fields */
+@keyframes soft-shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
+}
+
+.input-error {
+  animation: soft-shake 0.25s ease;
+  border-color: #dc2626 !important; /* red-600 */
+}
+
+/* success animation (confetti + check) */
+.success-anim { pointer-events: none; }
+
+.confetti-wrapper {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  width: 420px;
+  height: 220px;
+  overflow: visible;
+  pointer-events: none;
+}
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 16px;
+  opacity: 0.95;
+  top: 30px;
+  left: 50%;
+  transform-origin: center;
+  border-radius: 2px;
+  animation: confetti-fall 1.3s linear forwards;
+}
+@keyframes confetti-fall {
+  0% { transform: translateY(-20px) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translateY(280px) rotate(360deg) scale(.85); opacity: 0; }
+}
+/* color variants */
+.c-0 { background: #ff6b6b; left: 10%; animation-delay: 0s; }
+.c-1 { background: #ffd93d; left: 30%; animation-delay: 0.05s; }
+.c-2 { background: #6bcB77; left: 45%; animation-delay: 0.1s; }
+.c-3 { background: #4d96ff; left: 62%; animation-delay: 0.14s; }
+.c-4 { background: #b084ff; left: 78%; animation-delay: 0.18s; }
+.c-5 { background: #ff9f6b; left: 88%; animation-delay: 0.22s; }
+
+/* checkmark */
+.checkmark-wrapper { display:flex; align-items:center; justify-content:center; }
+.checkmark-circle {
+  width: 110px;
+  height: 110px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--brand), var(--accent));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow: 0 10px 30px rgba(3, 12, 30, 0.15);
+  transform: scale(0.96);
+  animation: pop .42s cubic-bezier(.2,.9,.25,1) forwards;
+}
+@keyframes pop {
+  0% { transform: scale(.6); opacity: 0; }
+  60% { transform: scale(1.07); opacity: 1; }
+  100% { transform: scale(1); }
+}
+.checkmark {
+  width: 52px;
+  height: 52px;
+  stroke: rgba(255,255,255,0.95);
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+/* small visual niceties */
+a { text-decoration: none; }
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\contact.ts
+RELATIVE: apps\web\src\pages\api\contact.ts
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import type { NextApiRequest, NextApiResponse } from 'next'
+import nodemailer from 'nodemailer'
+import fs from 'fs'
+import path from 'path'
+import { z } from 'zod'
+
+const ContactSchema = z.object({
+  name: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().optional().nullable(),
+  message: z.string().min(5),
+  source: z.string().optional(),
+})
+
+type Submission = z.infer<typeof ContactSchema> & { id: string; createdAt: string }
+
+const SUBMISSIONS_FILE = path.join(process.cwd(), 'data', 'submissions.json')
+
+function saveSubmissionLocally(sub: Submission) {
+  try {
+    if (!fs.existsSync(path.dirname(SUBMISSIONS_FILE)))
+      fs.mkdirSync(path.dirname(SUBMISSIONS_FILE), { recursive: true })
+
+    let arr: Submission[] = []
+    if (fs.existsSync(SUBMISSIONS_FILE)) {
+      const raw = fs.readFileSync(SUBMISSIONS_FILE, 'utf8')
+      try {
+        arr = JSON.parse(raw || '[]')
+      } catch {
+        arr = []
+      }
+    }
+    arr.unshift(sub)
+    fs.writeFileSync(SUBMISSIONS_FILE, JSON.stringify(arr, null, 2), 'utf8')
+    return true
+  } catch (err) {
+    console.error('Failed to save submission file', err)
+    return false
+  }
+}
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== 'POST') return res.status(405).end()
+
+  try {
+    const parsed = ContactSchema.parse(req.body)
+    const submission: Submission = {
+      ...parsed,
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      createdAt: new Date().toISOString(),
+    }
+
+    // Send email via Nodemailer / SMTP
+    const smtpHost = process.env.SMTP_HOST
+    const smtpPort = Number(process.env.SMTP_PORT || 587)
+    const smtpUser = process.env.SMTP_USER
+    const smtpPass = process.env.SMTP_PASS
+    const contactTo = process.env.CONTACT_TO
+
+    if (!smtpHost || !smtpUser || !smtpPass || !contactTo) {
+      console.error('SMTP environment variables not set')
+      // Still save locally for the tiny-CMS; return 202
+      saveSubmissionLocally(submission)
+      return res.status(202).json({ ok: true, warning: 'SMTP not configured; saved locally' })
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpPort === 465, // true for 465, false for other ports
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
+      },
+    })
+
+    const html = `
+      <h2>New contact submission</h2>
+      <p><strong>Name:</strong> ${escapeHtml(submission.name)}</p>
+      <p><strong>Email:</strong> ${escapeHtml(submission.email)}</p>
+      <p><strong>Phone:</strong> ${escapeHtml(submission.phone ?? '')}</p>
+      <p><strong>Message:</strong></p>
+      <p>${escapeHtml(submission.message).replace(/\n/g, '<br/>')}</p>
+      <hr/>
+      <small>Received at ${submission.createdAt}</small>
+    `
+
+    await transporter.sendMail({
+      from: `"Mygale Contact" <${smtpUser}>`,
+      to: contactTo,
+      subject: `New contact from ${submission.name}`,
+      text: `${submission.name} <${submission.email}>: ${submission.message}`,
+      html,
+    })
+
+    // Save locally too (for admin view)
+    saveSubmissionLocally(submission)
+
+    return res.status(201).json({ ok: true })
+  } catch (err: any) {
+    console.error('Contact API error:', err)
+    if (err?.issues) {
+      // zod validation errors
+      return res.status(422).json({ ok: false, errors: err.issues })
+    }
+    return res.status(500).json({ ok: false, error: 'Server error' })
+  }
+}
+
+function escapeHtml(s: string) {
+  if (!s) return ''
+  return s.replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c,
+  )
 }
 
 """
@@ -2798,53 +3079,151 @@ RELATIVE: apps\web\src\lib\locale.tsx
 ================================================================================
 
 """
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
+
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 
-type Lang = 'fr' | 'en'
-export const translations = {
+export type Lang = 'fr' | 'en'
+
+/**
+ * Translation shape used by the app components.
+ * Keep keys stable so server components can rely on same names.
+ */
+export type Translations = {
+  siteTitle: string
+  heroSubtitle: string
+  contactUs: string
+  ourServices: string
+  servicesTitle: string
+  aboutTitle: string
+  aboutText: string
+  services: {
+    architectureTitle: string
+    architectureDesc: string
+    architectureImg: string
+
+    stylismeTitle: string
+    stylismeDesc: string
+    stylismeImg: string
+
+    printTitle: string
+    printDesc: string
+    printImg: string
+
+    vitrauxTitle: string
+    vitrauxDesc: string
+    vitrauxImg: string
+
+    constructionTitle: string
+    constructionDesc: string
+    constructionImg: string
+  }
+  // small form field labels (for contact page later)
+  name?: string
+  email?: string
+  phone?: string
+  message?: string
+  send?: string
+  thanks?: string
+}
+
+const TRANSLATIONS: Record<Lang, any> = {
   fr: {
     siteTitle: 'MYGALE ART ET SERVICES',
     heroSubtitle:
-      "Nous sommes une agence basée au Cameroun, proposant nos services dans l'art : Architecture, Stylisme, Imprimerie sur tissus, Art des vitraux.",
+      "Innovation, Créativité et Excellence au service de vos projets. Nous sommes une agence basée au Cameroun, proposant nos services dans l'art : Architecture, Stylisme, Imprimerie sur tissus, Art des vitraux.",
     contactUs: 'Contactez-nous',
+    ourServices: 'Nos services',
+    servicesTitle: 'Nos services',
+    aboutTitle: 'À propos',
+    aboutText:
+      'Nous sommes une agence basée au Cameroun ,proposant nos services dans plusieurs domaines de l’art notamment:Architecture(réalisation et suivit des projets de toutes natures et envergures),stylisme, imprimerie sur tissus, art des vitraux(verre cathédrale)',
+    services: {
+      architectureTitle: 'Architecture',
+      architectureDesc: 'Conception et réalisation de projets architecturaux modernes et durables.',
+      stylismeTitle: 'Stylisme',
+      stylismeDesc: 'Création de designs uniques pour la mode et l’expression artistique.',
+      printTitle: 'Imprimerie Textiles',
+      printDesc: 'Impression personnalisée sur tissus et matériaux de qualité supérieure.',
+      vitrauxTitle: 'Service Vitrier',
+      vitrauxDesc: 'Installation et réparation de vitrages pour particuliers et professionnels.',
+      constructionTitle: 'Accessoires de Construction',
+      constructionDesc: 'Fourniture d’accessoires fiables et esthétiques pour vos chantiers.',
+      architectureImg: '/architecture.jpg',
+      stylismeImg: '/stylisme.jpg',
+      printImg: '/printing.jpg',
+      vitrauxImg: '/vitreaux.jpg',
+      constructionImg: '/construction.jpg',
+    },
     name: 'Nom',
     email: 'Email',
     phone: 'Téléphone (optionnel)',
     message: 'Message',
     send: 'Envoyer',
     thanks: 'Merci — votre message a été envoyé.',
-    servicesTitle: 'Nos services',
-    aboutTitle: 'À propos',
   },
   en: {
-    siteTitle: 'MYGALE ART ET SERVICES',
+    siteTitle: 'MYGALE ART & SERVICES',
     heroSubtitle:
-      'We are an agency based in Cameroon offering creative services: Architecture, Fashion Design, Textile Printing, and Stained Glass Art.',
+      'We are a Yaoundé-based agency offering services in architecture, fashion design, textile printing and stained glass art.',
     contactUs: 'Contact us',
+    ourServices: 'Our services',
+    servicesTitle: 'Our services',
+    aboutTitle: 'About',
+    aboutText:
+      'We are a Yaoundé-based agency specializing in architecture, fashion design, stained glass art and textile printing. We deliver bespoke projects.',
+    services: {
+      architectureTitle: 'Architecture',
+      architectureDesc: 'Design and delivery of modern, durable architectural projects.',
+      stylismeTitle: 'Stylism',
+      stylismeDesc: 'Creation of unique fashion and artistic designs.',
+      printTitle: 'Textile Printing',
+      printDesc: 'High-quality, custom textile printing services.',
+      vitrauxTitle: 'Glazier Service',
+      vitrauxDesc: 'Custom stained-glass pieces and installations.',
+      constructionTitle: 'Construction Accessories',
+      constructionDesc: 'Reliable and aesthetic accessories for construction projects.',
+      architectureImg: '/architecture.jpg',
+      stylismeImg: '/stylisme.jpg',
+      printImg: '/printing.jpg',
+      vitrauxImg: '/vitreaux.jpg',
+      constructionImg: '/construction.jpg',
+    },
     name: 'Name',
     email: 'Email',
     phone: 'Phone (optional)',
     message: 'Message',
     send: 'Send',
     thanks: 'Thanks — your message has been sent.',
-    servicesTitle: 'Our services',
-    aboutTitle: 'About',
   },
 }
 
-const LocaleContext = createContext({
-  lang: 'fr' as Lang,
-  t: translations.fr,
-  setLang: (l: Lang) => {},
+/** Context value type */
+type LocaleContextValue = {
+  lang: Lang
+  setLang: (l: Lang) => void
+  t: Translations
+}
+
+const LocaleContext = createContext<LocaleContextValue>({
+  lang: 'fr',
+  // placeholder noop; will be replaced by provider
+  setLang: () => {},
+  t: TRANSLATIONS.fr,
 })
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>('fr')
-  const value = { lang, t: translations[lang], setLang }
+  const value: LocaleContextValue = {
+    lang,
+    setLang,
+    t: TRANSLATIONS[lang],
+  }
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
 }
 
+/** Hook for components */
 export function useLocale() {
   return useContext(LocaleContext)
 }
@@ -2934,6 +3313,40 @@ export default function useSocket(
     disconnect: () => disconnectSocket(),
     socket: socketRef.current,
   }
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\hooks\useReveal.tsx
+RELATIVE: apps\web\src\hooks\useReveal.tsx
+================================================================================
+
+"""
+'use client'
+
+import { useEffect } from 'react'
+
+export default function useReveal() {
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('reveal-visible')
+            observer.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.15 },
+    )
+
+    const elements = document.querySelectorAll('.reveal')
+    elements.forEach((el) => observer.observe(el))
+
+    return () => observer.disconnect()
+  }, [])
 }
 
 """
@@ -3048,6 +3461,55 @@ export function useToast() {
   const ctx = useContext(ToastCtx)
   if (!ctx) throw new Error('useToast must be used inside ToastProvider')
   return ctx
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\components\SuccessAnim.tsx
+RELATIVE: apps\web\src\components\SuccessAnim.tsx
+================================================================================
+
+"""
+'use client'
+import React, { useEffect, useState } from 'react'
+
+export default function SuccessAnim({ show = true }: { show?: boolean }) {
+  const [visible, setVisible] = useState(show)
+
+  useEffect(() => {
+    setVisible(show)
+  }, [show])
+
+  if (!visible) return null
+
+  return (
+    <div className="success-anim fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
+      <div className="relative">
+        <div className="confetti-wrapper">
+          {Array.from({ length: 22 }).map((_, i) => (
+            <span key={i} className={`confetti c-${i % 6}`} />
+          ))}
+        </div>
+
+        <div className="checkmark-wrapper">
+          <div className="checkmark-circle">
+            <svg className="checkmark" viewBox="0 0 52 52">
+              <path
+                d="M14 27 L22 34 L38 16"
+                fill="none"
+                stroke="#fff"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 """
@@ -3227,31 +3689,38 @@ RELATIVE: apps\web\src\components\Navbar.tsx
 
 """
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useLocale } from '@/lib/locale'
-import LogoSpider from './LogoSpider'
 
 export default function Navbar() {
   const { lang, setLang, t } = useLocale()
+  const [open, setOpen] = useState(false)
+
   return (
-    <header className="sticky top-0 z-40 bg-white/60 backdrop-blur-sm border-b">
+    <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-sm border-b">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
-          <LogoSpider className="w-10 h-10" />
+          <div className="w-10 h-10 relative">
+            <Image src="/LOGO MYGALE 2.png" alt="Mygale" fill style={{ objectFit: 'contain' }} />
+          </div>
           <div>
             <div className="text-sm font-bold tracking-wider text-[#003366]">{t.siteTitle}</div>
             <div className="text-xs text-gray-500">Yaoundé, Cameroon</div>
           </div>
         </Link>
 
-        <nav className="flex items-center gap-4">
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-4">
           <Link href="/" className="text-sm hover:underline">
             {lang === 'fr' ? 'Accueil' : 'Home'}
           </Link>
+
           <Link href="/contact" className="text-sm hover:underline">
             {t.contactUs}
           </Link>
+
           <button
             aria-label="switch language"
             onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}
@@ -3260,56 +3729,58 @@ export default function Navbar() {
             {lang === 'fr' ? 'EN' : 'FR'}
           </button>
         </nav>
+
+        {/* Mobile button */}
+        <div className="md:hidden flex items-center">
+          <button
+            aria-label="toggle menu"
+            onClick={() => setOpen((s) => !s)}
+            className="p-2 rounded-md border"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              {open ? (
+                <path
+                  d="M6 18L18 6M6 6l12 12"
+                  stroke="#111827"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              ) : (
+                <path
+                  d="M4 7h16M4 12h16M4 17h16"
+                  stroke="#111827"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              )}
+            </svg>
+          </button>
+        </div>
       </div>
+
+      {/* Mobile menu */}
+      {open && (
+        <div className="md:hidden border-t bg-white/95">
+          <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-2">
+            <Link href="/" className="py-2 text-base" onClick={() => setOpen(false)}>
+              {lang === 'fr' ? 'Accueil' : 'Home'}
+            </Link>
+            <Link href="/contact" className="py-2 text-base" onClick={() => setOpen(false)}>
+              {t.contactUs}
+            </Link>
+            <button
+              onClick={() => {
+                setLang(lang === 'fr' ? 'en' : 'fr')
+                setOpen(false)
+              }}
+              className="py-2 text-left"
+            >
+              {lang === 'fr' ? 'English' : 'Français'}
+            </button>
+          </div>
+        </div>
+      )}
     </header>
-  )
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\components\LogoSpider.tsx
-RELATIVE: apps\web\src\components\LogoSpider.tsx
-================================================================================
-
-"""
-// apps/web/src/components/LogoSpider.tsx
-import React from 'react'
-
-export default function LogoSpider({ className = '' }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 120 120"
-      xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      role="img"
-      aria-label="Mygale logo"
-    >
-      <defs>
-        <linearGradient id="g" x1="0" x2="1">
-          <stop offset="0" stopColor="#003366" />
-          <stop offset="1" stopColor="#3399FF" />
-        </linearGradient>
-      </defs>
-      <rect width="100%" height="100%" rx="8" fill="white" />
-      {/* simplified spider / pen-nib shape */}
-      <g transform="translate(8,8) scale(0.8)">
-        <path
-          d="M50 10 L65 30 L60 60 L50 70 L40 60 L35 30 Z"
-          fill="url(#g)"
-          stroke="#001f3f"
-          strokeWidth="1"
-        />
-        {/* legs */}
-        <g stroke="#003366" strokeWidth="2" strokeLinecap="round">
-          <path d="M30 30 L10 10" />
-          <path d="M20 40 L5 50" />
-          <path d="M80 30 L100 10" />
-          <path d="M90 40 L115 50" />
-        </g>
-      </g>
-    </svg>
   )
 }
 
@@ -3322,8 +3793,8 @@ RELATIVE: apps\web\src\components\Footer.tsx
 ================================================================================
 
 """
+// apps/web/src/components/Footer.tsx
 import React from 'react'
-import Link from 'next/link'
 
 export default function Footer() {
   return (
@@ -3332,11 +3803,24 @@ export default function Footer() {
         <div>
           <div className="font-semibold text-[#003366]">MYGALE ART ET SERVICES</div>
           <div>Yaoundé, Cameroon</div>
+
           <div className="mt-2">
-            Email: <a href="mailto:mygaleartetservices@gmail.com">mygaleartetservices@gmail.com</a>
+            Email:{' '}
+            <a className="underline" href="mailto:mygaleartetservices@gmail.com">
+              mygaleartetservices@gmail.com
+            </a>
           </div>
+
           <div>
-            WhatsApp: <a href="https://wa.me/237675003269">+237 6 75 00 32 69</a>
+            WhatsApp:{' '}
+            <a
+              className="underline"
+              href="https://wa.me/237675003269"
+              target="_blank"
+              rel="noreferrer"
+            >
+              +237 6 75 00 32 69
+            </a>
           </div>
         </div>
 
@@ -3509,12 +3993,24 @@ import React from 'react'
 import { LocaleProvider } from '@/lib/locale'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
-import LogoSpider from '@/components/LogoSpider'
+import Image from 'next/image'
 
 export const metadata = {
-  title: 'Mygale Art et Services',
-  description: 'Agence d’architecture, stylisme, imprimerie, art des vitraux — Yaoundé, Cameroon',
+  title: 'Mygale Art & Services – Architecture, Stylisme, Vitraux, Imprimerie',
+  description:
+    'Agence basée à Yaoundé spécialisée en architecture, stylisme, vitreries et impression textile.',
+  openGraph: {
+    title: 'Mygale Art & Services',
+    description: 'Architecture, stylisme, art des vitraux, impression textile – Yaoundé.',
+    images: ['/LOGO MYGALE 2.png'],
+    url: 'https://mygale.vercel.app',
+    siteName: 'Mygale Art & Services',
+  },
+  icons: {
+    icon: '/LOGO MYGALE 2.png',
+  },
 }
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -3527,12 +4023,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Footer />
           </div>
         </LocaleProvider>
-        {/* loading overlay placeholder (hidden by default) */}
+
+        {/* loading overlay - page loader (hidden by default) */}
         <div
           id="page-loader"
           className="fixed inset-0 z-50 hidden items-center justify-center bg-white/80"
         >
-          <LogoSpider className="w-28 h-28 animate-float" />
+          <Image
+            className="w-28 h-28 animate-float"
+            src="/next.svg"
+            alt="Next.js logo"
+            width={100}
+            height={20}
+            priority
+          />
         </div>
       </body>
     </html>
@@ -3548,101 +4052,105 @@ RELATIVE: apps\web\src\app\HomeClient.tsx
 ================================================================================
 
 """
-// apps/web/src/app/HomeClient.tsx
 'use client'
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import LogoSpider from '@/components/LogoSpider' // your svg/logo component (placeholder allowed)
-import { useLocale } from '@/hooks/useLocale'
+import Image from 'next/image'
+import { useLocale } from '@/lib/locale'
+import useReveal from '@/hooks/useReveal'
 
 export default function HomeClient() {
-  const { locale, setLocale, t } = useLocale()
+  const { t } = useLocale()
   const [loading, setLoading] = useState(false)
-
-  function handleContactClick() {
-    // small fake loading to show UI polish
-    setLoading(true)
-    setTimeout(() => setLoading(false), 600)
-  }
+  useReveal()
 
   const services = [
     {
       title: t.services.architectureTitle,
       desc: t.services.architectureDesc,
+      img: '/architecture.jpg',
     },
-    { title: t.services.stylismeTitle, desc: t.services.stylismeDesc },
-    { title: t.services.printTitle, desc: t.services.printDesc },
-    { title: t.services.vitrauxTitle, desc: t.services.vitrauxDesc },
+    { title: t.services.stylismeTitle, desc: t.services.stylismeDesc, img: '/style.jpg' },
+    { title: t.services.printTitle, desc: t.services.printDesc, img: '/print.jpg' },
+    { title: t.services.vitrauxTitle, desc: t.services.vitrauxDesc, img: '/vitreaux.jpg' },
+    {
+      title: t.services.constructionTitle,
+      desc: t.services.constructionDesc,
+      img: '/construction.jpg',
+    },
   ]
 
   return (
     <main className="min-h-screen bg-white text-black">
-      <header className="border-b sticky top-0 bg-white/80 backdrop-blur z-50">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12">
-              {/* LogoSpider should be an inline SVG component; placeholder ok */}
-              <LogoSpider className="w-full h-full" />
-            </div>
-            <div className="leading-tight">
-              <div className="font-bold text-lg">MYGALE</div>
-              <div className="text-xs uppercase text-gray-500">ART ET SERVICES</div>
-            </div>
-          </div>
+      {/* HERO */}
+      <section
+        className="relative overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: "url('/construction.jpg')" }}
+      >
+        <div className="absolute inset-0 bg-linear-to-b from-white/80 to-white/60 pointer-events-none" />
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setLocale(locale === 'fr' ? 'en' : 'fr')}
-              className="px-3 py-1 border rounded"
-              aria-label="Toggle language"
-            >
-              {locale === 'fr' ? 'FR' : 'EN'}
-            </button>
-
-            <Link href="/contact" className="px-4 py-2 rounded bg-[#003366] text-white">
-              {t.contactUs}
-            </Link>
-          </div>
-        </div>
-      </header>
-
-      <section className="relative overflow-hidden bg-white">
-        <div className="max-w-6xl mx-auto px-4 py-24 flex flex-col items-center text-center gap-6">
+        <div className="max-w-6xl mx-auto px-4 py-28 flex flex-col items-center text-center gap-6 relative z-10">
           <div className="w-36 h-36">
-            <LogoSpider className="w-full h-full animate-float" />
+            <Image
+              className="w-full h-full animate-float"
+              src="/LOGO MYGALE 2.png"
+              alt="MYGALE logo"
+              width={144}
+              height={144}
+              priority
+            />
           </div>
 
-          <h1 className="text-4xl md:text-5xl font-extrabold text-[#003366]">{t.siteTitle}</h1>
-          <p className="max-w-3xl text-gray-600">{t.heroSubtitle}</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-[#003366] drop-shadow-sm">
+            {t.siteTitle}
+          </h1>
 
-          <div className="mt-6 flex gap-3">
+          <p className="max-w-3xl text-gray-600 reveal">{t.heroSubtitle}</p>
+
+          <div className="mt-6 flex gap-3 reveal">
             <Link
               href="/contact"
-              onClick={handleContactClick}
-              className="px-5 py-3 rounded bg-[#003366] text-white"
+              onClick={() => {
+                setLoading(true)
+                setTimeout(() => setLoading(false), 600)
+              }}
+              className="px-5 py-3 rounded-lg bg-[#003366] text-white transform transition hover:scale-[1.03] hover:shadow-lg"
             >
               {loading ? 'Loading…' : t.contactUs}
             </Link>
-            <a href="#services" className="px-4 py-2 border rounded">
+
+            <a
+              href="#services"
+              className="px-4 py-2 rounded-lg border transition hover:bg-gray-100 hover:scale-105"
+            >
               {t.ourServices}
             </a>
           </div>
         </div>
       </section>
 
+      {/* SERVICES */}
       <section id="services" className="py-16 bg-[#F4F6F8]">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-3xl font-semibold mb-6">{t.servicesTitle}</h2>
+          <h2 className="text-3xl font-semibold mb-6 reveal">{t.servicesTitle}</h2>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {services.map((s) => (
-              <article key={s.title} className="bg-white p-6 rounded-xl shadow-sm border">
-                <div className="h-32 w-full bg-gray-100 rounded flex items-center justify-center">
-                  {/* placeholder image */}
-                  <svg width="80" height="40" viewBox="0 0 80 40" className="opacity-80">
-                    <rect width="80" height="40" fill="#eee" />
-                  </svg>
+            {services.map((s, i) => (
+              <article
+                key={`${s.title}-${i}`}
+                className="reveal bg-white p-6 rounded-xl shadow-sm border transform transition hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl"
+              >
+                <div className="h-40 w-full bg-gray-100 rounded overflow-hidden">
+                  <Image
+                    src={s.img}
+                    alt={s.title}
+                    width={600}
+                    height={320}
+                    className="object-cover w-full h-full"
+                  />
                 </div>
+
                 <h3 className="mt-4 font-semibold text-lg">{s.title}</h3>
                 <p className="text-gray-600 mt-2 text-sm">{s.desc}</p>
               </article>
@@ -3651,36 +4159,13 @@ export default function HomeClient() {
         </div>
       </section>
 
+      {/* ABOUT */}
       <section className="py-16">
-        <div className="max-w-6xl mx-auto px-4">
+        <div className="max-w-6xl mx-auto px-4 reveal">
           <h2 className="text-2xl font-semibold mb-4">{t.aboutTitle}</h2>
           <p className="text-gray-600">{t.aboutText}</p>
         </div>
       </section>
-
-      <footer className="py-8 border-t">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-sm text-gray-600">
-            © {new Date().getFullYear()} Mygale Art et Services — Yaoundé, Cameroon
-          </div>
-          <div className="flex gap-3">
-            <a
-              href="https://web.facebook.com/profile.php?id=61583563763460"
-              target="_blank"
-              rel="noreferrer"
-              className="text-sm"
-            >
-              Facebook
-            </a>
-            <a href="https://wa.me/6750003269" className="text-sm">
-              WhatsApp
-            </a>
-            <a href="mailto:mygaleartetservices@gmail.com" className="text-sm">
-              Email
-            </a>
-          </div>
-        </div>
-      </footer>
     </main>
   )
 }
@@ -4514,90 +4999,121 @@ RELATIVE: apps\web\src\app\contact\page.tsx
 ================================================================================
 
 """
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
+
 import React, { useState } from 'react'
 import { useLocale } from '@/lib/locale'
+import { z } from 'zod'
+import SuccessAnim from '@/components/SuccessAnim'
+import confetti from 'canvas-confetti'
+
+const schema = z.object({
+  name: z.string().min(2, 'Name too short'),
+  email: z.string().email('Invalid email format'),
+  phone: z
+    .string()
+    .regex(/^\+?[0-9 ]{6,20}$/, 'Phone must contain only digits, spaces, or leading +')
+    .optional()
+    .or(z.literal('')),
+  message: z.string().min(5, 'Message too short'),
+})
 
 export default function ContactPage() {
   const { t } = useLocale()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [message, setMessage] = useState('')
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
-  const [errorText, setErrorText] = useState('')
+
+  const [inputs, setInputs] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    message: '',
+  })
+
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
+
+  function handleChange(field: string, value: string) {
+    setInputs((prev) => ({ ...prev, [field]: value }))
+
+    // Live validation
+    const check = schema.safeParse({ ...inputs, [field]: value })
+    if (check.success) {
+      setErrors({})
+    } else {
+      const flattened = check.error.flatten().fieldErrors
+      const message = (flattened as Record<string, string[]>)[field]?.[0] || ''
+      setErrors((prev) => ({ ...prev, [field]: message }))
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+
+    const result = schema.safeParse(inputs)
+    if (!result.success) {
+      const flattened = result.error.flatten().fieldErrors
+
+      const formatted: Record<string, string> = {}
+      Object.entries(flattened as Record<string, string[]>).forEach(([k, v]) => {
+        if (v && v.length > 0) formatted[k] = v[0]
+      })
+
+      setErrors(formatted)
+      return
+    }
+
     setStatus('sending')
-    setErrorText('')
+
     try {
-      const r = await fetch('/api/contact', {
+      await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone, message }),
+        body: JSON.stringify(inputs),
       })
-      if (!r.ok) {
-        const data = await r.json().catch(() => ({}))
-        setErrorText(data?.error || 'Failed to send')
-        setStatus('error')
-        return
-      }
+
       setStatus('sent')
-      setName('')
-      setEmail('')
-      setPhone('')
-      setMessage('')
-    } catch (err: any) {
-      setStatus('error')
-      setErrorText(err?.message || 'Network error')
+      setInputs({ name: '', email: '', phone: '', message: '' })
+      setErrors({})
+
+      confetti({ particleCount: 70, spread: 70, origin: { y: 0.65 } })
+    } catch {
+      alert('Network error')
+      setStatus('idle')
     }
   }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-16">
-      <h1 className="text-3xl font-semibold mb-4">{t.contactUs}</h1>
-      <p className="text-gray-600 mb-6">
-        Pour toute demande, envoyez-nous un message — nous répondrons rapidement.
-      </p>
+      {status === 'sent' && <SuccessAnim />}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          className="input"
-          placeholder={t.name}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <input
-          type="email"
-          className="input"
-          placeholder={t.email}
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          className="input"
-          placeholder={t.phone}
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
-        <textarea
-          className="input h-36"
-          placeholder={t.message}
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          required
-        />
-        <div>
-          <button type="submit" className="btn-primary w-full" disabled={status === 'sending'}>
-            {status === 'sending' ? 'Sending...' : t.send}
-          </button>
-        </div>
-        {status === 'sent' && <div className="text-green-600">{t.thanks}</div>}
-        {status === 'error' && <div className="text-red-600">Erreur: {errorText}</div>}
+      <h1 className="text-3xl font-semibold mb-4">{t.contactUs}</h1>
+
+      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+        {(['name', 'email', 'phone', 'message'] as const).map((field) => (
+          <div key={field}>
+            {field === 'message' ? (
+              <textarea
+                value={inputs[field]}
+                onChange={(e) => handleChange(field, e.target.value)}
+                className={`input h-36 ${errors[field] ? 'input-error' : ''}`}
+                placeholder={t[field]}
+              />
+            ) : (
+              <input
+                type={field === 'email' ? 'email' : 'text'}
+                value={inputs[field]}
+                onChange={(e) => handleChange(field, e.target.value)}
+                className={`input ${errors[field] ? 'input-error' : ''}`}
+                placeholder={t[field]}
+              />
+            )}
+
+            {errors[field] && <p className="text-red-600 text-sm mt-1">{errors[field]}</p>}
+          </div>
+        ))}
+
+        <button type="submit" className="btn-primary w-full" disabled={status === 'sending'}>
+          {status === 'sending' ? 'Sending…' : t.send}
+        </button>
       </form>
     </div>
   )
@@ -4732,82 +5248,6 @@ export default function SignInPage() {
       </div>
     </div>
   )
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\api\contact\route.ts
-RELATIVE: apps\web\src\app\api\contact\route.ts
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
-
-type Body = {
-  name?: string
-  email?: string
-  phone?: string
-  message?: string
-}
-
-export async function POST(req: Request) {
-  const body = (await req.json()) as Body
-
-  if (!body?.name || !body?.email || !body?.message) {
-    return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
-  }
-
-  // configure nodemailer transporter using env
-  const smtpHost = process.env.SMTP_HOST
-  const smtpPort = Number(process.env.SMTP_PORT ?? 587)
-  const smtpUser = process.env.SMTP_USER
-  const smtpPass = process.env.SMTP_PASS
-  const to = process.env.CONTACT_TO ?? 'mygaleartetservices@gmail.com'
-
-  if (!smtpHost || !smtpUser || !smtpPass) {
-    // fail safe: if SMTP credentials missing, still return 500 with message
-    return NextResponse.json({ error: 'SMTP not configured on server' }, { status: 500 })
-  }
-
-  const transporter = nodemailer.createTransport({
-    host: smtpHost,
-    port: smtpPort,
-    secure: smtpPort === 465,
-    auth: { user: smtpUser, pass: smtpPass },
-  })
-
-  const html = `
-    <h3>Nouveau message Mygale</h3>
-    <p><strong>Nom:</strong> ${escapeHtml(body.name)}</p>
-    <p><strong>Email:</strong> ${escapeHtml(body.email)}</p>
-    <p><strong>Téléphone:</strong> ${escapeHtml(body.phone ?? '')}</p>
-    <p><strong>Message:</strong><br/>${escapeHtml(body.message)}</p>
-  `
-
-  try {
-    await transporter.sendMail({
-      from: `"Mygale Website" <${smtpUser}>`,
-      to,
-      subject: `Nouveau message de ${body.name}`,
-      html,
-    })
-    return NextResponse.json({ ok: true })
-  } catch (err: any) {
-    console.error('mail error', err)
-    return NextResponse.json({ error: 'Failed to send email' }, { status: 500 })
-  }
-}
-
-function escapeHtml(str: string) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
 }
 
 """
@@ -5205,6 +5645,25 @@ export default function AboutPage() {
   )
 }
 
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\data\submissions.json
+RELATIVE: apps\web\data\submissions.json
+================================================================================
+
+"""
+[
+  {
+    "name": "Sam",
+    "email": "sam@gmail.com",
+    "phone": "670741854",
+    "message": "Hillo",
+    "id": "1763375323928-7kogkle",
+    "createdAt": "2025-11-17T10:28:43.928Z"
+  }
+]
 """
 
 

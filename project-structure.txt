@@ -1,6 +1,6 @@
 ================================================================================
 PROJECT DIRECTORY STRUCTURE
-Generated: 2025-11-17T01:00:50.212Z
+Generated: 2025-11-20T04:51:32.519Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
 ================================================================================
 
@@ -29,7 +29,7 @@ MYGALE_ART_AND_SERVICES/
 │   │   └── prepare-commit-msg
 │   ├── commit-msg
 │   └── pre-commit
-├── apps/ (776 files) ← Directory for independent applications
+├── apps/ (838 files) ← Directory for independent applications
 │   ├── api/ (190 files) ← Backend application (NestJS)
 │   │   ├── dist/ [collapsed] ← Build output (collapsed)
 │   │   ├── node_modules/ [collapsed] ← Dependencies (collapsed)
@@ -79,17 +79,52 @@ MYGALE_ART_AND_SERVICES/
 │   │   ├── README.md ← Project documentation
 │   │   ├── tsconfig.build.json
 │   │   └── tsconfig.json ← TypeScript configuration
-│   └── web/ (586 files) ← Frontend application (Next.js)
+│   └── web/ (648 files) ← Frontend application (Next.js)
 │       ├── .next/ [collapsed] ← Next.js build output (collapsed)
+│       ├── data/ (1 files) ← Data directory (collapsed)
+│       │   └── submissions.json
 │       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
-│       ├── public/ (5 files) ← Static assets
+│       ├── public/ (31 files) ← Static assets
+│       │   ├── services/ (16 files)
+│       │   │   ├── architechture/ (4 files)
+│       │   │   │   ├── a.png
+│       │   │   │   ├── b.png
+│       │   │   │   ├── c.png
+│       │   │   │   └── d.png
+│       │   │   ├── construction/ (2 files)
+│       │   │   │   ├── a.png
+│       │   │   │   └── b.png
+│       │   │   ├── printing/ (2 files)
+│       │   │   │   ├── a.png
+│       │   │   │   └── b.png
+│       │   │   ├── stylisme/ (3 files)
+│       │   │   │   ├── a.png
+│       │   │   │   ├── b.png
+│       │   │   │   └── c.png
+│       │   │   ├── vitraux/ (3 files)
+│       │   │   │   ├── a.png
+│       │   │   │   ├── b.png
+│       │   │   │   └── c.png
+│       │   │   └── web-development/ (2 files)
+│       │   │       ├── a.png
+│       │   │       └── b.png
+│       │   ├── architecture.jpg
+│       │   ├── construction.jpg
 │       │   ├── file.svg
 │       │   ├── globe.svg
+│       │   ├── hero-bg.jpg
+│       │   ├── LOGO MYGALE 2.png
+│       │   ├── LOGO MYGALE.jpg
 │       │   ├── next.svg
+│       │   ├── print.jpg
+│       │   ├── style.jpg
 │       │   ├── vercel.svg
+│       │   ├── vitreaux.jpg
+│       │   ├── web-dev.jpg
+│       │   ├── webdev.jpg
 │       │   └── window.svg
-│       ├── src/ (41 files) ← Source code directory
-│       │   ├── app/ (22 files)
+│       ├── src/ (53 files) ← Source code directory
+│       │   ├── app/ (26 files)
 │       │   │   ├── about/ (1 files)
 │       │   │   │   └── page.tsx ← Page component
 │       │   │   ├── admin/ (5 files)
@@ -101,6 +136,8 @@ MYGALE_ART_AND_SERVICES/
 │       │   │   │   │   └── page.tsx ← Page component
 │       │   │   │   ├── layout.tsx ← Root layout component
 │       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── api/ ← Backend application (NestJS)
+│       │   │   │   └── contact/
 │       │   │   ├── auth/ (2 files)
 │       │   │   │   ├── signin/ (1 files)
 │       │   │   │   │   └── page.tsx ← Page component
@@ -120,38 +157,52 @@ MYGALE_ART_AND_SERVICES/
 │       │   │   │   └── page.tsx ← Page component
 │       │   │   ├── privacy/ (1 files)
 │       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── services/ (3 files)
+│       │   │   │   ├── [slug]/ (2 files)
+│       │   │   │   │   ├── page.tsx ← Page component
+│       │   │   │   │   └── ServiceClient.tsx
+│       │   │   │   └── page.tsx ← Page component
 │       │   │   ├── terms/ (1 files)
 │       │   │   │   └── page.tsx ← Page component
 │       │   │   ├── favicon.ico
+│       │   │   ├── HomeClient.tsx
 │       │   │   ├── layout.tsx ← Root layout component
 │       │   │   ├── page.tsx ← Page component
 │       │   │   └── providers.tsx
-│       │   ├── components/ (10 files)
+│       │   ├── components/ (13 files)
 │       │   │   ├── AdminSidebar.tsx
 │       │   │   ├── AssigneeSelector.tsx
 │       │   │   ├── Footer.tsx
 │       │   │   ├── Navbar.tsx
+│       │   │   ├── PageTransitions.tsx
 │       │   │   ├── Pagination.tsx
 │       │   │   ├── RichTextComposer.tsx
 │       │   │   ├── SearchBar.tsx
+│       │   │   ├── ServicesSidebar.tsx
 │       │   │   ├── StatusChip.tsx
 │       │   │   ├── StatusFilter.tsx
+│       │   │   ├── SuccessAnim.tsx
 │       │   │   └── ToastProvider.tsx
-│       │   ├── hooks/ (1 files)
+│       │   ├── hooks/ (3 files)
+│       │   │   ├── useLocale.ts
+│       │   │   ├── useReveal.tsx
 │       │   │   └── useSocket.ts
-│       │   ├── lib/ (1 files)
+│       │   ├── lib/ (3 files)
+│       │   │   ├── locale.server.ts
+│       │   │   ├── locale.tsx
 │       │   │   └── socket.ts
-│       │   ├── pages/ (5 files)
-│       │   │   └── api/ (5 files) ← Backend application (NestJS)
+│       │   ├── pages/ (6 files)
+│       │   │   └── api/ (6 files) ← Backend application (NestJS)
 │       │   │       ├── auth/ (1 files)
 │       │   │       │   └── [...nextauth].ts
-│       │   │       └── proxy/ (4 files)
-│       │   │           └── contact-submissions/ (4 files)
-│       │   │               ├── [id]/ (3 files)
-│       │   │               │   ├── draft.ts
-│       │   │               │   ├── reply.ts
-│       │   │               │   └── status.ts
-│       │   │               └── index.ts
+│       │   │       ├── proxy/ (4 files)
+│       │   │       │   └── contact-submissions/ (4 files)
+│       │   │       │       ├── [id]/ (3 files)
+│       │   │       │       │   ├── draft.ts
+│       │   │       │       │   ├── reply.ts
+│       │   │       │       │   └── status.ts
+│       │   │       │       └── index.ts
+│       │   │       └── contact.ts
 │       │   ├── styles/ (1 files)
 │       │   │   └── globals.css ← Global styles
 │       │   └── types/ (1 files)
@@ -238,4 +289,5 @@ MYGALE_ART_AND_SERVICES/
 ├── pnpm-workspace.yaml ← Defines the project as a pnpm monorepo workspace
 ├── project-structure.txt
 ├── tsconfig.json ← TypeScript configuration
-└── turbo.json ← Turborepo configuration for monorepo build system
+├── turbo.json ← Turborepo configuration for monorepo build system
+└── vercel.json

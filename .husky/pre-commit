@@ -1,4 +1,5 @@
 #!/usr/bin/env sh
 
-pnpm lint-staged
-# pnpm test  # Commented til tests are set up
+bun lint-staged
+bun format
+# bun test  # Commented til tests are set up

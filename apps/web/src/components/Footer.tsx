@@ -1,3 +1,4 @@
+// apps/web/src/components/Footer.tsx
 import React from 'react'
 
 export default function Footer() {
@@ -9,11 +10,22 @@ export default function Footer() {
           <div>Yaoundé, Cameroon</div>
 
           <div className="mt-2">
-            Email: <a href="mailto:mygaleartetservices@gmail.com">mygaleartetservices@gmail.com</a>
+            Email:{' '}
+            <a className="underline" href="mailto:mygaleartetservices@gmail.com">
+              mygaleartetservices@gmail.com
+            </a>
           </div>
 
           <div>
-            WhatsApp: <a href="https://wa.me/237675003269">+237 6 75 00 32 69</a>
+            WhatsApp:{' '}
+            <a
+              className="underline"
+              href="https://wa.me/237675003269"
+              target="_blank"
+              rel="noreferrer"
+            >
+              +237 6 75 00 32 69
+            </a>
           </div>
         </div>
 
