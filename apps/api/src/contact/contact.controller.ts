@@ -146,7 +146,7 @@ export class ContactController {
   stream(): Observable<MessageEvent> {
     return this.service
       .getEventsSubject()
-      .pipe(map((evt: ContactEvent) => ({ data: evt }) as MessageEvent));
+      .pipe(map((evt: ContactEvent) => ({ data: evt }) as MessageEvent))
   }
 }
 */
