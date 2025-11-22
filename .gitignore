@@ -12,3 +12,8 @@ data
 .github\instructions\snyk_rules.instructions.md
 .vercel
 .turbo/
+.turbo/*
+apps/**/.turbo/
+apps/**/.next/
+**/.next
+**/.vercel
