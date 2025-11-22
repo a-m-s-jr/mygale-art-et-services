@@ -17,7 +17,12 @@ jobs:
       - name: 🧰 Setup Bun
         uses: oven-sh/setup-bun@v1
 
+      - name: 📁 Move into apps/web
+        working-directory: apps/web
+        run: echo "Switched to apps/web"
+
       - name: 📦 Install dependencies
+        working-directory: apps/web
         run: bun install
 
       - name: 🚀 Deploy to Vercel
@@ -27,3 +32,4 @@ jobs:
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
+          working-directory: apps/web
