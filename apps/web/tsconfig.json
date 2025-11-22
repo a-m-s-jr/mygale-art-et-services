@@ -40,6 +40,6 @@
     "next-auth.d.ts",
     "tests/**/*.ts",
     "tests/**/*.tsx"
-  ],
+, "next.config.-no-ts"  ],
   "exclude": ["node_modules", ".next"]
 }

@@ -1,14 +1,35 @@
 ================================================================================
 PROJECT DIRECTORY STRUCTURE
-Generated: 2025-11-20T04:51:32.519Z
+Generated: 2025-11-22T00:31:31.071Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
 ================================================================================
 
 MYGALE_ART_AND_SERVICES/
-├── .github/ (1 files) ← GitHub configuration
-│   └── instructions/ (1 files)
-│       └── snyk_rules.instructions.md
-├── .husky/ (19 files) ← Git hooks configuration
+├── .github/ (2 files) ← GitHub configuration
+│   ├── instructions/ (1 files)
+│   │   └── snyk_rules.instructions.md
+│   └── workflows/ (1 files)
+│       └── vercel.yml
+├── .husky/ (17 files) ← Git hooks configuration
+│   └── _/ (17 files)
+│       ├── .gitignore ← Git ignore patterns
+│       ├── applypatch-msg
+│       ├── commit-msg
+│       ├── h
+│       ├── husky.sh
+│       ├── post-applypatch
+│       ├── post-checkout
+│       ├── post-commit
+│       ├── post-merge
+│       ├── post-rewrite
+│       ├── pre-applypatch
+│       ├── pre-auto-gc
+│       ├── pre-commit
+│       ├── pre-merge-commit
+│       ├── pre-push
+│       ├── pre-rebase
+│       └── prepare-commit-msg
+├── .husky-disabled/ (19 files)
 │   ├── _/ (17 files)
 │   │   ├── .gitignore ← Git ignore patterns
 │   │   ├── applypatch-msg
@@ -29,8 +50,13 @@ MYGALE_ART_AND_SERVICES/
 │   │   └── prepare-commit-msg
 │   ├── commit-msg
 │   └── pre-commit
-├── apps/ (838 files) ← Directory for independent applications
-│   ├── api/ (190 files) ← Backend application (NestJS)
+├── .turbo/ [collapsed]
+├── .vercel/ (2 files)
+│   ├── project.json
+│   └── README.txt
+├── apps/ (1100 files) ← Directory for independent applications
+│   ├── api/ (191 files) ← Backend application (NestJS)
+│   │   ├── .turbo/ [collapsed]
 │   │   ├── dist/ [collapsed] ← Build output (collapsed)
 │   │   ├── node_modules/ [collapsed] ← Dependencies (collapsed)
 │   │   ├── src/ (23 files) ← Source code directory
@@ -79,42 +105,63 @@ MYGALE_ART_AND_SERVICES/
 │   │   ├── README.md ← Project documentation
 │   │   ├── tsconfig.build.json
 │   │   └── tsconfig.json ← TypeScript configuration
-│   └── web/ (648 files) ← Frontend application (Next.js)
+│   └── web/ (909 files) ← Frontend application (Next.js)
 │       ├── .next/ [collapsed] ← Next.js build output (collapsed)
+│       ├── .turbo/ [collapsed]
+│       ├── .vercel/ (2 files)
+│       │   ├── project.json
+│       │   └── README.txt
 │       ├── data/ (1 files) ← Data directory (collapsed)
 │       │   └── submissions.json
 │       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
-│       ├── public/ (31 files) ← Static assets
-│       │   ├── services/ (16 files)
-│       │   │   ├── architechture/ (4 files)
+│       ├── public/ (48 files) ← Static assets
+│       │   ├── services/ (31 files)
+│       │   │   ├── architecture/ (8 files)
+│       │   │   │   ├── 1.png
 │       │   │   │   ├── a.png
 │       │   │   │   ├── b.png
 │       │   │   │   ├── c.png
-│       │   │   │   └── d.png
-│       │   │   ├── construction/ (2 files)
-│       │   │   │   ├── a.png
-│       │   │   │   └── b.png
-│       │   │   ├── printing/ (2 files)
-│       │   │   │   ├── a.png
-│       │   │   │   └── b.png
-│       │   │   ├── stylisme/ (3 files)
+│       │   │   │   ├── d.png
+│       │   │   │   ├── i.png
+│       │   │   │   ├── ii.png
+│       │   │   │   └── iv.png
+│       │   │   ├── construction/ (4 files)
 │       │   │   │   ├── a.png
 │       │   │   │   ├── b.png
-│       │   │   │   └── c.png
-│       │   │   ├── vitraux/ (3 files)
+│       │   │   │   ├── i.png
+│       │   │   │   └── ii.png
+│       │   │   ├── printing/ (3 files)
+│       │   │   │   ├── 2-ii.png
+│       │   │   │   ├── a.png
+│       │   │   │   └── i.png
+│       │   │   ├── stylisme/ (6 files)
 │       │   │   │   ├── a.png
 │       │   │   │   ├── b.png
-│       │   │   │   └── c.png
-│       │   │   └── web-development/ (2 files)
+│       │   │   │   ├── c.png
+│       │   │   │   ├── i.png
+│       │   │   │   ├── ii.png
+│       │   │   │   └── iii.png
+│       │   │   ├── vitraux/ (6 files)
+│       │   │   │   ├── a.png
+│       │   │   │   ├── b.png
+│       │   │   │   ├── c.png
+│       │   │   │   ├── i.png
+│       │   │   │   ├── ii.png
+│       │   │   │   └── iii.png
+│       │   │   └── web-development/ (4 files)
 │       │   │       ├── a.png
-│       │   │       └── b.png
+│       │   │       ├── b.png
+│       │   │       ├── i.png
+│       │   │       └── ii.png
 │       │   ├── architecture.jpg
 │       │   ├── construction.jpg
 │       │   ├── file.svg
 │       │   ├── globe.svg
 │       │   ├── hero-bg.jpg
+│       │   ├── icon.png
 │       │   ├── LOGO MYGALE 2.png
 │       │   ├── LOGO MYGALE.jpg
+│       │   ├── manifest.json
 │       │   ├── next.svg
 │       │   ├── print.jpg
 │       │   ├── style.jpg
@@ -123,21 +170,14 @@ MYGALE_ART_AND_SERVICES/
 │       │   ├── web-dev.jpg
 │       │   ├── webdev.jpg
 │       │   └── window.svg
-│       ├── src/ (53 files) ← Source code directory
-│       │   ├── app/ (26 files)
+│       ├── src/ (49 files) ← Source code directory
+│       │   ├── app/ (22 files)
 │       │   │   ├── about/ (1 files)
 │       │   │   │   └── page.tsx ← Page component
-│       │   │   ├── admin/ (5 files)
-│       │   │   │   ├── contact-submissions/ (2 files)
-│       │   │   │   │   ├── [id]/ (1 files)
-│       │   │   │   │   │   └── page.tsx ← Page component
-│       │   │   │   │   └── page.tsx ← Page component
-│       │   │   │   ├── webhooks/ (1 files)
-│       │   │   │   │   └── page.tsx ← Page component
-│       │   │   │   ├── layout.tsx ← Root layout component
-│       │   │   │   └── page.tsx ← Page component
-│       │   │   ├── api/ ← Backend application (NestJS)
-│       │   │   │   └── contact/
+│       │   │   ├── api/ (1 files) ← Backend application (NestJS)
+│       │   │   │   ├── contact/
+│       │   │   │   └── og/ (1 files)
+│       │   │   │       └── route.tsx
 │       │   │   ├── auth/ (2 files)
 │       │   │   │   ├── signin/ (1 files)
 │       │   │   │   │   └── page.tsx ← Page component
@@ -218,19 +258,23 @@ MYGALE_ART_AND_SERVICES/
 │       │       └── status-update.spec.ts
 │       ├── .env.local
 │       ├── .gitignore ← Git ignore patterns
+│       ├── bun.lock
 │       ├── eslint.config.mjs
 │       ├── middleware.ts
 │       ├── next-auth.d.ts
 │       ├── next-env.d.ts
+│       ├── next-sitemap.config.js
+│       ├── next-sitemap.config.jsnext-sitemap.config.js
+│       ├── next.config.js ← Next.js configuration
 │       ├── next.config.mjs
 │       ├── next.config.ts
-│       ├── package-lock.json
 │       ├── package.json ← Package configuration and dependencies
 │       ├── playwright.config.ts
 │       ├── postcss.config.mjs
 │       ├── README.md ← Project documentation
 │       ├── tailwind.config.mjs
-│       └── tsconfig.json ← TypeScript configuration
+│       ├── tsconfig.json ← TypeScript configuration
+│       └── vercel.json
 ├── data/ (1273 files) ← Data directory (collapsed)
 │   └── postgres/ (1273 files) ← PostgreSQL data directory (collapsed)
 │       └── 18/ (1273 files)
@@ -278,7 +322,6 @@ MYGALE_ART_AND_SERVICES/
 ├── .env ← Environment variables (not tracked in git)
 ├── .gitignore ← Git ignore patterns
 ├── .prettierrc ← Prettier configuration for code formatting
-├── bun.lock
 ├── commitlint.config.js ← Configuration for linting commit messages
 ├── concatenate-files.js
 ├── docker-compose.yml ← Defines and runs multi-container Docker applications
@@ -289,5 +332,4 @@ MYGALE_ART_AND_SERVICES/
 ├── pnpm-workspace.yaml ← Defines the project as a pnpm monorepo workspace
 ├── project-structure.txt
 ├── tsconfig.json ← TypeScript configuration
-├── turbo.json ← Turborepo configuration for monorepo build system
-└── vercel.json
+└── turbo.json ← Turborepo configuration for monorepo build system

@@ -1,41 +1,10 @@
 ================================================================================
 PROJECT FILES CONCATENATION
-Generated: 2025-11-19T09:14:13.338Z
+Generated: 2025-11-22T00:31:21.620Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
-Total Files: 127
+Total Files: 136
 Extensions: .ts, .tsx, .js, .jsx, .json, .prisma, .yml, .yaml, .md, .mjs, .cjs, .css, .sql, .toml
 ================================================================================
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\vercel.json
-RELATIVE: vercel.json
-================================================================================
-
-"""
-{
-  "version": 2,
-  "builds": [
-    { "src": "apps/web/next.config.mjs", "use": "@vercel/next" },
-    {
-      "src": "apps/api/package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
-    }
-  ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/(.*)", "dest": "/$1" }
-  ],
-  "env": {
-    "NEXT_PUBLIC_API_BASE": "http://localhost:4000",
-    "NEXT_PUBLIC_API_WS_URL": "http://localhost:4000",
-    "NEXTAUTH_URL": "http://localhost:3000",
-    "NEXTAUTH_SECRET": "LUp2+5Cpq/zU732NiT1TFqsMOtLjKsCkOPMA/2V1hpc="
-  }
-}
-
-"""
 
 
 ================================================================================
@@ -47,7 +16,7 @@ RELATIVE: turbo.json
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["tsconfig.json"],
-  "pipeline": {
+  "tasks": {
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/", ".next/"]
@@ -124,6 +93,7 @@ RELATIVE: package.json
   "version": "1.0.0",
   "private": true,
   "type": "commonjs",
+  "packageManager": "bun@1.3.2",
   "workspaces": [
     "apps/*",
     "packages/*"
@@ -151,7 +121,9 @@ RELATIVE: package.json
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
+    "canvas-confetti": "^1.9.4",
     "dompurify": "^3.3.0",
+    "framer-motion": "^12.23.24",
     "glob": "^11.0.3",
     "nodemailer": "^7.0.10",
     "rimraf": "^6.1.0",
@@ -163,6 +135,7 @@ RELATIVE: package.json
     "@commitlint/config-conventional": "^20.0.0",
     "@eslint/js": "^9.0.0",
     "@playwright/test": "^1.56.1",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/nodemailer": "^7.0.3",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
@@ -1770,6 +1743,19 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 
 ================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\vercel.json
+RELATIVE: apps\web\vercel.json
+================================================================================
+
+"""
+{
+  "framework": "nextjs"
+}
+
+"""
+
+
+================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\tsconfig.json
 RELATIVE: apps\web\tsconfig.json
 ================================================================================
@@ -1938,14 +1924,17 @@ RELATIVE: apps\web\package.json
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postbuild": "next-sitemap"
   },
   "dependencies": {
     "@next-auth/prisma-adapter": "^1.0.7",
+    "@vercel/og": "^0.8.5",
     "add": "^2.0.6",
     "canvas-confetti": "^1.9.4",
     "clsx": "^2.1.1",
     "dompurify": "^3.3.0",
+    "framer-motion": "^12.23.24",
     "jsonwebtoken": "^9.0.2",
     "next": "16.0.1",
     "next-auth": "^4.24.13",
@@ -1955,11 +1944,13 @@ RELATIVE: apps\web\package.json
     "react-dom": "19.2.0",
     "react-hot-toast": "^2.6.0",
     "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "translations": "^2.2.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",
     "@tailwindcss/postcss": "^4.1.17",
+    "@types/canvas-confetti": "^1.9.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -1968,12 +1959,13 @@ RELATIVE: apps\web\package.json
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.1",
+    "next-sitemap": "^4.2.3",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5"
+    "typescript": "^5",
+    "next": "16.0.1"
   }
 }
-
 """
 
 
@@ -2006,6 +1998,90 @@ import path from 'path'
 
 export default {
   outputFileTracingRoot: path.resolve(process.cwd(), '../../'),
+  poweredByHeader: false,
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+        ],
+      },
+    ]
+  },
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\next.config.js
+RELATIVE: apps\web\next.config.js
+================================================================================
+
+"""
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    unoptimized: false,
+    remotePatterns: [],
+  },
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['*'],
+    },
+  },
+  compress: true,
+  poweredByHeader: false,
+  outputFileTracingRoot: __dirname,
+}
+
+module.exports = nextConfig
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\next-sitemap.config.jsnext-sitemap.config.js
+RELATIVE: apps\web\next-sitemap.config.jsnext-sitemap.config.js
+================================================================================
+
+"""
+module.exports = {
+  siteUrl: 'https://mygale-art-and-services.com',
+  generateRobotsTxt: true,
+  changefreq: 'weekly',
+  sitemapSize: 5000,
+  outDir: 'apps/web/public',
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\next-sitemap.config.js
+RELATIVE: apps\web\next-sitemap.config.js
+================================================================================
+
+"""
+/** @type {import('next-sitemap').IConfig} */
+module.exports = {
+  siteUrl: 'https://mygale-art-and-services.com',
+  generateRobotsTxt: true,
+  generateIndexSitemap: true,
+  sitemapSize: 5000,
+  exclude: ['/api/*', '/admin/*'],
+  transform: async (config, path) => {
+    return {
+      loc: path,
+      changefreq: 'weekly',
+      priority: 0.8,
+      lastmod: new Date().toISOString(),
+    }
+  },
 }
 
 """
@@ -3079,17 +3155,12 @@ RELATIVE: apps\web\src\lib\locale.tsx
 ================================================================================
 
 """
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 
 export type Lang = 'fr' | 'en'
 
-/**
- * Translation shape used by the app components.
- * Keep keys stable so server components can rely on same names.
- */
 export type Translations = {
   siteTitle: string
   heroSubtitle: string
@@ -3098,37 +3169,40 @@ export type Translations = {
   servicesTitle: string
   aboutTitle: string
   aboutText: string
-  services: {
-    architectureTitle: string
-    architectureDesc: string
-    architectureImg: string
-
-    stylismeTitle: string
-    stylismeDesc: string
-    stylismeImg: string
-
-    printTitle: string
-    printDesc: string
-    printImg: string
-
-    vitrauxTitle: string
-    vitrauxDesc: string
-    vitrauxImg: string
-
-    constructionTitle: string
-    constructionDesc: string
-    constructionImg: string
-  }
-  // small form field labels (for contact page later)
   name?: string
   email?: string
   phone?: string
   message?: string
   send?: string
   thanks?: string
+  services: {
+    architectureTitle: string
+    architectureDesc: string
+
+    stylismeTitle: string
+    stylismeDesc: string
+
+    printTitle: string
+    printDesc: string
+
+    vitrauxTitle: string
+    vitrauxDesc: string
+
+    constructionTitle: string
+    constructionDesc: string
+
+    webdevTitle: string
+    webdevDesc: string
+
+    architectureImg?: string
+    stylismeImg?: string
+    printImg?: string
+    vitrauxImg?: string
+    constructionImg?: string
+  }
 }
 
-const TRANSLATIONS: Record<Lang, any> = {
+const TRANSLATIONS: Record<Lang, Translations> = {
   fr: {
     siteTitle: 'MYGALE ART ET SERVICES',
     heroSubtitle:
@@ -3138,64 +3212,78 @@ const TRANSLATIONS: Record<Lang, any> = {
     servicesTitle: 'Nos services',
     aboutTitle: 'À propos',
     aboutText:
-      'Nous sommes une agence basée au Cameroun ,proposant nos services dans plusieurs domaines de l’art notamment:Architecture(réalisation et suivit des projets de toutes natures et envergures),stylisme, imprimerie sur tissus, art des vitraux(verre cathédrale)',
-    services: {
-      architectureTitle: 'Architecture',
-      architectureDesc: 'Conception et réalisation de projets architecturaux modernes et durables.',
-      stylismeTitle: 'Stylisme',
-      stylismeDesc: 'Création de designs uniques pour la mode et l’expression artistique.',
-      printTitle: 'Imprimerie Textiles',
-      printDesc: 'Impression personnalisée sur tissus et matériaux de qualité supérieure.',
-      vitrauxTitle: 'Service Vitrier',
-      vitrauxDesc: 'Installation et réparation de vitrages pour particuliers et professionnels.',
-      constructionTitle: 'Accessoires de Construction',
-      constructionDesc: 'Fourniture d’accessoires fiables et esthétiques pour vos chantiers.',
-      architectureImg: '/architecture.jpg',
-      stylismeImg: '/stylisme.jpg',
-      printImg: '/printing.jpg',
-      vitrauxImg: '/vitreaux.jpg',
-      constructionImg: '/construction.jpg',
-    },
+      'Nous sommes une agence basée au Cameroun, proposant des services en architecture, stylisme, imprimerie sur tissus et art des vitraux. Basée à Yaoundé, nous réalisons des projets sur mesure.',
     name: 'Nom',
     email: 'Email',
     phone: 'Téléphone (optionnel)',
     message: 'Message',
     send: 'Envoyer',
     thanks: 'Merci — votre message a été envoyé.',
+    services: {
+      architectureTitle: 'Architecture',
+      architectureDesc:
+        'Conception architecturale, gestion de chantier, démarches administratives et services complémentaires pour projets résidentiels et commerciaux.',
+      stylismeTitle: 'Stylisme',
+      stylismeDesc:
+        'Stylisme créatif, modélisme, prototypage, et consulting pour collections et productions mode.',
+      printTitle: 'Imprimerie Textile',
+      printDesc:
+        'Solutions d’impression sur tissu — sérigraphie et impression numérique professionnelle.',
+      vitrauxTitle: 'Vitraux & Miroiterie',
+      vitrauxDesc:
+        "Conception, fabrication et pose d'ouvrages en verre: vitraux, verrières, façades et menuiseries vitrées.",
+      constructionTitle: 'Accessoires & Construction',
+      constructionDesc:
+        'Fourniture d’accessoires, conseils techniques et solutions pour vos chantiers.',
+      webdevTitle: 'Développement Web',
+      webdevDesc: 'Sites vitrines, UI/UX et solutions digitales adaptées à vos besoins.',
+      architectureImg: '/architecture.jpg',
+      stylismeImg: '/style.jpg',
+      printImg: '/print.jpg',
+      vitrauxImg: '/vitreaux.jpg',
+      constructionImg: '/construction.jpg',
+    },
   },
+
   en: {
     siteTitle: 'MYGALE ART & SERVICES',
     heroSubtitle:
-      'We are a Yaoundé-based agency offering services in architecture, fashion design, textile printing and stained glass art.',
+      'Innovation, creativity and excellence for your projects. Yaoundé-based agency specialized in architecture, fashion design, textile printing and stained glass art.',
     contactUs: 'Contact us',
     ourServices: 'Our services',
     servicesTitle: 'Our services',
     aboutTitle: 'About',
     aboutText:
-      'We are a Yaoundé-based agency specializing in architecture, fashion design, stained glass art and textile printing. We deliver bespoke projects.',
-    services: {
-      architectureTitle: 'Architecture',
-      architectureDesc: 'Design and delivery of modern, durable architectural projects.',
-      stylismeTitle: 'Stylism',
-      stylismeDesc: 'Creation of unique fashion and artistic designs.',
-      printTitle: 'Textile Printing',
-      printDesc: 'High-quality, custom textile printing services.',
-      vitrauxTitle: 'Glazier Service',
-      vitrauxDesc: 'Custom stained-glass pieces and installations.',
-      constructionTitle: 'Construction Accessories',
-      constructionDesc: 'Reliable and aesthetic accessories for construction projects.',
-      architectureImg: '/architecture.jpg',
-      stylismeImg: '/stylisme.jpg',
-      printImg: '/printing.jpg',
-      vitrauxImg: '/vitreaux.jpg',
-      constructionImg: '/construction.jpg',
-    },
+      'We are a Yaoundé-based agency offering architecture, fashion design, textile printing and stained glass services. We provide bespoke solutions.',
     name: 'Name',
     email: 'Email',
     phone: 'Phone (optional)',
     message: 'Message',
     send: 'Send',
     thanks: 'Thanks — your message has been sent.',
+    services: {
+      architectureTitle: 'Architecture',
+      architectureDesc:
+        'Architectural design, construction management, regulatory assistance and complementary services for residential and commercial projects.',
+      stylismeTitle: 'Fashion Design',
+      stylismeDesc:
+        'Creative styling, pattern-making, prototyping and consulting for collections and fashion productions.',
+      printTitle: 'Textile Printing',
+      printDesc: 'Textile printing solutions — screen printing and professional digital printing.',
+      vitrauxTitle: 'Stained Glass & Glazing',
+      vitrauxDesc:
+        'Custom design, fabrication and installation of glassworks: stained glass, skylights, façades and glazing systems.',
+      constructionTitle: 'Construction Accessories',
+      constructionDesc:
+        'Supply of accessories, technical guidance and construction site solutions.',
+      webdevTitle: 'Web Development',
+      webdevDesc: 'Showcase websites, UI/UX and digital solutions tailored to your needs.',
+      architectureImg: '/architecture.jpg',
+      stylismeImg: '/style.jpg',
+      printImg: '/print.jpg',
+      vitrauxImg: '/vitreaux.jpg',
+      constructionImg: '/construction.jpg',
+    },
   },
 }
 
@@ -3208,24 +3296,102 @@ type LocaleContextValue = {
 
 const LocaleContext = createContext<LocaleContextValue>({
   lang: 'fr',
-  // placeholder noop; will be replaced by provider
   setLang: () => {},
   t: TRANSLATIONS.fr,
 })
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>('fr')
-  const value: LocaleContextValue = {
-    lang,
-    setLang,
-    t: TRANSLATIONS[lang],
-  }
+  const value: LocaleContextValue = { lang, setLang, t: TRANSLATIONS[lang] }
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>
 }
 
-/** Hook for components */
 export function useLocale() {
   return useContext(LocaleContext)
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\lib\locale.server.ts
+RELATIVE: apps\web\src\lib\locale.server.ts
+================================================================================
+
+"""
+// server-side translation subset used by generateMetadata
+export type Lang = 'fr' | 'en'
+
+type ServicesTranslations = Record<
+  string,
+  {
+    title: string
+    desc: string
+  }
+>
+
+export const SERVER_TRANSLATIONS: Record<
+  Lang,
+  { siteTitle: string; services: ServicesTranslations }
+> = {
+  fr: {
+    siteTitle: 'MYGALE ART ET SERVICES',
+    services: {
+      architecture: {
+        title: 'Architecture',
+        desc: 'Conception architecturale, suivi de chantier, rénovation et gestion des projets — Yaoundé, Cameroun.',
+      },
+      stylisme: {
+        title: 'Stylisme',
+        desc: 'Création de collections, modélisme, patronage et accompagnement à la production.',
+      },
+      printing: {
+        title: 'Impression textile',
+        desc: 'Impression tissu: sérigraphie, impression numérique et préparation de fichiers.',
+      },
+      vitraux: {
+        title: 'Vitraux',
+        desc: 'Conception, fabrication et installation de réalisations verrières sur mesure.',
+      },
+      construction: {
+        title: 'Construction',
+        desc: 'Fourniture d’accessoires, supports techniques et solutions pour chantiers.',
+      },
+      'web-development': {
+        title: 'Développement Web',
+        desc: 'Sites vitrine, UI/UX, intégration et solutions web professionnelles.',
+      },
+    },
+  },
+  en: {
+    siteTitle: 'MYGALE ART & SERVICES',
+    services: {
+      architecture: {
+        title: 'Architecture',
+        desc: 'Architectural design, site supervision, renovation and project management — Yaoundé, Cameroon.',
+      },
+      stylisme: {
+        title: 'Fashion & Styling',
+        desc: 'Collections creation, pattern making, prototypes and production support.',
+      },
+      printing: {
+        title: 'Textile Printing',
+        desc: 'Fabric printing: screen, digital and print-ready file preparation.',
+      },
+      vitraux: {
+        title: 'Stained Glass',
+        desc: 'Custom stained glass design, fabrication and installation services.',
+      },
+      construction: {
+        title: 'Construction',
+        desc: 'Accessories, technical support and supplies for construction projects.',
+      },
+      'web-development': {
+        title: 'Web Development',
+        desc: 'Showcase websites, UI/UX and professional web solutions.',
+      },
+    },
+  },
 }
 
 """
@@ -3586,6 +3752,66 @@ export default function StatusChip({ status }: { status?: string }) {
 
 
 ================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\components\ServicesSidebar.tsx
+RELATIVE: apps\web\src\components\ServicesSidebar.tsx
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* apps/web/src/components/ServicesSidebar.tsx */
+'use client'
+
+import React from 'react'
+import Link from 'next/link'
+import { useLocale } from '@/lib/locale'
+
+type Props = {
+  activeSlug?: string
+}
+
+const SERVICES = [
+  { slug: 'architecture', key: 'architectureTitle' },
+  { slug: 'stylisme', key: 'stylismeTitle' },
+  { slug: 'printing', key: 'printTitle' },
+  { slug: 'vitraux', key: 'vitrauxTitle' },
+  { slug: 'construction', key: 'constructionTitle' },
+  { slug: 'web-development', key: 'webdevTitle' },
+]
+
+export default function ServicesSidebar({ activeSlug }: Props) {
+  const { t } = useLocale()
+
+  return (
+    <div className="sticky top-24 p-4 border rounded-lg bg-white">
+      <h4 className="text-sm font-semibold text-gray-700 mb-3">{t.servicesTitle}</h4>
+
+      <ul className="space-y-2 text-sm">
+        {SERVICES.map((s) => {
+          const label = (t.services as any)[s.key] ?? s.slug
+          const active = activeSlug === s.slug
+          return (
+            <li key={s.slug}>
+              <Link
+                href={`/services/${s.slug}`}
+                className={`block px-3 py-2 rounded ${active ? 'bg-[#003366] text-white' : 'text-gray-700 hover:bg-gray-50'}`}
+              >
+                {label}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+      <div className="mt-4 text-xs text-gray-500">
+        Découvrez nos expériences, projets passés et solutions sur-mesure pour chaque service.
+      </div>
+    </div>
+  )
+}
+
+"""
+
+
+================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\components\SearchBar.tsx
 RELATIVE: apps\web\src\components\SearchBar.tsx
 ================================================================================
@@ -3683,23 +3909,90 @@ export default function Pagination({
 
 
 ================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\components\PageTransitions.tsx
+RELATIVE: apps\web\src\components\PageTransitions.tsx
+================================================================================
+
+"""
+/* eslint-disable react-hooks/set-state-in-effect */
+'use client'
+
+import React, { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
+import { motion } from 'framer-motion'
+
+/**
+ * Safer page transitions:
+ * - We DON'T use AnimatePresence or unmount the previous page,
+ *   which avoids the blank white flash caused by server component swaps.
+ * - On pathname change we briefly toggle `pulse` to trigger an "enter" animation.
+ */
+
+export default function PageTransitions({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname() ?? '/'
+  const [pulse, setPulse] = useState(false)
+
+  useEffect(() => {
+    // trigger entrance animation whenever pathname changes
+    // brief toggle is enough for framer-motion to animate from `initial` -> `animate`
+    setPulse(false)
+
+    // small timeout ensures any navigation/hydration swap completes enough before animation
+    const t = setTimeout(() => setPulse(true), 25)
+
+    return () => clearTimeout(t)
+  }, [pathname])
+
+  return (
+    <motion.div
+      // don't animate on initial SSR/hydration (initial={false})
+      initial={false}
+      animate={pulse ? { opacity: 1, y: 0, scale: 1 } : { opacity: 0.0, y: 8, scale: 0.998 }}
+      transition={{ duration: 0.32, ease: 'easeOut' }}
+      className="min-h-screen"
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+"""
+
+
+================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\components\Navbar.tsx
 RELATIVE: apps\web\src\components\Navbar.tsx
 ================================================================================
 
 """
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import React, { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useLocale } from '@/lib/locale'
+import { usePathname } from 'next/navigation'
 
 export default function Navbar() {
   const { lang, setLang, t } = useLocale()
+  const pathname = usePathname() ?? '/'
+
   const [open, setOpen] = useState(false)
+  const [openServices, setOpenServices] = useState(false)
+
+  const servicesList = [
+    { slug: 'architecture', label: (t.services as any).architectureTitle ?? 'Architecture' },
+    { slug: 'stylisme', label: (t.services as any).stylismeTitle ?? 'Stylisme' },
+    { slug: 'printing', label: (t.services as any).printTitle ?? 'Printing' },
+    { slug: 'vitraux', label: (t.services as any).vitrauxTitle ?? 'Vitraux' },
+    { slug: 'construction', label: (t.services as any).constructionTitle ?? 'Construction' },
+    { slug: 'web-development', label: (t.services as any).webdevTitle ?? 'Web Dev' },
+  ]
+
+  const inServices = pathname.startsWith('/services')
 
   return (
-    <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-sm border-b">
+    <header className="sticky top-0 z-50 bg-white/70 backdrop-blur-sm border-b">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <div className="w-10 h-10 relative">
@@ -3707,67 +4000,137 @@ export default function Navbar() {
           </div>
           <div>
             <div className="text-sm font-bold tracking-wider text-[#003366]">{t.siteTitle}</div>
-            <div className="text-xs text-gray-500">Yaoundé, Cameroon</div>
           </div>
         </Link>
 
         {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-4">
-          <Link href="/" className="text-sm hover:underline">
+        <nav className="hidden md:flex items-center gap-6 text-sm relative">
+          <Link
+            href="/"
+            className={`hover:underline ${pathname === '/' ? 'font-semibold text-[#003366]' : ''}`}
+          >
             {lang === 'fr' ? 'Accueil' : 'Home'}
           </Link>
 
-          <Link href="/contact" className="text-sm hover:underline">
+          <div className="relative">
+            <Link href="/services">
+              <button
+                className={`hover:underline cursor-pointer ${inServices ? 'font-semibold text-[#003366]' : ''}`}
+                aria-expanded={false}
+              >
+                {lang === 'fr' ? 'Services' : 'Services'}
+              </button>
+            </Link>
+
+            {/* dropdown */}
+            <div
+              className="absolute left-0 mt-2 w-56 bg-white border rounded-lg shadow-lg 
+                         opacity-0 invisible group-hover:opacity-100 group-hover:visible 
+                         transition-all duration-200 z-50"
+              // we show the dropdown on hover via wrapper "group" on parent if you prefer click-to-open, convert logic
+            >
+              <ul className="py-2">
+                {servicesList.map((s) => {
+                  const active = pathname === `/services/${s.slug}`
+                  return (
+                    <li key={s.slug}>
+                      <Link
+                        href={`/services/${s.slug}`}
+                        className={`block px-4 py-2 hover:bg-gray-100 ${active ? 'font-semibold text-[#003366]' : ''}`}
+                      >
+                        {s.label}
+                      </Link>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          </div>
+
+          <Link
+            href="/contact"
+            className={`hover:underline ${pathname === '/contact' ? 'font-semibold text-[#003366]' : ''}`}
+          >
             {t.contactUs}
           </Link>
 
           <button
             aria-label="switch language"
             onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}
-            className="ml-2 px-3 py-1 rounded border text-sm"
+            className="ml-3 px-3 py-1 rounded border"
           >
             {lang === 'fr' ? 'EN' : 'FR'}
           </button>
         </nav>
 
-        {/* Mobile button */}
-        <div className="md:hidden flex items-center">
-          <button
-            aria-label="toggle menu"
-            onClick={() => setOpen((s) => !s)}
-            className="p-2 rounded-md border"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              {open ? (
-                <path
-                  d="M6 18L18 6M6 6l12 12"
-                  stroke="#111827"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              ) : (
-                <path
-                  d="M4 7h16M4 12h16M4 17h16"
-                  stroke="#111827"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              )}
-            </svg>
-          </button>
-        </div>
+        {/* Mobile */}
+        <button
+          aria-label="toggle menu"
+          onClick={() => setOpen((s) => !s)}
+          className="md:hidden p-2 rounded-md border"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            {open ? (
+              <path
+                d="M6 18L18 6M6 6l12 12"
+                stroke="#111827"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            ) : (
+              <path
+                d="M4 7h16M4 12h16M4 17h16"
+                stroke="#111827"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            )}
+          </svg>
+        </button>
       </div>
 
-      {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t bg-white/95">
-          <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-2">
-            <Link href="/" className="py-2 text-base" onClick={() => setOpen(false)}>
+          <div className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-3">
+            <Link
+              href="/"
+              className={`py-2 ${pathname === '/' ? 'font-semibold text-[#003366]' : ''}`}
+              onClick={() => setOpen(false)}
+            >
               {lang === 'fr' ? 'Accueil' : 'Home'}
             </Link>
-            <Link href="/contact" className="py-2 text-base" onClick={() => setOpen(false)}>
+
+            <button
+              className={`py-2 flex justify-between items-center ${inServices ? 'font-semibold text-[#003366]' : ''}`}
+              onClick={() => setOpenServices((s) => !s)}
+            >
+              {lang === 'fr' ? 'Services' : 'Services'}
+              <span>{openServices ? '−' : '+'}</span>
+            </button>
+
+            {openServices && (
+              <div className="pl-4 flex flex-col gap-2">
+                {servicesList.map((s) => (
+                  <Link
+                    key={s.slug}
+                    href={`/services/${s.slug}`}
+                    className={`py-1 text-sm ${pathname === `/services/${s.slug}` ? 'font-semibold text-[#003366]' : ''}`}
+                    onClick={() => setOpen(false)}
+                  >
+                    {s.label}
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            <Link
+              href="/contact"
+              className={`hover:underline py-2 ${pathname === '/contact' ? 'font-semibold text-[#003366]' : ''}`}
+              onClick={() => setOpen(false)}
+            >
               {t.contactUs}
             </Link>
+
             <button
               onClick={() => {
                 setLang(lang === 'fr' ? 'en' : 'fr')
@@ -3994,6 +4357,7 @@ import { LocaleProvider } from '@/lib/locale'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Image from 'next/image'
+import PageTransitions from '@/components/PageTransitions' // client wrapper for AnimatePresence
 
 export const metadata = {
   title: 'Mygale Art & Services – Architecture, Stylisme, Vitraux, Imprimerie',
@@ -4009,6 +4373,7 @@ export const metadata = {
   icons: {
     icon: '/LOGO MYGALE 2.png',
   },
+  metadataBase: new URL('https://mygale-art-and-services.com'),
 }
 
 
@@ -4019,7 +4384,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LocaleProvider>
           <div className="min-h-screen flex flex-col">
             <Navbar />
-            <main className="flex-1">{children}</main>
+            {/* PageTransitions handles the AnimatePresence keyed by pathname */}
+            <PageTransitions>
+              <main className="flex-1">{children}</main>
+            </PageTransitions>
             <Footer />
           </div>
         </LocaleProvider>
@@ -4031,8 +4399,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           <Image
             className="w-28 h-28 animate-float"
-            src="/next.svg"
-            alt="Next.js logo"
+            src="/LOGO MYGALE 2.png"
+            alt="MYGALE ART ET SERVICES logo"
             width={100}
             height={20}
             priority
@@ -4063,21 +4431,47 @@ import useReveal from '@/hooks/useReveal'
 export default function HomeClient() {
   const { t } = useLocale()
   const [loading, setLoading] = useState(false)
+
+  // activate reveal observer (adds .is-revealed class to .reveal elements)
   useReveal()
 
   const services = [
     {
+      slug: 'architecture',
       title: t.services.architectureTitle,
       desc: t.services.architectureDesc,
       img: '/architecture.jpg',
     },
-    { title: t.services.stylismeTitle, desc: t.services.stylismeDesc, img: '/style.jpg' },
-    { title: t.services.printTitle, desc: t.services.printDesc, img: '/print.jpg' },
-    { title: t.services.vitrauxTitle, desc: t.services.vitrauxDesc, img: '/vitreaux.jpg' },
     {
+      slug: 'stylisme',
+      title: t.services.stylismeTitle,
+      desc: t.services.stylismeDesc,
+      // public folder file name — ensure this exists (you said "style.jpg" earlier, if your file is "stylisme.jpg" update here)
+      img: '/style.jpg',
+    },
+    {
+      slug: 'printing',
+      title: t.services.printTitle,
+      desc: t.services.printDesc,
+      img: '/print.jpg',
+    },
+    {
+      slug: 'vitraux',
+      title: t.services.vitrauxTitle,
+      desc: t.services.vitrauxDesc,
+      img: '/vitreaux.jpg',
+    },
+    {
+      slug: 'construction',
       title: t.services.constructionTitle,
       desc: t.services.constructionDesc,
       img: '/construction.jpg',
+    },
+    {
+      slug: 'web-development',
+      title: t.services.webdevTitle,
+      desc: t.services.webdevDesc,
+      img: '/web-dev.jpg',
     },
   ]
 
@@ -4086,18 +4480,19 @@ export default function HomeClient() {
       {/* HERO */}
       <section
         className="relative overflow-hidden bg-cover bg-center"
-        style={{ backgroundImage: "url('/construction.jpg')" }}
+        style={{ backgroundImage: "url('/hero-bg.jpg')" }}
+        aria-label="Hero"
       >
         <div className="absolute inset-0 bg-linear-to-b from-white/80 to-white/60 pointer-events-none" />
 
         <div className="max-w-6xl mx-auto px-4 py-28 flex flex-col items-center text-center gap-6 relative z-10">
           <div className="w-36 h-36">
             <Image
-              className="w-full h-full animate-float"
               src="/LOGO MYGALE 2.png"
               alt="MYGALE logo"
               width={144}
               height={144}
+              className="w-full h-full animate-float"
               priority
             />
           </div>
@@ -4106,9 +4501,9 @@ export default function HomeClient() {
             {t.siteTitle}
           </h1>
 
-          <p className="max-w-3xl text-gray-600 reveal">{t.heroSubtitle}</p>
+          <p className="max-w-3xl text-gray-600">{t.heroSubtitle}</p>
 
-          <div className="mt-6 flex gap-3 reveal">
+          <div className="mt-6 flex gap-3">
             <Link
               href="/contact"
               onClick={() => {
@@ -4136,10 +4531,12 @@ export default function HomeClient() {
           <h2 className="text-3xl font-semibold mb-6 reveal">{t.servicesTitle}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {services.map((s, i) => (
-              <article
-                key={`${s.title}-${i}`}
-                className="reveal bg-white p-6 rounded-xl shadow-sm border transform transition hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl"
+            {services.map((s) => (
+              <Link
+                key={s.slug}
+                href={`/services/${s.slug}`}
+                className="group reveal bg-white p-6 rounded-xl shadow-sm border cursor-pointer
+                           transform transition hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl"
               >
                 <div className="h-40 w-full bg-gray-100 rounded overflow-hidden">
                   <Image
@@ -4153,7 +4550,17 @@ export default function HomeClient() {
 
                 <h3 className="mt-4 font-semibold text-lg">{s.title}</h3>
                 <p className="text-gray-600 mt-2 text-sm">{s.desc}</p>
-              </article>
+
+                {/* Hover-only Learn More (Option B) */}
+                <span
+                  className="inline-block mt-3 text-[#003366] font-medium 
+                                 opacity-0 group-hover:opacity-100 transition"
+                >
+                  <span className="text-[#003366] hover:underline">
+                    Learn More/Apprendre encore plus ↗
+                  </span>
+                </span>
+              </Link>
             ))}
           </div>
         </div>
@@ -4161,7 +4568,7 @@ export default function HomeClient() {
 
       {/* ABOUT */}
       <section className="py-16">
-        <div className="max-w-6xl mx-auto px-4 reveal">
+        <div className="max-w-6xl mx-auto px-4 reveal text-center">
           <h2 className="text-2xl font-semibold mb-4">{t.aboutTitle}</h2>
           <p className="text-gray-600">{t.aboutText}</p>
         </div>
@@ -4191,6 +4598,717 @@ export default function TermsPage() {
       <p>Don&apos;t misuse the platform. Respect applicable laws.</p>
     </div>
   )
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\services\page.tsx
+RELATIVE: apps\web\src\app\services\page.tsx
+================================================================================
+
+"""
+import React from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+//import { getLocaleDict } from '@/lib/locale' // server helper (if you exported one). If not, we'll simply render static headings.
+
+export default function ServicesIndexPage() {
+  // We can't call client hooks here. Use a server-side minimal object or pass static text.
+  // If you want localized server text, export a server helper from lib/locale.ts instead.
+  const t = {
+    servicesTitle: 'Nos services',
+  }
+
+  const list = [
+    { slug: 'architecture', title: 'Architecture', img: '/architecture.jpg' },
+    { slug: 'stylisme', title: 'Stylisme', img: '/style.jpg' },
+    { slug: 'printing', title: 'Imprimerie', img: '/print.jpg' },
+    { slug: 'vitraux', title: 'Vitraux', img: '/vitreaux.jpg' },
+    { slug: 'construction', title: 'Construction', img: '/construction.jpg' },
+    { slug: 'web-development', title: 'Web Development', img: '/web-dev.jpg' },
+  ]
+
+  return (
+    <div className="max-w-6xl mx-auto px-4 py-16">
+      <h1 className="text-3xl font-semibold mb-8">{t.servicesTitle}</h1>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {list.map((s) => (
+          <Link
+            key={s.slug}
+            href={`/services/${s.slug}`}
+            className="group block rounded-lg border p-4 hover:shadow-lg transition"
+          >
+            <div className="h-40 w-full rounded overflow-hidden bg-gray-100">
+              <Image
+                src={s.img}
+                alt={s.title}
+                width={800}
+                height={400}
+                className="object-cover w-full h-full"
+              />
+            </div>
+            <h3 className="mt-4 font-semibold">{s.title}</h3>
+            <div className="mt-2 text-sm text-[#003366] group-hover:underline">
+              Learn More/Apprendre encore plus ↗
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\services\[slug]\ServiceClient.tsx
+RELATIVE: apps\web\src\app\services\[slug]\ServiceClient.tsx
+================================================================================
+
+"""
+'use client'
+
+import React from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { motion } from 'framer-motion'
+import { useLocale } from '@/lib/locale'
+import ServicesSidebar from '@/components/ServicesSidebar'
+
+type ContentBlock = {
+  title: string
+  items: string[]
+  img?: string
+}
+
+type Props = {
+  slug: string
+  data: {
+    titleKey: string
+    descKey: string
+    img?: string
+    content: {
+      fr: ContentBlock[]
+      en: ContentBlock[]
+    }
+  }
+}
+
+/**
+ * ServiceClient (client component)
+ * - shows header + supporting image
+ * - shows each content block with an image (block.img or fallback to service img)
+ * - displays a sidebar (ServicesSidebar) with the activeSlug highlighted
+ */
+export default function ServiceClient({ slug, data }: Props) {
+  const { t, lang } = useLocale()
+  const locale = lang === 'fr' ? 'fr' : 'en'
+
+  // Safe read from translations — cast to indexable keys
+  const title = t.services[data.titleKey as unknown as keyof typeof t.services] as string
+  const desc = t.services[data.descKey as unknown as keyof typeof t.services] as string
+
+  const blocks = data.content?.[locale] ?? []
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      transition={{ duration: 0.35 }}
+      className="max-w-6xl mx-auto px-4 py-16"
+    >
+      {/* Breadcrumbs */}
+      <nav className="text-sm text-gray-500 mb-6">
+        <Link href="/" className="hover:underline">
+          {lang === 'fr' ? 'Accueil' : 'Home'}
+        </Link>
+        <span className="mx-2">/</span>
+        <Link href="/services" className="hover:underline">
+          {t.servicesTitle}
+        </Link>
+        <span className="mx-2">/</span>
+        <span className="text-gray-700">{title}</span>
+      </nav>
+
+      {/* Main layout: content + sidebar */}
+      <div className="md:grid md:grid-cols-[1fr_300px] md:gap-8">
+        {/* Content column */}
+        <div>
+          {/* Header area: on desktop text left, image right; on mobile image below header */}
+          <div className="mb-8">
+            <div className="md:flex md:items-start md:gap-6">
+              <div className="md:flex-1">
+                <h1 className="text-4xl font-bold text-[#003366] mb-4">{title}</h1>
+                <p className="text-gray-700 leading-relaxed">{desc}</p>
+              </div>
+
+              {/* supporting image on right (desktop) / below on mobile */}
+              <div className="mt-6 md:mt-0 md:w-80 md:shrink-0">
+                <Image
+                  src={data.img ?? '/hero-bg.jpg'}
+                  alt={title ?? ''}
+                  width={900}
+                  height={600}
+                  className="w-full h-48 md:h-56 object-cover rounded-lg"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Blocks */}
+          <div className="space-y-12">
+            {blocks.map((block, i) => {
+              // ensure blockImg is a plain string for the Image component
+              const blockImg: string = block.img ?? data.img ?? '/hero-bg.jpg'
+
+              return (
+                <div key={i} className="md:grid md:grid-cols-2 md:gap-6 items-start">
+                  {/* text */}
+                  <div>
+                    <h2 className="text-2xl font-semibold text-[#003366] mb-3">{block.title}</h2>
+                    <ul className="list-disc list-inside text-gray-700 space-y-1">
+                      {block.items.map((it, idx) => (
+                        <li key={idx}>{it}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* image (appears below on small screens, right on md+) */}
+                  <div className="mt-4 md:mt-0">
+                    <Image
+                      src={blockImg}
+                      alt={`${title} - ${block.title}`}
+                      width={900}
+                      height={600}
+                      className="w-full h-full md:h-40 object-cover rounded-lg"
+                    />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <aside className="mt-10 md:mt-0">
+          <ServicesSidebar activeSlug={slug} />
+        </aside>
+      </div>
+    </motion.div>
+  )
+}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\services\[slug]\page.tsx
+RELATIVE: apps\web\src\app\services\[slug]\page.tsx
+================================================================================
+
+"""
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React from 'react'
+import ServiceClient from './ServiceClient'
+import { notFound } from 'next/navigation'
+import type { Metadata } from 'next'
+import { SERVER_TRANSLATIONS } from '@/lib/locale.server'
+
+export const revalidate = 86400 // 24 hours
+
+/**
+ * Slug list (keeps types safe)
+ */
+const SLUGS = [
+  'architecture',
+  'stylisme',
+  'printing',
+  'vitraux',
+  'construction',
+  'web-development',
+] as const
+export type ServiceSlug = (typeof SLUGS)[number]
+
+type ContentBlock = {
+  title: string
+  items: string[]
+  img?: string
+}
+
+type ServiceDataServer = {
+  titleKey: string
+  descKey: string
+  img: string
+  og?: string
+  content: { fr: ContentBlock[]; en: ContentBlock[] }
+}
+
+/**
+ * The bilingual service content structure — you already provided this; I preserved it and added no required per-block img fields.
+ * If a content block includes `img`, ServiceClient will use it, otherwise it will fallback to the main service `img`.
+ */
+export const SERVICE_DATA: Record<ServiceSlug, ServiceDataServer> = {
+  architecture: {
+    titleKey: 'architecture',
+    descKey: 'architecture',
+    img: '/architecture.jpg',
+    og: '/services/architecture/og.png',
+    content: {
+      fr: [
+        {
+          title: 'Conception et faisabilité',
+          img: '/services/architecture/i.png',
+          items: [
+            "Conseil et analyse : Étude de la faisabilité du projet, analyse des règles d'urbanisme, estimation du budget et du calendrier.",
+            'Conception : Élaboration des plans, esquisses et projets architecturaux pour répondre aux besoins du client.',
+            'Choix du terrain : Assistance dans le choix du site approprié pour le projet.',
+          ],
+        },
+        {
+          title: 'Démarches administratives et réglementaires',
+          img: '/services/architecture/ii.png',
+          items: [
+            'Autorisations : Préparation et soumission des demandes de permis de construire et autres autorisations nécessaires.',
+            'Conformité : Assurer que le projet respecte les normes en vigueur.',
+          ],
+        },
+        {
+          title: 'Gestion de chantier',
+          img: '/services/architecture/c.png',
+          items: [
+            'Suivi et pilotage : Coordination de toutes les entreprises et corps de métier sur le chantier.',
+            'Gestion financière : Vérification des factures des entreprises et validation pour paiement.',
+            'Réunions et comptes-rendus : Organisation de réunions de chantier régulières et rédaction de comptes-rendus.',
+            'Livraison : Suivi du projet jusqu’à la livraison finale',
+          ],
+        },
+        {
+          title: 'Services complémentaires',
+          img: '/services/architecture/iv.png',
+          items: [
+            'Rénovation et réhabilitation : Transformation, agrandissement ou modernisation de bâtiments existants.',
+            'Évaluation économique : Estimation des coûts et aide au montage financier.',
+            "Décoration intérieure et extérieure : Conception de l'aménagement des espaces.",
+            "Appel d'offres : Organisation de la procédure pour sélectionner les entreprises.",
+          ],
+        },
+      ],
+      en: [
+        {
+          title: 'Design & Feasibility',
+          img: '/services/architecture/i.png',
+          items: [
+            'Consulting & analysis: Feasibility studies, urban planning review, budget and schedule estimation.',
+            'Design: Development of plans, sketches and architectural proposals tailored to client needs.',
+            'Site selection: Assistance in choosing the most suitable site for the project.',
+          ],
+        },
+        {
+          title: 'Administrative & regulatory procedures',
+          img: '/services/architecture/ii.png',
+          items: [
+            'Permits: Preparation and submission of building permits and other required approvals.',
+            'Compliance: Ensuring projects meet applicable standards and regulations.',
+          ],
+        },
+        {
+          title: 'Construction Management',
+          img: '/services/architecture/iii.png',
+          items: [
+            'Supervision & coordination: Management of contractors and site activities.',
+            'Financial management: Verification and approval of contractor invoices.',
+            'Meetings & reporting: Regular site meetings and detailed reports.',
+            'Delivery: Follow-up through to final handover.',
+          ],
+        },
+        {
+          title: 'Complementary Services',
+          img: '/services/architecture/iv.png',
+          items: [
+            'Renovation & rehabilitation: Transformation and modernization of existing buildings.',
+            'Economic evaluation: Cost estimation and financial planning support.',
+            'Interior & exterior design: Layout and aesthetic design for spaces.',
+            'Tender management: Organization and handling of bidding procedures.',
+          ],
+        },
+      ],
+    },
+  },
+  stylisme: {
+    titleKey: 'stylisme',
+    descKey: 'stylisme',
+    img: '/style.jpg',
+    og: '/services/stylisme/og.png',
+    content: {
+      fr: [
+        {
+          title: 'Services de stylisme et de design',
+          img: '/services/stylisme/i.png',
+          items: [
+            "Création de croquis et concepts : Réalisation de croquis et de planches tendances pour définir l'univers d'une collection.",
+            'Sélection de tissus et de matériaux : Choix des matières et des couleurs en fonction du design et des exigences du projet.',
+            "Conception de fiches techniques : Création de fiches détaillées pour la communication avec l'atelier de production.",
+            'Conception numérique : Création de silhouettes mode, de textures et de motifs en format numérique.',
+          ],
+        },
+        {
+          title: 'Services de modélisme et de développement de produits',
+          img: '/services/stylisme/ii.png',
+          items: [
+            'Création de patrons : Élaboration de patrons à plat ou en 3D.',
+            'Gradation : Adaptation des tailles des patrons selon les standards.',
+            'Moulage : Techniques de moulage sur mannequin.',
+            'Développement et prototypage : Confection de prototypes pour tester le fit.',
+            'Mise au point industrielle : Adaptation pour la production en série.',
+          ],
+        },
+        {
+          title: 'Services de collaboration et de consulting',
+          img: '/services/stylisme/iii.png',
+          items: [
+            'Consulting mode : Accompagnement des créateurs de la conception à la production.',
+            'Réseau de fournisseurs : Mise en relation avec fournisseurs et ateliers.',
+            'Solutions éthiques et durables : Intégration de pratiques durables.',
+          ],
+        },
+      ],
+      en: [
+        {
+          title: 'Fashion Styling & Design Services',
+          img: '/services/stylisme/i.png',
+          items: [
+            'Sketches & concepts: Creation of sketches and style-boards to define a collection identity.',
+            'Fabric & material selection: Choosing appropriate materials and colors based on the design.',
+            'Technical sheets: Detailed documentation for the production workshop.',
+            'Digital design: Digital silhouettes, textures and pattern creation.',
+          ],
+        },
+        {
+          title: 'Pattern Making & Product Development',
+          img: '/services/stylisme/ii.png',
+          items: [
+            'Pattern creation: Flat or 3D patterns developed manually or with software.',
+            'Grading: Size adaptation according to industry standards.',
+            'Draping: Mannequin-based techniques for complex shapes.',
+            'Prototyping & fitting: Making prototypes to test fit and make adjustments.',
+            'Industrial tuning: Preparing prototypes for mass production.',
+          ],
+        },
+        {
+          title: 'Collaboration & Consulting',
+          img: '/services/stylisme/iii.png',
+          items: [
+            'Fashion consulting: Support from concept through production.',
+            'Supplier network: Connections with suppliers and workshops.',
+            'Sustainable solutions: Implementation of eco-friendly design practices.',
+          ],
+        },
+      ],
+    },
+  },
+  printing: {
+    titleKey: 'print',
+    descKey: 'print',
+    img: '/print.jpg',
+    og: '/services/printing/og.png',
+    content: {
+      fr: [
+        {
+          title: 'Impression textile',
+          img: '/services/printing/i.png',
+          items: [
+            'Sérigraphie sur tissus',
+            'Impression numérique haute qualité',
+            'Création de motifs personnalisés',
+            'Impression sur vêtements, tissus et accessoires',
+          ],
+        },
+        {
+          title: 'Services graphiques',
+          img: '/services/printing/2-ii.png',
+          items: [
+            'Correction de visuels',
+            'Préparation de fichiers pour impression',
+            'Design sur mesure',
+          ],
+        },
+      ],
+      en: [
+        {
+          title: 'Textile Printing',
+          img: '/services/printing/i.png',
+          items: [
+            'Screen printing on fabric',
+            'High-resolution digital printing',
+            'Custom pattern creation',
+            'Printing on garments and accessories',
+          ],
+        },
+        {
+          title: 'Graphic Services',
+          img: '/services/printing/2-ii.png',
+          items: ['Artwork correction', 'Print-ready preparation', 'Custom design services'],
+        },
+      ],
+    },
+  },
+  vitraux: {
+    titleKey: 'vitraux',
+    descKey: 'vitraux',
+    img: '/vitreaux.jpg',
+    og: '/services/vitraux/og.png',
+    content: {
+      fr: [
+        {
+          title: 'Conception et fabrication sur mesure',
+          img: '/services/vitraux/i.png',
+          items: [
+            'Étude de projet : prise de mesures sur site, conception sur-mesure de fenêtres, portes, baies vitrées, vérandas, pergolas, etc.',
+            'Fabrication : découpe des profilés aluminium et du vitrage, assemblage des éléments de menuiserie.',
+            'Produits spécifiques : verrières de toit, cloisons aluminium/verre, murs-rideaux, façades.',
+          ],
+        },
+        {
+          title: 'Pose et installation',
+          img: '/services/vitraux/ii.png',
+          items: [
+            'Installation d’ouvrages : pose de fenêtres, portes, baies vitrées, vérandas, garde-corps.',
+            'Finitions et étanchéité : réalisation de l’étanchéité et des finitions du châssis.',
+            'Fixations : fourniture et pose de pattes de scellement et systèmes de fixation.',
+          ],
+        },
+        {
+          title: 'Services de vitrerie et miroitier',
+          img: '/services/vitraux/iii.png',
+          items: [
+            'Réparation et remplacement : remplacement de vitres brisées, réparation de fenêtres.',
+            'Fabrication sur mesure : découpe de vitres et miroirs sur mesure.',
+            'Produits verriers : installation de portes vitrées, verrières, et produits verriers.',
+          ],
+        },
+      ],
+      en: [
+        {
+          title: 'Custom Design & Fabrication',
+          img: '/services/vitraux/i.png',
+          items: [
+            'Project study: on-site measurements and custom design of windows, doors and large glazing.',
+            'Fabrication: cutting of aluminum profiles and glazing, assembly of joinery elements.',
+            'Special products: skylights, interior glass partitions, curtain walls and storefront façades.',
+          ],
+        },
+        {
+          title: 'Installation',
+          img: '/services/vitraux/ii.png',
+          items: [
+            'On-site installation of windows, doors, large glass panels and structures.',
+            'Finishing & waterproofing: insulation and sealing details.',
+            'Fixings: supply and installation of anchors and fastening systems.',
+          ],
+        },
+        {
+          title: 'Glazing & Mirror Services',
+          img: '/services/vitraux/iii.png',
+          items: [
+            'Repair & replacement: emergency glass replacement and window repair.',
+            'Custom fabrication: cutting glass and mirrors to measure.',
+            'Glass products: installation of glass doors and bespoke elements.',
+          ],
+        },
+      ],
+    },
+  },
+  construction: {
+    titleKey: 'construction',
+    descKey: 'construction',
+    img: '/construction.jpg',
+    og: '/services/construction/og.png',
+    content: {
+      fr: [
+        {
+          title: 'Accessoires de construction',
+          img: '/services/construction/i.png',
+          items: [
+            'Fourniture d’outils professionnels',
+            'Matériaux fiables et durables',
+            'Accessoires pour chantiers',
+          ],
+        },
+        {
+          title: 'Services associés',
+          img: '/services/construction/ii.png',
+          items: [
+            'Conseil et accompagnement technique',
+            'Solutions adaptées aux besoins des chantiers',
+            'Support pour installations',
+          ],
+        },
+      ],
+      en: [
+        {
+          title: 'Construction Accessories',
+          img: '/services/construction/i.png',
+          items: [
+            'Professional tools and equipment',
+            'Reliable, durable materials',
+            'Accessories for construction sites',
+          ],
+        },
+        {
+          title: 'Associated Services',
+          img: '/services/construction/ii.png',
+          items: [
+            'Technical guidance and recommendations',
+            'Adapted solutions for project needs',
+            'Support for installations',
+          ],
+        },
+      ],
+    },
+  },
+  'web-development': {
+    titleKey: 'webdev',
+    descKey: 'webdev',
+    img: '/web-dev.jpg',
+    og: '/services/web-development/og.png',
+    content: {
+      fr: [
+        {
+          title: 'Développement web',
+          img: '/services/web-development/i.png',
+          items: [
+            'Sites vitrines professionnels',
+            'Sites responsives optimisés',
+            'Intégration UI/UX moderne',
+          ],
+        },
+        {
+          title: 'Solutions digitales',
+          img: '/services/web-development/ii.png',
+          items: [
+            'Systèmes de gestion',
+            'Landing pages produits',
+            'Optimisation SEO technique',
+            'Tests d’intrusion',
+          ],
+        },
+      ],
+      en: [
+        {
+          title: 'Web Development',
+          img: '/services/web-development/i.png',
+          items: [
+            'Professional showcase websites',
+            'Responsive, mobile-first builds',
+            'Modern UI/UX integration',
+          ],
+        },
+        {
+          title: 'Digital Solutions',
+          img: '/services/web-development/ii.png',
+          items: [
+            'Management systems',
+            'Product landing pages',
+            'Technical SEO optimization',
+            'Penetration Testing',
+          ],
+        },
+      ],
+    },
+  },
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: ServiceSlug } | Promise<{ slug: ServiceSlug }>
+}): Promise<Metadata> {
+  const p = await params
+  const slug = p.slug
+
+  const data = SERVICE_DATA[slug]
+  if (!data) return {}
+
+  // Detect language from segment
+  // Example: /fr/services/architecture → lang === 'fr'
+  // Fallback to English
+  const lang: 'fr' | 'en' = 'fr'
+  const t = SERVER_TRANSLATIONS[lang]
+
+  // SAFETY CHECKS
+  const titleEntry = t.services[data.titleKey]
+  const descEntry = t.services[data.descKey]
+
+  if (!titleEntry) {
+    //console.error(`[ERROR] Missing translation for titleKey: ${data.titleKey}`)
+    return { title: 'Missing translation', description: '' }
+  }
+
+  if (!descEntry) {
+    console.error(`[ERROR] Missing translation for descKey: ${data.descKey}`)
+    return { title: titleEntry.title, description: '' }
+  }
+
+  const title = titleEntry.title
+  const desc = descEntry.desc
+
+  const baseUrl = 'https://mygale-art-and-services.com'
+  const url = `${baseUrl}/services/${slug}`
+
+  const ogImage = data.og ?? data.img ?? `${baseUrl}/hero-bg.jpg`
+
+  return {
+    title,
+    description: desc,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description: desc,
+      url,
+      siteName: 'MYGALE Art & Services',
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+      locale: lang,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description: desc,
+      images: [ogImage],
+    },
+  }
+}
+
+// Unwrap params safely in case Next supplies a Promise
+export default async function ServicePage({
+  params,
+}: {
+  params: { slug: string } | Promise<{ slug: string }>
+}) {
+  const p = await params
+  const slug = p.slug as ServiceSlug
+
+  const data = SERVICE_DATA[slug as ServiceSlug]
+
+  if (!data) {
+    notFound()
+  }
+
+  return <ServiceClient slug={slug as ServiceSlug} data={data} />
 }
 
 """
@@ -4370,10 +5488,15 @@ export type Submission = {
   createdAt: string
 }
 
-export default function ContactListClient({ token }: { token: string }) {
-  const [data, setData] = useState<Submission[]>([])
-  const [filtered, setFiltered] = useState<Submission[]>([])
-  const [loading, setLoading] = useState(true)
+interface ContactListClientProps {
+  token: string
+  initialData?: Submission[]
+}
+
+export default function ContactListClient({ token, initialData = [] }: ContactListClientProps) {
+  const [data, setData] = useState<Submission[]>(initialData)
+  const [filtered, setFiltered] = useState<Submission[]>(initialData)
+  const [loading, setLoading] = useState(initialData.length === 0)
 
   // filters
   const [status, setStatus] = useState('all')
@@ -4384,6 +5507,9 @@ export default function ContactListClient({ token }: { token: string }) {
   const pageSize = 10
 
   useEffect(() => {
+    // Skip fetching if we already have initial data
+    if (initialData.length > 0) return
+
     async function load() {
       const res = await fetch(`/api/contact-submissions`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -4393,7 +5519,7 @@ export default function ContactListClient({ token }: { token: string }) {
       setLoading(false)
     }
     load()
-  }, [token])
+  }, [token, initialData.length])
 
   useEffect(() => {
     let items = data
@@ -4448,7 +5574,7 @@ export default function ContactListClient({ token }: { token: string }) {
         ))}
       </div>
 
-      <Pagination page={page} totalPages={totalPages} onPage={setPage} />
+      <Pagination page={page} onPage={setPage} />
     </div>
   )
 }
@@ -5254,352 +6380,46 @@ export default function SignInPage() {
 
 
 ================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\admin\page.tsx
-RELATIVE: apps\web\src\app\admin\page.tsx
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\api\og\route.tsx
+RELATIVE: apps\web\src\app\api\og\route.tsx
 ================================================================================
 
 """
+/* eslint-disable react/react-in-jsx-scope */
+import { ImageResponse } from "next/og"
 
-"""
+export const runtime = "edge"
 
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const title = searchParams.get("title") || "MYGALE Art & Services"
 
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\admin\layout.tsx
-RELATIVE: apps\web\src\app\admin\layout.tsx
-================================================================================
-
-"""
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\admin\webhooks\page.tsx
-RELATIVE: apps\web\src\app\admin\webhooks\page.tsx
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-'use client'
-import React, { useEffect, useState } from 'react'
-import { useSession } from 'next-auth/react'
-
-type Attempt = {
-  id: string
-  webhookUrl: string
-  status: string
-  attempt: number
-  maxAttempts: number
-  response?: string
-  createdAt: string
-  nextRetryAt?: string | null
-  payload?: any
-}
-
-export default function WebhookAdminPage() {
-  const { data: session, status } = useSession()
-  const [attempts, setAttempts] = useState<Attempt[]>([])
-  const [loading, setLoading] = useState(false)
-  const [page, setPage] = useState(1)
-
-  useEffect(() => {
-    if (status !== 'authenticated') return
-    fetchData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, page])
-
-  async function fetchData() {
-    setLoading(true)
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
-    const res = await fetch(`${apiBase}/admin/webhooks?page=${page}&pageSize=25`, {
-      headers: { Authorization: `Bearer ${session?.apiToken ?? ''}` },
-    })
-    if (!res.ok) {
-      setAttempts([])
-      setLoading(false)
-      return
+  // ImageResponse takes the React element as the first argument
+  // and the options object (width/height) as the second.
+  // The old signature often involved three arguments, causing the error.
+  return new ImageResponse(
+    <div
+      style={{
+        display: "flex",
+        height: "100%",
+        width: "100%",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#003366",
+        color: "white",
+        fontSize: 64,
+        padding: "40px",
+        textAlign: "center",
+      }}
+    >
+      {title}
+    </div>,
+    {
+      width: 1200,
+      height: 630,
     }
-    const j = await res.json()
-    setAttempts(j.items ?? [])
-    setLoading(false)
-  }
-
-  async function retry(id: string) {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
-    await fetch(`${apiBase}/admin/webhooks/${id}/retry`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${session?.apiToken ?? ''}` },
-    })
-    // refresh
-    void fetchData()
-  }
-
-  if (status === 'loading') return <div className="p-6">Loading…</div>
-  if (status !== 'authenticated') return <div className="p-6">Please sign in</div>
-
-  return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold mb-4">Webhook Attempts</h1>
-      {loading ? (
-        <div>Loading…</div>
-      ) : (
-        <div className="space-y-3">
-          {attempts.map((a) => (
-            <div key={a.id} className="border p-3 rounded">
-              <div className="flex justify-between">
-                <div>
-                  <div className="text-sm text-gray-600">{a.webhookUrl}</div>
-                  <div className="text-xs text-gray-400">
-                    Created: {new Date(a.createdAt).toLocaleString()}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div>
-                    <strong>{a.status}</strong> — {a.attempt}/{a.maxAttempts}
-                  </div>
-                  {a.nextRetryAt && (
-                    <div className="text-xs text-gray-400">
-                      Next: {new Date(a.nextRetryAt).toLocaleString()}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="mt-2 text-sm">
-                <div className="mb-2">
-                  Response:{' '}
-                  {a.response ? (
-                    <pre className="whitespace-pre-wrap">{a.response}</pre>
-                  ) : (
-                    <em>—</em>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => retry(a.id)}
-                    className="px-3 py-1 bg-black text-white rounded text-sm"
-                  >
-                    Retry
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-          {attempts.length === 0 && <div className="text-sm text-gray-500">No attempts</div>}
-        </div>
-      )}
-    </div>
   )
 }
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\admin\contact-submissions\page.tsx
-RELATIVE: apps\web\src\app\admin\contact-submissions\page.tsx
-================================================================================
-
-"""
-import React, { useEffect, useState } from 'react'
-import Link from 'next/link'
-import StatusChip from '../../../components/StatusChip'
-import Pagination from '../../../components/Pagination'
-
-type Item = { id: string; name: string; email: string; status: string; createdAt: string }
-
-export default function SubmissionsPage() {
-  const [items, setItems] = useState<Item[]>([])
-  const [page, setPage] = useState(1)
-
-  useEffect(() => {
-    // load submissions (placeholder)
-    fetch('/api/proxy/contact-submissions?page=' + page)
-      .then((r) => r.json())
-      .then((j) => setItems(j.items ?? []))
-      .catch(() => {
-        // demo placeholder
-        setItems([
-          {
-            id: '1',
-            name: 'WS Test',
-            email: 'ws@example.com',
-            status: 'new',
-            createdAt: new Date().toISOString(),
-          },
-          {
-            id: '2',
-            name: 'Maya',
-            email: 'maya@example.com',
-            status: 'responded',
-            createdAt: new Date().toISOString(),
-          },
-        ])
-      })
-  }, [page])
-
-  return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-xl font-semibold">Contact submissions</h1>
-      </div>
-
-      <div className="bg-neutral-850 rounded border border-neutral-800 overflow-hidden">
-        <table className="min-w-full text-sm">
-          <thead className="bg-neutral-900">
-            <tr>
-              <th className="p-3 text-left">Name</th>
-              <th className="p-3 text-left">Email</th>
-              <th className="p-3">Status</th>
-              <th className="p-3">Received</th>
-              <th className="p-3">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((it) => (
-              <tr key={it.id} className="border-t border-neutral-800">
-                <td className="p-3">{it.name}</td>
-                <td className="p-3 text-gray-300">{it.email}</td>
-                <td className="p-3">
-                  <StatusChip status={it.status} />
-                </td>
-                <td className="p-3 text-xs text-gray-400">
-                  {new Date(it.createdAt).toLocaleString()}
-                </td>
-                <td className="p-3">
-                  <Link
-                    href={`/admin/contact-submissions/${it.id}`}
-                    className="px-3 py-1 border rounded text-sm"
-                  >
-                    Open
-                  </Link>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <Pagination page={page} onPage={(p) => setPage(p)} />
-    </div>
-  )
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\admin\contact-submissions\[id]\page.tsx
-RELATIVE: apps\web\src\app\admin\contact-submissions\[id]\page.tsx
-================================================================================
-
-"""
-'use client'
-import React, { useEffect, useState } from 'react'
-import RichTextComposer from '../../../../components/RichTextComposer'
-import StatusChip from '../../../../components/StatusChip'
-
-type Submission = {
-  id: string
-  name: string
-  email: string
-  message: string
-  createdAt: string
-  status: string
-  replies?: { id: string; body: string; sentAt: string }[]
-}
-
-export default function SubmissionDetail({ params }: { params: { id: string } }) {
-  const id = params.id
-  const [submission, setSubmission] = useState<Submission | null>(null)
-  const [composer, setComposer] = useState('')
-
-  useEffect(() => {
-    // load submission (placeholder)
-    fetch(`/api/proxy/contact-submissions/${id}`)
-      .then((r) => r.json())
-      .then((j) => setSubmission(j))
-      .catch(() => {
-        setSubmission({
-          id,
-          name: 'Demo user',
-          email: 'demo@example.com',
-          message: 'Hello — this is a demo conversation.',
-          createdAt: new Date().toISOString(),
-          status: 'new',
-          replies: [],
-        })
-      })
-  }, [id])
-
-  async function sendReply() {
-    if (!composer.trim()) return
-    try {
-      const r = await fetch(`/api/proxy/contact-submissions/${id}/reply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: composer, channel: 'email' }),
-      })
-      if (!r.ok) throw new Error('send failed')
-      const j = await r.json()
-      setSubmission(j.updated ?? j)
-      setComposer('')
-      alert('Sent (demo)')
-    } catch {
-      alert('Failed to send')
-    }
-  }
-
-  if (!submission) return <div>Loading…</div>
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-xl font-semibold">{submission.name}</h1>
-          <div className="text-sm text-gray-400">{submission.email}</div>
-          <div className="text-xs text-gray-500">
-            Received: {new Date(submission.createdAt).toLocaleString()}
-          </div>
-        </div>
-        <div>
-          <StatusChip status={submission.status} />
-        </div>
-      </div>
-
-      <section className="bg-neutral-850 p-4 rounded border border-neutral-800">
-        <h3 className="font-medium">Message</h3>
-        <p className="mt-2 whitespace-pre-line text-gray-200">{submission.message}</p>
-      </section>
-
-      <section>
-        <h3 className="font-medium mb-3">Replies</h3>
-        <div className="space-y-3">
-          {(submission.replies ?? []).map((r) => (
-            <div key={r.id} className="p-3 bg-neutral-800 rounded">
-              <div className="text-xs text-gray-400">{new Date(r.sentAt).toLocaleString()}</div>
-              <div className="mt-1">{r.body}</div>
-            </div>
-          ))}
-
-          <div>
-            <RichTextComposer
-              value={composer}
-              onChange={setComposer}
-              placeholder="Write your reply..."
-            />
-            <div className="mt-2 flex gap-2">
-              <button onClick={sendReply} className="px-3 py-2 bg-indigo-600 rounded">
-                Send
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  )
-}
-
 """
 
 
@@ -5649,12 +6469,51 @@ export default function AboutPage() {
 
 
 ================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\public\manifest.json
+RELATIVE: apps\web\public\manifest.json
+================================================================================
+
+"""
+{
+  "name": "MYGALE Art & Services",
+  "short_name": "MYGALE",
+  "description": "Architecture, Printing, Fashion design, Web development and more — based in Yaoundé, Cameroon.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
+
+"""
+
+
+================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\data\submissions.json
 RELATIVE: apps\web\data\submissions.json
 ================================================================================
 
 """
 [
+  {
+    "name": "Samuel Anjoh Jr",
+    "email": "anjohsamueljr@gmail.com",
+    "phone": "670741854",
+    "message": "Message pour MyGale.",
+    "id": "1763653188425-aywuwzb",
+    "createdAt": "2025-11-20T15:39:48.425Z"
+  },
   {
     "name": "Sam",
     "email": "sam@gmail.com",
@@ -5664,6 +6523,16 @@ RELATIVE: apps\web\data\submissions.json
     "createdAt": "2025-11-17T10:28:43.928Z"
   }
 ]
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\.vercel\project.json
+RELATIVE: apps\web\.vercel\project.json
+================================================================================
+
+"""
+{"projectId":"prj_7vFcEW1Wd1V6MErkUSRibkn6Gf59","orgId":"team_BXmfSag4SrY3xCbbaesSzguY","projectName":"mygale-art-et-services"}
 """
 
 
@@ -7329,6 +8198,55 @@ import { JwtStrategy } from './jwt.strategy';
   exports: [],
 })
 export class AuthModule {}
+
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\.vercel\project.json
+RELATIVE: .vercel\project.json
+================================================================================
+
+"""
+{"projectId":"prj_7vFcEW1Wd1V6MErkUSRibkn6Gf59","orgId":"team_BXmfSag4SrY3xCbbaesSzguY","projectName":"mygale-art-et-services"}
+"""
+
+
+================================================================================
+FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\.github\workflows\vercel.yml
+RELATIVE: .github\workflows\vercel.yml
+================================================================================
+
+"""
+name: Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛒 Checkout repo
+        uses: actions/checkout@v4
+
+      - name: 🧰 Setup Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: 📦 Install dependencies
+        run: bun install
+
+      - name: 🚀 Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
 
 """
 
