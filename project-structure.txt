@@ -1,15 +1,13 @@
 ================================================================================
 PROJECT DIRECTORY STRUCTURE
-Generated: 2025-11-22T00:31:31.071Z
+Generated: 2025-11-22T06:26:49.707Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
 ================================================================================
 
 MYGALE_ART_AND_SERVICES/
-├── .github/ (2 files) ← GitHub configuration
-│   ├── instructions/ (1 files)
-│   │   └── snyk_rules.instructions.md
-│   └── workflows/ (1 files)
-│       └── vercel.yml
+├── .github/ (1 files) ← GitHub configuration
+│   └── instructions/ (1 files)
+│       └── snyk_rules.instructions.md
 ├── .husky/ (17 files) ← Git hooks configuration
 │   └── _/ (17 files)
 │       ├── .gitignore ← Git ignore patterns
@@ -51,15 +49,12 @@ MYGALE_ART_AND_SERVICES/
 │   ├── commit-msg
 │   └── pre-commit
 ├── .turbo/ [collapsed]
-├── .vercel/ (2 files)
-│   ├── project.json
-│   └── README.txt
-├── apps/ (1100 files) ← Directory for independent applications
-│   ├── api/ (191 files) ← Backend application (NestJS)
+├── apps/ (1171 files) ← Directory for independent applications
+│   ├── api/ (185 files) ← Backend application (NestJS)
 │   │   ├── .turbo/ [collapsed]
 │   │   ├── dist/ [collapsed] ← Build output (collapsed)
 │   │   ├── node_modules/ [collapsed] ← Dependencies (collapsed)
-│   │   ├── src/ (23 files) ← Source code directory
+│   │   ├── src/ (17 files) ← Source code directory
 │   │   │   ├── auth/ (5 files)
 │   │   │   │   ├── auth.module.ts
 │   │   │   │   ├── jwt-auth.guard.ts
@@ -68,14 +63,6 @@ MYGALE_ART_AND_SERVICES/
 │   │   │   │   └── roles.guard.ts
 │   │   │   ├── common/ (1 files)
 │   │   │   │   └── rate-limiter.middleware.ts
-│   │   │   ├── contact/ (6 files)
-│   │   │   │   ├── dto/ (1 files)
-│   │   │   │   │   └── create-contact.dto.ts
-│   │   │   │   ├── contact.controller.ts
-│   │   │   │   ├── contact.gateway.ts
-│   │   │   │   ├── contact.module.ts
-│   │   │   │   ├── contact.service.ts
-│   │   │   │   └── schemas.ts
 │   │   │   ├── prisma/ (2 files) ← Shared Prisma/database package
 │   │   │   │   ├── prisma.module.ts
 │   │   │   │   └── prisma.service.ts
@@ -105,16 +92,13 @@ MYGALE_ART_AND_SERVICES/
 │   │   ├── README.md ← Project documentation
 │   │   ├── tsconfig.build.json
 │   │   └── tsconfig.json ← TypeScript configuration
-│   └── web/ (909 files) ← Frontend application (Next.js)
+│   └── web/ (986 files) ← Frontend application (Next.js)
 │       ├── .next/ [collapsed] ← Next.js build output (collapsed)
 │       ├── .turbo/ [collapsed]
-│       ├── .vercel/ (2 files)
-│       │   ├── project.json
-│       │   └── README.txt
 │       ├── data/ (1 files) ← Data directory (collapsed)
 │       │   └── submissions.json
 │       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
-│       ├── public/ (48 files) ← Static assets
+│       ├── public/ (51 files) ← Static assets
 │       │   ├── services/ (31 files)
 │       │   │   ├── architecture/ (8 files)
 │       │   │   │   ├── 1.png
@@ -164,14 +148,17 @@ MYGALE_ART_AND_SERVICES/
 │       │   ├── manifest.json
 │       │   ├── next.svg
 │       │   ├── print.jpg
+│       │   ├── robots.txt
+│       │   ├── sitemap-0.xml
+│       │   ├── sitemap.xml
 │       │   ├── style.jpg
 │       │   ├── vercel.svg
 │       │   ├── vitreaux.jpg
 │       │   ├── web-dev.jpg
 │       │   ├── webdev.jpg
 │       │   └── window.svg
-│       ├── src/ (49 files) ← Source code directory
-│       │   ├── app/ (22 files)
+│       ├── src/ (37 files) ← Source code directory
+│       │   ├── app/ (16 files)
 │       │   │   ├── about/ (1 files)
 │       │   │   │   └── page.tsx ← Page component
 │       │   │   ├── api/ (1 files) ← Backend application (NestJS)
@@ -184,14 +171,6 @@ MYGALE_ART_AND_SERVICES/
 │       │   │   │   └── signup/ (1 files)
 │       │   │   │       └── page.tsx ← Page component
 │       │   │   ├── contact/ (1 files)
-│       │   │   │   └── page.tsx ← Page component
-│       │   │   ├── contact-submissions/ (6 files)
-│       │   │   │   ├── [id]/ (3 files)
-│       │   │   │   │   ├── ContactDetailClient.tsx
-│       │   │   │   │   ├── page.tsx ← Page component
-│       │   │   │   │   └── RichTextComposer.tsx
-│       │   │   │   ├── ContactListClient.tsx
-│       │   │   │   ├── index.ts
 │       │   │   │   └── page.tsx ← Page component
 │       │   │   ├── login/ (1 files)
 │       │   │   │   └── page.tsx ← Page component
@@ -231,18 +210,7 @@ MYGALE_ART_AND_SERVICES/
 │       │   │   ├── locale.server.ts
 │       │   │   ├── locale.tsx
 │       │   │   └── socket.ts
-│       │   ├── pages/ (6 files)
-│       │   │   └── api/ (6 files) ← Backend application (NestJS)
-│       │   │       ├── auth/ (1 files)
-│       │   │       │   └── [...nextauth].ts
-│       │   │       ├── proxy/ (4 files)
-│       │   │       │   └── contact-submissions/ (4 files)
-│       │   │       │       ├── [id]/ (3 files)
-│       │   │       │       │   ├── draft.ts
-│       │   │       │       │   ├── reply.ts
-│       │   │       │       │   └── status.ts
-│       │   │       │       └── index.ts
-│       │   │       └── contact.ts
+│       │   ├── pages/
 │       │   ├── styles/ (1 files)
 │       │   │   └── globals.css ← Global styles
 │       │   └── types/ (1 files)
@@ -257,6 +225,7 @@ MYGALE_ART_AND_SERVICES/
 │       │       ├── realtime.spec.ts
 │       │       └── status-update.spec.ts
 │       ├── .env.local
+│       ├── .env.production
 │       ├── .gitignore ← Git ignore patterns
 │       ├── bun.lock
 │       ├── eslint.config.mjs
@@ -265,9 +234,9 @@ MYGALE_ART_AND_SERVICES/
 │       ├── next-env.d.ts
 │       ├── next-sitemap.config.js
 │       ├── next-sitemap.config.jsnext-sitemap.config.js
+│       ├── next.config.-no-mjs
+│       ├── next.config.-no-ts
 │       ├── next.config.js ← Next.js configuration
-│       ├── next.config.mjs
-│       ├── next.config.ts
 │       ├── package.json ← Package configuration and dependencies
 │       ├── playwright.config.ts
 │       ├── postcss.config.mjs
@@ -322,6 +291,7 @@ MYGALE_ART_AND_SERVICES/
 ├── .env ← Environment variables (not tracked in git)
 ├── .gitignore ← Git ignore patterns
 ├── .prettierrc ← Prettier configuration for code formatting
+├── bun.lock
 ├── commitlint.config.js ← Configuration for linting commit messages
 ├── concatenate-files.js
 ├── docker-compose.yml ← Defines and runs multi-container Docker applications

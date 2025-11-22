@@ -1,8 +1,8 @@
 ================================================================================
 PROJECT FILES CONCATENATION
-Generated: 2025-11-22T00:31:21.620Z
+Generated: 2025-11-22T06:27:07.107Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
-Total Files: 136
+Total Files: 113
 Extensions: .ts, .tsx, .js, .jsx, .json, .prisma, .yml, .yaml, .md, .mjs, .cjs, .css, .sql, .toml
 ================================================================================
 
@@ -128,7 +128,10 @@ RELATIVE: package.json
     "nodemailer": "^7.0.10",
     "rimraf": "^6.1.0",
     "socket.io-client": "^4.8.1",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "next": "16.0.1",
+    "next-auth": "^4.24.13",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@commitlint/cli": "^20.1.0",
@@ -149,7 +152,6 @@ RELATIVE: package.json
     "turbo": "^2.6.1"
   }
 }
-
 """
 
 
@@ -1749,6 +1751,9 @@ RELATIVE: apps\web\vercel.json
 
 """
 {
+  "buildCommand": "bun run build --filter=web",
+  "ignoreCommand": "echo Ignoring API",
+  "installCommand": "bun install",
   "framework": "nextjs"
 }
 
@@ -1803,7 +1808,7 @@ RELATIVE: apps\web\tsconfig.json
     "next-auth.d.ts",
     "tests/**/*.ts",
     "tests/**/*.tsx"
-  ],
+, "next.config.-no-ts"  ],
   "exclude": ["node_modules", ".next"]
 }
 
@@ -1841,12 +1846,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
 bun dev
 ```
 
@@ -1922,7 +1921,7 @@ RELATIVE: apps\web\package.json
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint",
     "postbuild": "next-sitemap"
@@ -1957,7 +1956,7 @@ RELATIVE: apps\web\package.json
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.22",
     "babel-plugin-react-compiler": "1.0.0",
-    "eslint": "^9",
+    "eslint": "^9.39.1",
     "eslint-config-next": "16.0.1",
     "next-sitemap": "^4.2.3",
     "postcss": "^8.5.6",
@@ -1970,54 +1969,6 @@ RELATIVE: apps\web\package.json
 
 
 ================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\next.config.ts
-RELATIVE: apps\web\next.config.ts
-================================================================================
-
-"""
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
-};
-
-export default nextConfig;
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\next.config.mjs
-RELATIVE: apps\web\next.config.mjs
-================================================================================
-
-"""
-/* eslint-disable import/no-anonymous-default-export */
-import path from 'path'
-
-export default {
-  outputFileTracingRoot: path.resolve(process.cwd(), '../../'),
-  poweredByHeader: false,
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-        ],
-      },
-    ]
-  },
-}
-
-"""
-
-
-================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\next.config.js
 RELATIVE: apps\web\next.config.js
 ================================================================================
@@ -2025,18 +1976,19 @@ RELATIVE: apps\web\next.config.js
 """
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: true,
+
   images: {
     unoptimized: false,
     remotePatterns: [],
   },
-  experimental: {
-    serverActions: {
-      allowedOrigins: ['*'],
-    },
-  },
+
   compress: true,
   poweredByHeader: false,
-  outputFileTracingRoot: __dirname,
+
+  webpack(config) {
+    return config
+  },
 }
 
 module.exports = nextConfig
@@ -2551,384 +2503,6 @@ html,body,#__next { height: 100%; }
 
 /* small visual niceties */
 a { text-decoration: none; }
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\contact.ts
-RELATIVE: apps\web\src\pages\api\contact.ts
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextApiRequest, NextApiResponse } from 'next'
-import nodemailer from 'nodemailer'
-import fs from 'fs'
-import path from 'path'
-import { z } from 'zod'
-
-const ContactSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  phone: z.string().optional().nullable(),
-  message: z.string().min(5),
-  source: z.string().optional(),
-})
-
-type Submission = z.infer<typeof ContactSchema> & { id: string; createdAt: string }
-
-const SUBMISSIONS_FILE = path.join(process.cwd(), 'data', 'submissions.json')
-
-function saveSubmissionLocally(sub: Submission) {
-  try {
-    if (!fs.existsSync(path.dirname(SUBMISSIONS_FILE)))
-      fs.mkdirSync(path.dirname(SUBMISSIONS_FILE), { recursive: true })
-
-    let arr: Submission[] = []
-    if (fs.existsSync(SUBMISSIONS_FILE)) {
-      const raw = fs.readFileSync(SUBMISSIONS_FILE, 'utf8')
-      try {
-        arr = JSON.parse(raw || '[]')
-      } catch {
-        arr = []
-      }
-    }
-    arr.unshift(sub)
-    fs.writeFileSync(SUBMISSIONS_FILE, JSON.stringify(arr, null, 2), 'utf8')
-    return true
-  } catch (err) {
-    console.error('Failed to save submission file', err)
-    return false
-  }
-}
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).end()
-
-  try {
-    const parsed = ContactSchema.parse(req.body)
-    const submission: Submission = {
-      ...parsed,
-      id: `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-      createdAt: new Date().toISOString(),
-    }
-
-    // Send email via Nodemailer / SMTP
-    const smtpHost = process.env.SMTP_HOST
-    const smtpPort = Number(process.env.SMTP_PORT || 587)
-    const smtpUser = process.env.SMTP_USER
-    const smtpPass = process.env.SMTP_PASS
-    const contactTo = process.env.CONTACT_TO
-
-    if (!smtpHost || !smtpUser || !smtpPass || !contactTo) {
-      console.error('SMTP environment variables not set')
-      // Still save locally for the tiny-CMS; return 202
-      saveSubmissionLocally(submission)
-      return res.status(202).json({ ok: true, warning: 'SMTP not configured; saved locally' })
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465, // true for 465, false for other ports
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    })
-
-    const html = `
-      <h2>New contact submission</h2>
-      <p><strong>Name:</strong> ${escapeHtml(submission.name)}</p>
-      <p><strong>Email:</strong> ${escapeHtml(submission.email)}</p>
-      <p><strong>Phone:</strong> ${escapeHtml(submission.phone ?? '')}</p>
-      <p><strong>Message:</strong></p>
-      <p>${escapeHtml(submission.message).replace(/\n/g, '<br/>')}</p>
-      <hr/>
-      <small>Received at ${submission.createdAt}</small>
-    `
-
-    await transporter.sendMail({
-      from: `"Mygale Contact" <${smtpUser}>`,
-      to: contactTo,
-      subject: `New contact from ${submission.name}`,
-      text: `${submission.name} <${submission.email}>: ${submission.message}`,
-      html,
-    })
-
-    // Save locally too (for admin view)
-    saveSubmissionLocally(submission)
-
-    return res.status(201).json({ ok: true })
-  } catch (err: any) {
-    console.error('Contact API error:', err)
-    if (err?.issues) {
-      // zod validation errors
-      return res.status(422).json({ ok: false, errors: err.issues })
-    }
-    return res.status(500).json({ ok: false, error: 'Server error' })
-  }
-}
-
-function escapeHtml(s: string) {
-  if (!s) return ''
-  return s.replace(
-    /[&<>"']/g,
-    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c] ?? c,
-  )
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\proxy\contact-submissions\index.ts
-RELATIVE: apps\web\src\pages\api\proxy\contact-submissions\index.ts
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/pages/api/auth/[...nextauth]'
-import type { Session } from 'next-auth'
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = (await getServerSession(req, res, authOptions as any)) as Session | null
-  const apiToken = session?.apiToken
-  if (!apiToken) return res.status(401).json({ error: 'Unauthorized' })
-
-  const backend = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
-  const r = await fetch(`${backend}/contact-submissions`, {
-    headers: { Authorization: `Bearer ${apiToken}` },
-  })
-
-  const data = await r.json()
-  return res.status(r.status).json(data)
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\proxy\contact-submissions\[id]\status.ts
-RELATIVE: apps\web\src\pages\api\proxy\contact-submissions\[id]\status.ts
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/pages/api/auth/[...nextauth]'
-import type { Session } from 'next-auth'
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'PUT') return res.status(405).end()
-  const session = (await getServerSession(req, res, authOptions as any)) as Session | null
-  const apiToken = session?.apiToken
-  if (!apiToken) return res.status(401).json({ error: 'Unauthorized' })
-
-  const backend = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
-  const r = await fetch(`${backend}/contact-submissions/${req.query.id}/status`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiToken}` },
-    body: JSON.stringify(req.body),
-  })
-  const data = await r.json()
-  return res.status(r.status).json(data)
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\proxy\contact-submissions\[id]\reply.ts
-RELATIVE: apps\web\src\pages\api\proxy\contact-submissions\[id]\reply.ts
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/pages/api/auth/[...nextauth]'
-import type { Session } from 'next-auth'
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).end()
-
-  const session = (await getServerSession(req, res, authOptions as any)) as Session | null
-  const apiToken = session?.apiToken
-  if (!apiToken) return res.status(401).json({ error: 'Unauthorized' })
-
-  const backend = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
-  const r = await fetch(`${backend}/contact-submissions/${req.query.id}/reply`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiToken}` },
-    body: JSON.stringify(req.body),
-  })
-
-  const data = await r.json()
-  return res.status(r.status).json(data)
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\proxy\contact-submissions\[id]\draft.ts
-RELATIVE: apps\web\src\pages\api\proxy\contact-submissions\[id]\draft.ts
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/pages/api/auth/[...nextauth]'
-import type { Session } from 'next-auth'
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = (await getServerSession(req, res, authOptions as any)) as Session | null
-  if (!session || !session.apiToken) return res.status(401).json({ error: 'Unauthorized' })
-
-  const backend = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
-  const id = req.query.id as string
-
-  if (req.method === 'POST') {
-    // forward draft to API (we saved as auditLog in API)
-    const r = await fetch(`${backend}/contact-submissions/${id}/draft`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.apiToken}` },
-      body: JSON.stringify({ draft: req.body.draft }),
-    })
-    const data = await r.json()
-    return res.status(r.status).json(data)
-  }
-
-  if (req.method === 'GET') {
-    const r = await fetch(`${backend}/contact-submissions/${id}/draft`, {
-      headers: { Authorization: `Bearer ${session.apiToken}` },
-    })
-    const data = await r.json()
-    return res.status(r.status).json(data)
-  }
-
-  return res.status(405).end()
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\pages\api\auth\[...nextauth].ts
-RELATIVE: apps\web\src\pages\api\auth\[...nextauth].ts
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import NextAuth, { type NextAuthOptions } from 'next-auth'
-import EmailProvider from 'next-auth/providers/email'
-import GoogleProvider from 'next-auth/providers/google'
-import { PrismaAdapter } from '@next-auth/prisma-adapter'
-import { PrismaClient } from '@prisma/client'
-import jwt from 'jsonwebtoken'
-import fs from 'fs'
-import path from 'path'
-
-/**
- * Use a dev singleton to avoid multiple PrismaClient instances during HMR.
- */
-declare global {
-  var __prismaClient: PrismaClient | undefined
-}
-const prisma = global.__prismaClient ?? new PrismaClient()
-if (process.env.NODE_ENV !== 'production') global.__prismaClient = prisma
-
-const PRIVATE_KEY =
-  process.env.JWT_PRIVATE_KEY ||
-  (() => {
-    // fallback: if env points to a pem file path, try to load it
-    const p = path.resolve(process.cwd(), 'apps', 'api', 'jwt_private.pem')
-    if (fs.existsSync(p)) return fs.readFileSync(p, 'utf8')
-    return undefined
-  })()
-
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma as any),
-  providers: [
-    EmailProvider({
-      server: {
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT ?? 587),
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      },
-      from: `no-reply@${process.env.NEXTAUTH_URL?.replace(/^https?:\/\//, '')}`,
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
-    }),
-  ],
-
-  session: { strategy: 'jwt' },
-  secret: process.env.NEXTAUTH_SECRET ?? 'change_this_in_prod',
-
-  callbacks: {
-    // Persist identifying info into the token when user signs in
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = (user as any).id
-        token.role = (user as any).role ?? 'VIEWER'
-        token.email = (user as any).email ?? token.email
-      }
-
-      // Ensure apiToken is available in the token (signed with your API private key).
-      // If you do not have PRIVATE_KEY available, apiToken won't be created.
-      if (PRIVATE_KEY && token.id) {
-        try {
-          token.apiToken = jwt.sign(
-            {
-              sub: token.id,
-              email: token.email,
-              role: token.role,
-            },
-            PRIVATE_KEY,
-            {
-              algorithm: 'RS256',
-              expiresIn: Number(process.env.JWT_EXPIRES_IN ?? 900),
-              issuer: process.env.JWT_ISSUER ?? 'mygale',
-              audience: process.env.JWT_AUD ?? 'api',
-            },
-          )
-        } catch (e) {
-          // fall through without breaking auth if signing fails
-          console.warn("Failed signing apiToken:", e);
-        }
-      }
-
-      return token
-    },
-
-    // Expose apiToken and user id/role in session
-    async session({ session, token }) {
-      return {
-        ...session,
-        apiToken: token.apiToken as string | undefined,
-        user: {
-          ...(session.user ?? {}),
-          id: token.id,
-          role: token.role,
-          email: token.email ?? session.user?.email,
-        },
-      } as any
-    },
-  },
-}
-
-export default NextAuth(authOptions)
 
 """
 
@@ -5397,729 +4971,6 @@ export default function LoginPage() {
 
 
 ================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\page.tsx
-RELATIVE: apps\web\src\app\contact-submissions\page.tsx
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
-import ContactListClient from './ContactListClient'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '../../pages/api/auth/[...nextauth]'
-import type { Session } from 'next-auth'
-
-export default async function ContactSubmissionsPage() {
-  const session = (await getServerSession(authOptions as any)) as Session | null
-
-  if (!session?.apiToken) {
-    return <div className="p-8">You must be logged in to view submissions.</div>
-  }
-
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'}/contact-submissions`,
-    {
-      headers: { Authorization: `Bearer ${session.apiToken}` },
-      cache: 'no-store',
-    },
-  )
-
-  const submissions = await res.json()
-  return (
-    <div className="p-4 space-y-6">
-      <h1 className="text-2xl font-bold">Contact Submissions</h1>
-      <ContactListClient initialData={submissions} token={session.apiToken} />
-    </div>
-  )
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\index.ts
-RELATIVE: apps\web\src\app\contact-submissions\index.ts
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/pages/api/auth/[...nextauth]'
-import type { Session } from 'next-auth'
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const session = (await getServerSession(req, res, authOptions as any)) as Session | null
-  const apiToken = session?.apiToken
-  if (!apiToken) return res.status(401).json({ error: 'Unauthorized' })
-
-  const backend = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'
-  const r = await fetch(`${backend}/contact-submissions`, {
-    headers: { Authorization: `Bearer ${apiToken}` },
-  })
-
-  const data = await r.json()
-  return res.status(r.status).json(data)
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\ContactListClient.tsx
-RELATIVE: apps\web\src\app\contact-submissions\ContactListClient.tsx
-================================================================================
-
-"""
-/* eslint-disable react-hooks/set-state-in-effect */
-'use client'
-import { useState, useEffect } from 'react'
-import StatusFilter from '@/components/StatusFilter'
-import SearchBar from '@/components/SearchBar'
-import StatusChip from '@/components/StatusChip'
-import Pagination from '@/components/Pagination'
-
-export type Submission = {
-  id: string
-  name: string
-  email: string
-  message: string
-  status: string
-  createdAt: string
-}
-
-interface ContactListClientProps {
-  token: string
-  initialData?: Submission[]
-}
-
-export default function ContactListClient({ token, initialData = [] }: ContactListClientProps) {
-  const [data, setData] = useState<Submission[]>(initialData)
-  const [filtered, setFiltered] = useState<Submission[]>(initialData)
-  const [loading, setLoading] = useState(initialData.length === 0)
-
-  // filters
-  const [status, setStatus] = useState('all')
-  const [search, setSearch] = useState('')
-
-  // pagination
-  const [page, setPage] = useState(1)
-  const pageSize = 10
-
-  useEffect(() => {
-    // Skip fetching if we already have initial data
-    if (initialData.length > 0) return
-
-    async function load() {
-      const res = await fetch(`/api/contact-submissions`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const list = await res.json()
-      setData(list)
-      setLoading(false)
-    }
-    load()
-  }, [token, initialData.length])
-
-  useEffect(() => {
-    let items = data
-
-    if (status !== 'all') {
-      items = items.filter((s) => s.status === status)
-    }
-
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      items = items.filter(
-        (s) =>
-          s.name.toLowerCase().includes(q) ||
-          s.email.toLowerCase().includes(q) ||
-          s.message.toLowerCase().includes(q),
-      )
-    }
-
-    setFiltered(items)
-    setPage(1)
-  }, [status, search, data])
-
-  if (loading) return <div>Loading…</div>
-
-  const start = (page - 1) * pageSize
-  const slice = filtered.slice(start, start + pageSize)
-  const totalPages = Math.ceil(filtered.length / pageSize)
-
-  return (
-    <div className="space-y-6">
-      <StatusFilter active={status} onChange={setStatus} />
-      <SearchBar value={search} onChange={setSearch} />
-
-      <div className="space-y-2">
-        {slice.map((s) => (
-          <a
-            key={s.id}
-            href={`/contact-submissions/${s.id}`}
-            className="block p-3 border rounded hover:bg-gray-50"
-          >
-            <div className="flex justify-between">
-              <div>
-                <div className="font-medium">{s.name}</div>
-                <div className="text-sm text-gray-500">{s.email}</div>
-              </div>
-              <StatusChip status={s.status} />
-            </div>
-
-            <div className="text-sm mt-1 line-clamp-1">{s.message}</div>
-            <div className="text-xs text-gray-400">{new Date(s.createdAt).toLocaleString()}</div>
-          </a>
-        ))}
-      </div>
-
-      <Pagination page={page} onPage={setPage} />
-    </div>
-  )
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\[id]\RichTextComposer.tsx
-RELATIVE: apps\web\src\app\contact-submissions\[id]\RichTextComposer.tsx
-================================================================================
-
-"""
-'use client'
-import React, { useEffect, useRef } from 'react'
-import DOMPurify from 'dompurify'
-
-export default function RichTextComposer({
-  value,
-  onChange,
-  placeholder,
-  autosaveKey,
-}: {
-  value: string
-  onChange: (html: string) => void
-  placeholder?: string
-  autosaveKey?: string
-}) {
-  const ref = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    if (!ref.current) return
-    // initialize contentEditable
-    if (value) {
-      ref.current.innerHTML = value
-    } else {
-      // if no value, try load from localStorage
-      try {
-        const key = autosaveKey
-        if (key) {
-          const saved = localStorage.getItem(key)
-          if (saved) ref.current.innerHTML = saved
-        }
-      } catch {}
-    }
-  }, [value, autosaveKey])
-
-  useEffect(() => {
-    if (!autosaveKey) return
-    const timer = setInterval(() => {
-      if (!ref.current) return
-      try {
-        localStorage.setItem(autosaveKey, ref.current.innerHTML)
-      } catch {}
-    }, 3000)
-    return () => clearInterval(timer)
-  }, [autosaveKey])
-
-  function handleInput() {
-    if (!ref.current) return
-    const raw = ref.current.innerHTML
-    // sanitize before sending up
-    const safe = DOMPurify.sanitize(raw, {
-      ALLOWED_TAGS: ['b', 'i', 'u', 'a', 'p', 'br', 'strong', 'em', 'ul', 'ol', 'li'],
-      ALLOWED_ATTR: ['href', 'target', 'rel'],
-    })
-    onChange(safe)
-  }
-
-  return (
-    <div className="relative">
-      <div
-        ref={ref}
-        contentEditable
-        onInput={handleInput}
-        className="min-h-[120px] border p-3 rounded prose max-w-none"
-        data-placeholder={placeholder}
-        suppressContentEditableWarning
-        aria-multiline
-      />
-      <style jsx>{`
-        [data-placeholder]:empty:before {
-          content: attr(data-placeholder);
-          color: #9ca3af;
-        }
-      `}</style>
-    </div>
-  )
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\[id]\page.tsx
-RELATIVE: apps\web\src\app\contact-submissions\[id]\page.tsx
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/pages/api/auth/[...nextauth]'
-import type { Session } from 'next-auth'
-import ContactDetailClient from './ContactDetailClient'
-
-type Props = { params: { id: string } }
-
-export default async function SubmissionPage({ params }: Props) {
-  const session = (await getServerSession(authOptions as any)) as Session | null
-  if (!session?.apiToken) {
-    return <div className="p-8">You must be logged in to view this submission.</div>
-  }
-
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'}/contact-submissions/${params.id}`,
-    {
-      headers: { Authorization: `Bearer ${session.apiToken}` },
-      cache: 'no-store',
-    },
-  )
-
-  if (!res.ok) {
-    return <div className="p-8">Failed to load submission</div>
-  }
-
-  const submission = await res.json()
-  return <ContactDetailClient initialData={submission} token={session.apiToken} />
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact-submissions\[id]\ContactDetailClient.tsx
-RELATIVE: apps\web\src\app\contact-submissions\[id]\ContactDetailClient.tsx
-================================================================================
-
-"""
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-'use client'
-
-import React, { useState, useMemo, useEffect } from 'react'
-import useSocket from '@/hooks/useSocket'
-import { useToast } from '@/components/ToastProvider'
-import RichTextComposer from './RichTextComposer'
-
-type Reply = { id: string; body: string; channel: string; sentAt: string }
-type AuditLog = { id: string; action: string; details: any; createdAt: string }
-
-type Submission = {
-  id: string
-  name: string
-  email: string
-  message: string
-  status: string
-  createdAt: string
-  assignedTo?: string | null
-  replies?: Reply[]
-  auditLogs?: AuditLog[]
-}
-
-type TimelineItem = {
-  id: string
-  type: 'submission' | 'reply' | 'status' | 'audit'
-  createdAt: string
-  payload: any
-}
-
-export default function ContactDetailClient({
-  initialData,
-  token,
-}: {
-  initialData: Submission
-  token: string
-}) {
-  const toast = useToast()
-  const [submission, setSubmission] = useState<Submission>(initialData)
-  const [saving, setSaving] = useState(false)
-
-  /** ────────────────────────────────
-   *  REPLY COMPOSER + DRAFT SYNC
-   *  ────────────────────────────────
-   */
-  const draftKey = `draft:submission:${submission.id}`
-  const [composerValue, setComposerValue] = useState<string>('')
-
-  // Load local + server drafts
-  useEffect(() => {
-    try {
-      const local = localStorage.getItem(draftKey)
-      if (local) setComposerValue(local)
-    } catch {}
-
-    ;(async () => {
-      if (!token) return
-      try {
-        const r = await fetch(`/api/proxy/contact-submissions/${submission.id}/draft`)
-        if (r.ok) {
-          const j = await r.json()
-          if (j?.draft) setComposerValue(j.draft)
-        }
-      } catch {}
-    })()
-  }, [draftKey, submission.id, token])
-
-  /** ────────────────────────────────
-   *  WEBSOCKET SUBSCRIPTIONS
-   *  ────────────────────────────────
-   */
-  const socket = useSocket(token)
-
-  useEffect(() => {
-    const unsub = socket.subscribe('contact:event', (evt: any) => {
-      if (!evt || evt.payload?.id !== submission.id) return
-
-      switch (evt.type) {
-        case 'updated':
-          setSubmission(evt.payload)
-          toast.push('Submission updated', 'info')
-          break
-
-        case 'status_changed':
-          setSubmission((s) => ({ ...s, status: evt.payload.status }))
-          toast.push(`Status updated → ${evt.payload.status}`, 'success')
-          break
-
-        case 'reply_added':
-          // Reload entire submission to sync timeline
-          ;(async () => {
-            try {
-              const r = await fetch(
-                `${process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:4000'}/contact-submissions/${submission.id}`,
-              )
-              if (r.ok) {
-                const full = await r.json()
-                setSubmission(full)
-              }
-            } catch {}
-          })()
-          toast.push('New reply received', 'info')
-          break
-      }
-    })
-
-    return unsub
-  }, [socket, submission.id, toast])
-
-  /** ────────────────────────────────
-   *  STATUS CHANGE (OPTIMISTIC)
-   *  ────────────────────────────────
-   */
-  async function changeStatus(newStatus: string) {
-    const prev = submission.status
-    setSubmission({ ...submission, status: newStatus }) // optimistic
-    setSaving(true)
-
-    try {
-      const res = await fetch(`/api/proxy/contact-submissions/${submission.id}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      })
-      if (!res.ok) throw new Error()
-      const j = await res.json()
-      setSubmission(j)
-      toast.push('Status updated', 'success')
-    } catch (err) {
-      setSubmission({ ...submission, status: prev })
-      toast.push('Status update failed', 'error')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  /** ────────────────────────────────
-   *  SEND REPLY (HTML EMAIL)
-   *  ────────────────────────────────
-   */
-  async function submitReply() {
-    if (!composerValue?.trim()) {
-      toast.push('Please enter a message', 'error')
-      return
-    }
-
-    setSaving(true)
-    try {
-      const res = await fetch(`/api/proxy/contact-submissions/${submission.id}/reply`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ body: composerValue, channel: 'email' }),
-      })
-      if (!res.ok) throw new Error('Reply failed')
-
-      const j = await res.json()
-      setSubmission(j.updated ?? j)
-      setComposerValue('')
-
-      // clear local + server drafts
-      try {
-        localStorage.removeItem(draftKey)
-        await fetch(`/api/proxy/contact-submissions/${submission.id}/draft`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ draft: '' }),
-        })
-      } catch {}
-
-      toast.push('Reply sent', 'success')
-    } catch (err) {
-      toast.push('Reply failed to send', 'error')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  /** ────────────────────────────────
-   *  TIMELINE AGGREGATION
-   *  ────────────────────────────────
-   */
-  const timeline: TimelineItem[] = useMemo(() => {
-    const base: TimelineItem[] = [
-      {
-        id: 'submission',
-        type: 'submission',
-        createdAt: submission.createdAt,
-        payload: {
-          message: submission.message,
-          name: submission.name,
-          email: submission.email,
-        },
-      },
-    ]
-
-    const replies =
-      submission.replies?.map((r) => ({
-        id: r.id,
-        type: 'reply' as const,
-        createdAt: r.sentAt,
-        payload: r,
-      })) ?? []
-
-    const audits =
-      submission.auditLogs?.map((a) => ({
-        id: a.id,
-        type: 'audit' as const,
-        createdAt: a.createdAt,
-        payload: a,
-      })) ?? []
-
-    const statusAudits =
-      submission.auditLogs
-        ?.filter((a) => a.action === 'status_changed')
-        .map((a) => ({
-          id: `status-${a.id}`,
-          type: 'status' as const,
-          createdAt: a.createdAt,
-          payload: a.details,
-        })) ?? []
-
-    return [...base, ...replies, ...audits, ...statusAudits].sort(
-      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-    )
-  }, [submission])
-
-  /** ────────────────────────────────
-   *  RENDER TIMELINE ITEM
-   *  ────────────────────────────────
-   */
-  function renderTimelineItem(item: TimelineItem) {
-    switch (item.type) {
-      case 'submission':
-        return (
-          <div className="border-l pl-4 pb-4">
-            <div className="text-xs text-gray-400">
-              Submitted: {new Date(item.createdAt).toLocaleString()}
-            </div>
-            <p className="mt-1 whitespace-pre-line text-gray-700">{item.payload.message}</p>
-          </div>
-        )
-      case 'reply':
-        return (
-          <div className="border-l pl-4 pb-4">
-            <div className="text-xs text-gray-500">
-              Reply · {new Date(item.createdAt).toLocaleString()}
-            </div>
-            <div
-              className="mt-1 p-2 bg-gray-50 rounded"
-              dangerouslySetInnerHTML={{ __html: item.payload.body }}
-            />
-          </div>
-        )
-      case 'status':
-        return (
-          <div className="border-l pl-4 pb-4 text-sm text-yellow-700">
-            Status changed → <strong>{item.payload.status}</strong>
-            <div className="text-xs text-gray-400">{new Date(item.createdAt).toLocaleString()}</div>
-          </div>
-        )
-      case 'audit':
-        return (
-          <div className="border-l pl-4 pb-4 text-sm">
-            <div className="text-xs text-gray-400">{new Date(item.createdAt).toLocaleString()}</div>
-            <div className="mt-1">{item.payload.action}</div>
-            {item.payload.details && (
-              <pre className="text-xs text-gray-500 mt-1">
-                {JSON.stringify(item.payload.details, null, 2)}
-              </pre>
-            )}
-          </div>
-        )
-      default:
-        return null
-    }
-  }
-
-  /** ────────────────────────────────
-   *  UI
-   *  ────────────────────────────────
-   */
-  return (
-    <div className="space-y-8">
-      {/* HEADER */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-xl font-semibold">{submission.name}</h1>
-          <div className="text-sm text-gray-500">{submission.email}</div>
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            disabled={saving}
-            onClick={() => changeStatus('in_review')}
-            className="px-2 py-1 border rounded"
-          >
-            In Review
-          </button>
-          <button
-            disabled={saving}
-            onClick={() => changeStatus('responded')}
-            className="px-2 py-1 border rounded"
-          >
-            Responded
-          </button>
-          <button
-            disabled={saving}
-            onClick={() => changeStatus('closed')}
-            className="px-2 py-1 border rounded"
-          >
-            Close
-          </button>
-        </div>
-      </div>
-
-      {/* ACTIVITY TIMELINE */}
-      <section>
-        <h2 className="font-medium mb-4">Activity Timeline</h2>
-        <div className="space-y-4">
-          {timeline.map((item) => (
-            <div key={item.id}>{renderTimelineItem(item)}</div>
-          ))}
-        </div>
-      </section>
-
-      {/* REPLY COMPOSER */}
-      <section>
-        <h3 className="font-medium mb-2">Send a Reply</h3>
-
-        <RichTextComposer
-          value={composerValue}
-          onChange={(v) => {
-            setComposerValue(v)
-            try {
-              localStorage.setItem(draftKey, v)
-            } catch {}
-            // background save
-            void fetch(`/api/proxy/contact-submissions/${submission.id}/draft`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ draft: v }),
-            }).catch(() => {})
-          }}
-          placeholder="Write your reply (basic HTML allowed)"
-          autosaveKey={draftKey}
-        />
-
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={submitReply}
-            disabled={saving}
-            className="px-3 py-2 bg-black text-white rounded"
-          >
-            Send Email
-          </button>
-          <button
-            onClick={async () => {
-              try {
-                localStorage.setItem(draftKey, composerValue)
-                await fetch(`/api/proxy/contact-submissions/${submission.id}/draft`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ draft: composerValue }),
-                })
-                toast.push('Draft saved', 'info')
-              } catch {
-                toast.push('Draft save failed', 'error')
-              }
-            }}
-            className="px-3 py-2 border rounded"
-          >
-            Save Draft
-          </button>
-        </div>
-      </section>
-
-      {/* AUDIT LOG (full) */}
-      <section>
-        <h3 className="font-medium">Audit Log</h3>
-        <div className="mt-3 space-y-2">
-          {submission.auditLogs?.length ? (
-            submission.auditLogs.map((a: any) => (
-              <div key={a.id} className="text-sm text-gray-700 border-l pl-3">
-                <div className="text-xs text-gray-400">
-                  {new Date(a.createdAt).toLocaleString()}
-                </div>
-                <div className="mt-1">{a.action}</div>
-                {a.details && (
-                  <pre className="text-xs text-gray-500 mt-1">{JSON.stringify(a.details)}</pre>
-                )}
-              </div>
-            ))
-          ) : (
-            <div className="text-sm text-gray-500">No audit entries</div>
-          )}
-        </div>
-      </section>
-    </div>
-  )
-}
-
-"""
-
-
-================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\src\app\contact\page.tsx
 RELATIVE: apps\web\src\app\contact\page.tsx
 ================================================================================
@@ -6385,41 +5236,42 @@ RELATIVE: apps\web\src\app\api\og\route.tsx
 ================================================================================
 
 """
-/* eslint-disable react/react-in-jsx-scope */
-import { ImageResponse } from "next/og"
+import React from 'react'
+import { ImageResponse } from 'next/og'
 
-export const runtime = "edge"
+export const runtime = 'edge'
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url)
-  const title = searchParams.get("title") || "MYGALE Art & Services"
+  const url = new URL(req.url)
+  const title = url.searchParams.get('title') || 'MYGALE Art & Services'
 
-  // ImageResponse takes the React element as the first argument
-  // and the options object (width/height) as the second.
-  // The old signature often involved three arguments, causing the error.
   return new ImageResponse(
-    <div
-      style={{
-        display: "flex",
-        height: "100%",
-        width: "100%",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#003366",
-        color: "white",
-        fontSize: 64,
-        padding: "40px",
-        textAlign: "center",
-      }}
-    >
-      {title}
-    </div>,
+    (
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          height: '100%',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#003366',
+          color: 'white',
+          fontSize: 64,
+          padding: '40px',
+          textAlign: 'center',
+          boxSizing: 'border-box',
+        }}
+      >
+        {title}
+      </div>
+    ),
     {
       width: 1200,
       height: 630,
-    }
+    },
   )
 }
+
 """
 
 
@@ -6523,16 +5375,6 @@ RELATIVE: apps\web\data\submissions.json
     "createdAt": "2025-11-17T10:28:43.928Z"
   }
 ]
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\web\.vercel\project.json
-RELATIVE: apps\web\.vercel\project.json
-================================================================================
-
-"""
-{"projectId":"prj_7vFcEW1Wd1V6MErkUSRibkn6Gf59","orgId":"team_BXmfSag4SrY3xCbbaesSzguY","projectName":"mygale-art-et-services"}
 """
 
 
@@ -7009,7 +5851,7 @@ import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
-import { ContactModule } from './contact/contact.module';
+//import { ContactModule } from './contact/contact.module';
 import { AuthModule } from './auth/auth.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { RateLimiterMiddleware } from './common/rate-limiter.middleware';
@@ -7019,7 +5861,7 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
-    ContactModule,
+    //ContactModule,
     AuthModule,
     WebhooksModule,
   ],
@@ -7045,14 +5887,14 @@ RELATIVE: apps\api\src\app.controller.ts
 """
 import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { PrismaService } from './prisma/prisma.service';
-import { User } from '@prisma/client';
+//import { PrismaService } from './prisma/prisma.service';
+//import { User } from '@prisma/client';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
-    private prisma: PrismaService,
+    //private prisma: PrismaService,
   ) {}
 
   @Get()
@@ -7060,13 +5902,12 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('users')
+  /*@Get('users')
   async getUsers(): Promise<User[]> {
     const users: User[] = await this.prisma.user.findMany();
     return users;
-  }
+  } */
 }
-
 """
 
 
@@ -7403,618 +6244,6 @@ export class PrismaModule {}
 
 
 ================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\schemas.ts
-RELATIVE: apps\api\src\contact\schemas.ts
-================================================================================
-
-"""
-import { z } from 'zod';
-
-export const CreateContactSchema = z.object({
-  name: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().optional().nullable(),
-  message: z.string().min(1),
-  source: z.string().optional().nullable(),
-});
-
-export const ReplySchema = z.object({
-  body: z.string().min(1, 'Body is required').max(20000),
-  channel: z.enum(['email', 'phone', 'whatsapp', 'note']).default('email'),
-  subject: z.string().optional(),
-});
-
-export type ReplyDto = z.infer<typeof ReplySchema>;
-
-export const DraftSchema = z.object({
-  draft: z.string().nullable().optional(),
-});
-
-export const UpdateStatusSchema = z.object({
-  status: z.enum(['new', 'in_review', 'responded', 'closed']),
-  assignedToId: z.string().optional().nullable(),
-});
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\contact.service.ts
-RELATIVE: apps\api\src\contact\contact.service.ts
-================================================================================
-
-"""
-// apps/api/src/contact/contact.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import type { ContactSubmission, SubmissionStatus } from '@prisma/client';
-import { Subject, ReplaySubject } from 'rxjs';
-import nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
-import { ReplyDto } from './schemas';
-
-export type ContactEvent =
-  | { type: 'created'; payload: any }
-  | { type: 'updated'; payload: any }
-  | { type: 'status_changed'; payload: any }
-  | { type: 'reply_added'; payload: any };
-
-@Injectable()
-export class ContactService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  // in-memory event bus for realtime (Gateway will subscribe)
-  private events$ = new ReplaySubject<ContactEvent>(10);
-
-  getEventsSubject() {
-    return this.events$;
-  }
-
-  // Create a contact submission
-  async createContact(data: {
-    name: string;
-    email: string;
-    phone?: string;
-    message: string;
-    source?: string;
-  }): Promise<ContactSubmission> {
-    const created = await this.prisma.contactSubmission.create({ data });
-    // create lightweight audit log
-    await this.prisma.auditLog.create({
-      data: {
-        contactSubmissionId: created.id,
-        actorId: null,
-        action: 'submission_created',
-        meta: { source: data.source ?? 'unknown' },
-      },
-    });
-    this.events$.next({ type: 'created', payload: created });
-    return created;
-  }
-
-  async listContacts(): Promise<ContactSubmission[]> {
-    return this.prisma.contactSubmission.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async getContactById(id: string) {
-    const found = await this.prisma.contactSubmission.findUnique({
-      where: { id },
-      include: {
-        assignedTo: true,
-        replies: { orderBy: { sentAt: 'desc' } },
-        auditLogs: { orderBy: { createdAt: 'desc' } },
-      },
-    });
-    return found;
-  }
-
-  async findByIdWithHistory(id: string) {
-    return this.getContactById(id);
-  }
-
-  // Admin-only status update
-  async updateStatus(
-    id: string,
-    status: SubmissionStatus,
-    assignedToId?: string,
-    actorId?: string,
-  ) {
-    const prev = await this.prisma.contactSubmission.findUnique({
-      where: { id },
-    });
-    if (!prev) throw new NotFoundException('Contact not found');
-
-    const updated = await this.prisma.contactSubmission.update({
-      where: { id },
-      data: {
-        status,
-        ...(assignedToId
-          ? { assignedTo: { connect: { id: assignedToId } } }
-          : assignedToId === null
-            ? { assignedTo: { disconnect: true } }
-            : {}),
-      },
-    });
-
-    await this.prisma.auditLog.create({
-      data: {
-        contactSubmissionId: id,
-        actorId: actorId ?? null,
-        action: 'status_changed',
-        meta: { from: prev.status, to: status },
-      },
-    });
-
-    this.events$.next({ type: 'status_changed', payload: { id, status } });
-    this.events$.next({ type: 'updated', payload: updated });
-
-    return updated;
-  }
-
-  // add a reply record (basic)
-  async addReplyLog(id: string, replyData: any, assignedToId?: string) {
-    await this.prisma.reply.create({
-      data: {
-        submissionId: id,
-        body: replyData.body,
-        channel: replyData.channel ?? 'note',
-        meta: replyData.meta ?? undefined,
-      },
-    });
-
-    await this.prisma.auditLog.create({
-      data: {
-        contactSubmissionId: id,
-        actorId: assignedToId ?? null,
-        action: 'reply_added',
-        meta: replyData,
-      },
-    });
-
-    const updated = await this.getContactById(id);
-    this.events$.next({ type: 'reply_added', payload: { id, replyData } });
-    this.events$.next({ type: 'updated', payload: updated });
-    return updated;
-  }
-
-  // -----------------------
-  // NEW: sendReply & draft save
-  // -----------------------
-
-  private createTransport(): Transporter {
-    const host = process.env.SMTP_HOST;
-    const port = Number(process.env.SMTP_PORT ?? 587);
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
-
-    if (!host || !user || !pass) {
-      // dev-friendly: stream transport (prints to console)
-      return nodemailer.createTransport({
-        streamTransport: true,
-        newline: 'unix',
-        buffer: true,
-      });
-    }
-
-    return nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass },
-    });
-  }
-
-  private stripHtml(html: string) {
-    return html.replace(/<[^>]+>/g, '');
-  }
-
-  /**
-   * Persist a reply and send email if channel === 'email'
-   */
-  async sendReply(submissionId: string, payload: ReplyDto, actorId?: string) {
-    // ensure submission exists
-    const submission = await this.prisma.contactSubmission.findUnique({
-      where: { id: submissionId },
-    });
-    if (!submission) throw new NotFoundException('Submission not found');
-
-    // create reply row
-    const reply = await this.prisma.reply.create({
-      data: {
-        submissionId,
-        body: payload.body,
-        channel: payload.channel,
-        meta: payload.subject ? { subject: payload.subject } : undefined,
-      },
-    });
-
-    // audit log for reply
-    await this.prisma.auditLog.create({
-      data: {
-        contactSubmissionId: submissionId,
-        actorId: actorId ?? null,
-        action: 'reply_added',
-        meta: { channel: payload.channel, subject: payload.subject ?? null },
-      },
-    });
-
-    // if email, attempt to send
-    if (payload.channel === 'email') {
-      const transport = this.createTransport();
-      const mailOptions: any = {
-        from:
-          process.env.EMAIL_FROM ??
-          `no-reply@${process.env.NEXTAUTH_URL?.replace(/^https?:\/\//, '')}`,
-        to: submission.email,
-        subject:
-          payload.subject ??
-          `Reply from ${process.env.NEXTAUTH_URL ?? 'Support'}`,
-        html: payload.body,
-        text: this.stripHtml(payload.body),
-      };
-
-      try {
-        const info = await transport.sendMail(mailOptions);
-        await this.prisma.auditLog.create({
-          data: {
-            contactSubmissionId: submissionId,
-            actorId: actorId ?? null,
-            action: 'email_sent',
-            meta: {
-              envelope: (info as any).envelope ?? null,
-              response: (info as any).response ?? null,
-            },
-          },
-        });
-      } catch (err) {
-        // log failure as audit and rethrow
-        await this.prisma.auditLog.create({
-          data: {
-            contactSubmissionId: submissionId,
-            actorId: actorId ?? null,
-            action: 'email_send_failed',
-            meta: { message: (err as any)?.message ?? String(err) },
-          },
-        });
-        throw err;
-      }
-    }
-
-    const updated = await this.getContactById(submissionId);
-    this.events$.next({ type: 'reply_added', payload: reply });
-    this.events$.next({ type: 'updated', payload: updated });
-    return { reply, updated };
-  }
-
-  // Save a lightweight draft as an audit log entry (no schema change)
-  async saveDraft(
-    submissionId: string,
-    draft: string | null,
-    actorId?: string,
-  ) {
-    await this.prisma.auditLog.create({
-      data: {
-        contactSubmissionId: submissionId,
-        actorId: actorId ?? null,
-        action: 'draft_saved',
-        meta: { draft },
-      },
-    });
-    return { ok: true };
-  }
-
-  async getLatestDraft(submissionId: string) {
-    const draft = await this.prisma.auditLog.findFirst({
-      where: { contactSubmissionId: submissionId, action: 'draft_saved' },
-      orderBy: { createdAt: 'desc' },
-    });
-    return draft?.meta ?? null;
-  }
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\contact.module.ts
-RELATIVE: apps\api\src\contact\contact.module.ts
-================================================================================
-
-"""
-import { Module, forwardRef } from '@nestjs/common';
-import { ContactController } from './contact.controller';
-import { ContactService } from './contact.service';
-import { PrismaModule } from '../prisma/prisma.module';
-import { ContactGateway } from './contact.gateway';
-
-@Module({
-  imports: [PrismaModule],
-  controllers: [ContactController],
-  providers: [ContactService, ContactGateway],
-  exports: [ContactService],
-})
-export class ContactModule {}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\contact.gateway.ts
-RELATIVE: apps\api\src\contact\contact.gateway.ts
-================================================================================
-
-"""
-import {
-  WebSocketGateway,
-  WebSocketServer,
-  OnGatewayInit,
-  OnGatewayConnection,
-  OnGatewayDisconnect,
-  SubscribeMessage,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { ContactService, ContactEvent } from './contact.service';
-import { Logger, Inject, forwardRef, Injectable } from '@nestjs/common';
-
-@WebSocketGateway({
-  cors: {
-    origin: '*', // adjust in production
-  },
-})
-@Injectable()
-export class ContactGateway
-  implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
-{
-  private readonly logger = new Logger(ContactGateway.name);
-
-  @WebSocketServer()
-  server!: Server;
-
-  constructor(
-    @Inject(forwardRef(() => ContactService))
-    private readonly contactService: ContactService,
-  ) {}
-
-  // 🔥 Correct lifecycle method name
-  afterInit() {
-    this.logger.log('WebSocket Gateway initialized');
-
-    // Subscribe to service events and broadcast to clients
-    this.contactService.getEventsSubject().subscribe((event: ContactEvent) => {
-      switch (event.type) {
-        case 'created':
-          this.server.emit('contact:created', event.payload);
-          break;
-
-        case 'updated':
-          this.server.emit('contact:updated', event.payload);
-          break;
-
-        case 'status_changed':
-          this.server.emit('contact:status_changed', event.payload);
-          break;
-      }
-      this.logger.log(`Broadcasting event type=${event.type}`);
-      this.server.emit('contact:event', event);
-    });
-  }
-
-  @SubscribeMessage('health:ping')
-  handleHealthPing(client: Socket, payload: any) {
-    client.emit('health:pong', { ts: Date.now(), received: payload });
-  }
-
-  // Correct connection handler
-  handleConnection(client: any) {
-    this.logger.log(`Client connected: ${client.id}`);
-  }
-
-  // Correct disconnect handler
-  handleDisconnect(client: any) {
-    this.logger.log(`Client disconnected: ${client.id}`);
-  }
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\contact.controller.ts
-RELATIVE: apps\api\src\contact\contact.controller.ts
-================================================================================
-
-"""
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-  Put,
-  UsePipes,
-  ValidationPipe,
-  UseGuards,
-  Req,
-  Sse,
-} from '@nestjs/common';
-
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { ContactService, ContactEvent } from './contact.service';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { RolesGuard } from '../auth/roles.guard';
-import { Roles } from '../auth/roles.decorator';
-import { SubmissionStatus } from '@prisma/client';
-import { CreateContactDto } from './dto/create-contact.dto';
-import { Prisma } from '@prisma/client';
-import { ReplySchema, DraftSchema } from './schemas';
-import { ZodError } from 'zod';
-
-/* ------------------------------
-   DTO for Status Update
---------------------------------*/
-class UpdateStatusDto {
-  @IsEnum(SubmissionStatus)
-  status!: SubmissionStatus;
-
-  @IsOptional()
-  @IsString()
-  assignedToId?: string;
-}
-
-@Controller('contact-submissions')
-export class ContactController {
-  constructor(public readonly service: ContactService) {}
-
-  @Post(':id/reply')
-  @UseGuards(JwtAuthGuard, RolesGuard) // require login to reply
-  @Roles('ADMIN', 'STAFF')
-  async replyToSubmission(
-    @Param('id') id: string,
-    @Body() body: any,
-    @Req() req: any,
-  ) {
-    // validate with zod
-    try {
-      const dto = ReplySchema.parse(body);
-      const actorId = req.user?.sub ?? req.user?.id ?? null;
-      const result = await this.service.sendReply(id, dto, actorId);
-      return { success: true, result };
-    } catch (err) {
-      if (err instanceof ZodError) {
-        return { success: false, errors: err };
-      }
-      // nodemailer or prisma errors
-      throw err;
-    }
-  }
-
-  @Post(':id/draft')
-  @UseGuards(JwtAuthGuard)
-  @Roles('ADMIN', 'STAFF')
-  async saveDraft(
-    @Param('id') id: string,
-    @Body() body: { draft: string },
-    @Req() req: any,
-  ) {
-    try {
-      const dto = DraftSchema.parse(body);
-      const actorId = req.user?.sub ?? req.user?.id ?? null;
-      return this.service.saveDraft(id, dto.draft ?? null, actorId);
-    } catch (error) {
-      if (error instanceof ZodError)
-        return { success: false, errors: error };
-      throw error;
-    }
-  }
-
-  @Get(':id/draft')
-  @UseGuards(JwtAuthGuard)
-  @Roles('ADMIN', 'STAFF')
-  async getDraft(@Param('id') id: string) {
-    // get latest draft audit log
-    const draft = await this.service.getLatestDraft(id);
-    return { draft: draft ?? null };
-  }
-
-  /* --------------------------------------------
-    PUBLIC CONTACT FORM
-  -------------------------------------------- */
-  @Post()
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  async submitContact(@Body() body: CreateContactDto) {
-    return this.service.createContact(body);
-  }
-
-  /* --------------------------------------------
-    LIST ALL (ADMIN/STAFF)
-  -------------------------------------------- */
-  @Get()
-  async getAll() {
-    return this.service.listContacts();
-  }
-
-  /* --------------------------------------------
-    GET ONE + HISTORY
-  -------------------------------------------- */
-  @Get(':id')
-  async getOne(@Param('id') id: string) {
-    return this.service.getContactById(id);
-  }
-
-  /* --------------------------------------------
-    STATUS UPDATE (ADMIN)
-  -------------------------------------------- */
-  @Put(':id/status')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  @Put(':id/status')
-  @UsePipes(new ValidationPipe({ whitelist: true }))
-  async updateStatus(
-    @Param('id') id: string,
-    @Body() body: UpdateStatusDto,
-    @Req() req: any,
-  ) {
-    const actorId = req.user?.sub ?? req.user?.id ?? null;
-    return this.service.updateStatus(
-      id,
-      body.status,
-      body.assignedToId,
-      actorId,
-    );
-  }
-
-  /* --------------------------------------------
-    REALTIME STREAM (SSE)
-  -------------------------------------------- */
-  @Sse('stream')
-  stream(): Observable<MessageEvent> {
-    return this.service
-      .getEventsSubject()
-      .pipe(map((evt: ContactEvent) => ({ data: evt }) as MessageEvent));
-  }
-}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\contact\dto\create-contact.dto.ts
-RELATIVE: apps\api\src\contact\dto\create-contact.dto.ts
-================================================================================
-
-"""
-import { IsEmail, IsOptional, IsString, Length } from 'class-validator';
-
-export class CreateContactDto {
-  @IsString()
-  @Length(1, 255)
-  name!: string;
-
-  @IsEmail()
-  email!: string;
-
-  @IsOptional()
-  @IsString()
-  @Length(0, 30)
-  phone?: string;
-
-  @IsString()
-  @Length(1, 5000)
-  message!: string;
-
-  @IsOptional()
-  @IsString()
-  source?: string;
-}
-
-"""
-
-
-================================================================================
 FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\apps\api\src\common\rate-limiter.middleware.ts
 RELATIVE: apps\api\src\common\rate-limiter.middleware.ts
 ================================================================================
@@ -8198,55 +6427,6 @@ import { JwtStrategy } from './jwt.strategy';
   exports: [],
 })
 export class AuthModule {}
-
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\.vercel\project.json
-RELATIVE: .vercel\project.json
-================================================================================
-
-"""
-{"projectId":"prj_7vFcEW1Wd1V6MErkUSRibkn6Gf59","orgId":"team_BXmfSag4SrY3xCbbaesSzguY","projectName":"mygale-art-et-services"}
-"""
-
-
-================================================================================
-FILE: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES\.github\workflows\vercel.yml
-RELATIVE: .github\workflows\vercel.yml
-================================================================================
-
-"""
-name: Deploy to Vercel
-
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: 🛒 Checkout repo
-        uses: actions/checkout@v4
-
-      - name: 🧰 Setup Bun
-        uses: oven-sh/setup-bun@v1
-
-      - name: 📦 Install dependencies
-        run: bun install
-
-      - name: 🚀 Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
 
 """
 
