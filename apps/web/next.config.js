@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -8,16 +7,11 @@ const nextConfig = {
     remotePatterns: [],
   },
 
-  experimental: {
-    serverActions: false,
-  },
-
   compress: true,
   poweredByHeader: false,
 
-  // Force Webpack builder
-  webpack(config, { isServer }) {
-    return config // returning untouched config triggers Webpack mode
+  webpack(config) {
+    return config
   },
 }
 
