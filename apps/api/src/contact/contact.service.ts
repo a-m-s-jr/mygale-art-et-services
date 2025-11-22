@@ -1,4 +1,4 @@
-// apps/api/src/contact/contact.service.ts
+/*
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import type { ContactSubmission, SubmissionStatus } from '@prisma/client';
@@ -167,7 +167,7 @@ export class ContactService {
   /**
    * Persist a reply and send email if channel === 'email'
    */
-  async sendReply(submissionId: string, payload: ReplyDto, actorId?: string) {
+  /*async sendReply(submissionId: string, payload: ReplyDto, actorId?: string) {
     // ensure submission exists
     const submission = await this.prisma.contactSubmission.findUnique({
       where: { id: submissionId },
@@ -267,3 +267,4 @@ export class ContactService {
     return draft?.meta ?? null;
   }
 }
+*/

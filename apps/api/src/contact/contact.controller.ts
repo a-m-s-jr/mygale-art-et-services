@@ -1,4 +1,4 @@
-import {
+/*import {
   Body,
   Controller,
   Get,
@@ -28,7 +28,7 @@ import { ZodError } from 'zod';
 /* ------------------------------
    DTO for Status Update
 --------------------------------*/
-class UpdateStatusDto {
+/*class UpdateStatusDto {
   @IsEnum(SubmissionStatus)
   status!: SubmissionStatus;
 
@@ -95,7 +95,7 @@ export class ContactController {
   /* --------------------------------------------
     PUBLIC CONTACT FORM
   -------------------------------------------- */
-  @Post()
+ /* @Post()
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async submitContact(@Body() body: CreateContactDto) {
     return this.service.createContact(body);
@@ -104,7 +104,7 @@ export class ContactController {
   /* --------------------------------------------
     LIST ALL (ADMIN/STAFF)
   -------------------------------------------- */
-  @Get()
+ /* @Get()
   async getAll() {
     return this.service.listContacts();
   }
@@ -112,7 +112,7 @@ export class ContactController {
   /* --------------------------------------------
     GET ONE + HISTORY
   -------------------------------------------- */
-  @Get(':id')
+ /* @Get(':id')
   async getOne(@Param('id') id: string) {
     return this.service.getContactById(id);
   }
@@ -120,7 +120,7 @@ export class ContactController {
   /* --------------------------------------------
     STATUS UPDATE (ADMIN)
   -------------------------------------------- */
-  @Put(':id/status')
+ /* @Put(':id/status')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @Put(':id/status')
@@ -142,10 +142,11 @@ export class ContactController {
   /* --------------------------------------------
     REALTIME STREAM (SSE)
   -------------------------------------------- */
-  @Sse('stream')
+  /*@Sse('stream')
   stream(): Observable<MessageEvent> {
     return this.service
       .getEventsSubject()
       .pipe(map((evt: ContactEvent) => ({ data: evt }) as MessageEvent));
   }
 }
+*/
