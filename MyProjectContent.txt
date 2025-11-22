@@ -1,6 +1,6 @@
 ================================================================================
 PROJECT FILES CONCATENATION
-Generated: 2025-11-22T07:08:48.093Z
+Generated: 2025-11-22T07:10:50.957Z
 Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
 Total Files: 113
 Extensions: .ts, .tsx, .js, .jsx, .json, .prisma, .yml, .yaml, .md, .mjs, .cjs, .css, .sql, .toml
@@ -152,6 +152,7 @@ RELATIVE: package.json
     "turbo": "^2.6.1"
   }
 }
+
 """
 
 
@@ -1844,6 +1845,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 ## Getting Started
 
 First, run the development server:
+
 
 ```bash
 bun dev
