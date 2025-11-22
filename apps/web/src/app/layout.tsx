@@ -20,6 +20,7 @@ export const metadata = {
   icons: {
     icon: '/LOGO MYGALE 2.png',
   },
+  metadataBase: new URL('https://mygale-art-and-services.com'),
 }
 
 
