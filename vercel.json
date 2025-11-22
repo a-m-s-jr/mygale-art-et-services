@@ -1,6 +1,0 @@
-{
-  "buildCommand": "bun run build --filter=web",
-  "ignoreCommand": "echo Ignoring API",
-  "installCommand": "bun install",
-  "framework": "nextjs"
-}
