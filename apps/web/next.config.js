@@ -1,14 +1,5 @@
-// apps/web/next.config.mjs
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /** @type {import('next').NextConfig} */
-import path from 'path'
-import { fileURLToPath } from 'url'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-// Set BOTH turbopack.root and outputFileTracingRoot to your monorepo root
-const MONOREPO_ROOT = path.resolve(__dirname, '..', '..')
-
 const nextConfig = {
   reactStrictMode: true,
 
@@ -18,22 +9,16 @@ const nextConfig = {
   },
 
   experimental: {
-    serverActions: {
-      allowedOrigins: ['*'],
-    },
+    serverActions: false,
   },
 
   compress: true,
   poweredByHeader: false,
 
-  turbopack: {
-    root: MONOREPO_ROOT, // MUST match outputFileTracingRoot
+  // Force Webpack builder
+  webpack(config, { isServer }) {
+    return config // returning untouched config triggers Webpack mode
   },
-
-  outputFileTracingRoot: MONOREPO_ROOT,
-
-  // Force classic Webpack builder
-  distDir: '.next',
 }
 
-export default nextConfig
+module.exports = nextConfig
