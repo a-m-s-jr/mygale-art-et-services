@@ -18,6 +18,7 @@ const nextConfig = {
   },
 
   experimental: {
+    turbo: false,
     serverActions: {
       allowedOrigins: ['*'],
     },
