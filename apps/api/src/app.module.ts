@@ -2,7 +2,7 @@ import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
-import { ContactModule } from './contact/contact.module';
+//import { ContactModule } from './contact/contact.module';
 import { AuthModule } from './auth/auth.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { RateLimiterMiddleware } from './common/rate-limiter.middleware';
@@ -12,7 +12,7 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
-    ContactModule,
+    //ContactModule,
     AuthModule,
     WebhooksModule,
   ],
