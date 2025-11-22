@@ -21,12 +21,10 @@ jobs:
 
       - name: Install dependencies (web)
         run: |
-          cd apps/web
           bun install --frozen-lockfile
 
       - name: Build (web)
         run: |
-          cd apps/web
           bun run build
 
       - name: Deploy to Vercel
