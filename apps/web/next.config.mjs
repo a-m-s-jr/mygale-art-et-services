@@ -18,7 +18,8 @@ const nextConfig = {
   },
 
   experimental: {
-    turbo: false,
+    turbo: false, // 🚫 disable Turbopack
+    webpackBuildWorker: false, // extra safety for Next 16
     serverActions: {
       allowedOrigins: ['*'],
     },
@@ -32,6 +33,9 @@ const nextConfig = {
   },
 
   outputFileTracingRoot: MONOREPO_ROOT,
+
+  // Force classic Webpack builder
+  distDir: '.next',
 }
 
 export default nextConfig
