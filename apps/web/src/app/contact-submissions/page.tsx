@@ -2,7 +2,7 @@
 import React from 'react'
 import ContactListClient from './ContactListClient'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '../../pages/api/auth/[...nextauth]'
+/*import { authOptions } from '../../pages/api/auth/[...nextauth]'
 import type { Session } from 'next-auth'
 
 export default async function ContactSubmissionsPage() {
@@ -28,3 +28,4 @@ export default async function ContactSubmissionsPage() {
     </div>
   )
 }
+*/
