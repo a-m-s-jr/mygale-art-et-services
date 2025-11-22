@@ -11,25 +11,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🛒 Checkout repo
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: 🧰 Setup Bun
+      - name: Setup Bun
         uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
 
-      - name: 📁 Move into apps/web
-        working-directory: apps/web
-        run: echo "Switched to apps/web"
+      - name: Install dependencies (web)
+        run: |
+          cd apps/web
+          bun install --frozen-lockfile
 
-      - name: 📦 Install dependencies
-        working-directory: apps/web
-        run: bun install
+      - name: Build (web)
+        run: |
+          cd apps/web
+          bun run build
 
-      - name: 🚀 Deploy to Vercel
+      - name: Deploy to Vercel
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
           working-directory: apps/web
+          vercel-args: '--prod'
