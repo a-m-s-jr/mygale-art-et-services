@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+bun lint-staged
+# bun test  # Commented til tests are set up

@@ -1,0 +1,24 @@
+node_modules
+dist
+.next
+.env.local
+.vscode
+.DS_Store
+.bun
+bun.lock
+data
+# Snyk Security Extension - AI Rules (auto-generated)
+.github\instructions\snyk_rules.instructions.md
+.vercel
+.turbo/
+.turbo/*
+apps/**/.turbo/
+apps/**/.next/
+**/.next
+**/.vercel
+.turbo/
+apps/**/.turbo/
+apps/web/.next
+
+# Snyk Security Extension - AI Rules (auto-generated)
+.github/instructions/snyk_rules.instructions.md

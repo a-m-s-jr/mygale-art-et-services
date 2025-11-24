@@ -1,0 +1,305 @@
+================================================================================
+PROJECT DIRECTORY STRUCTURE
+Generated: 2025-11-22T07:10:46.091Z
+Root: C:\Users\User\Desktop\MYGALE_ART_AND_SERVICES
+================================================================================
+
+MYGALE_ART_AND_SERVICES/
+├── .github/ (1 files) ← GitHub configuration
+│   └── instructions/ (1 files)
+│       └── snyk_rules.instructions.md
+├── .husky/ (17 files) ← Git hooks configuration
+│   └── _/ (17 files)
+│       ├── .gitignore ← Git ignore patterns
+│       ├── applypatch-msg
+│       ├── commit-msg
+│       ├── h
+│       ├── husky.sh
+│       ├── post-applypatch
+│       ├── post-checkout
+│       ├── post-commit
+│       ├── post-merge
+│       ├── post-rewrite
+│       ├── pre-applypatch
+│       ├── pre-auto-gc
+│       ├── pre-commit
+│       ├── pre-merge-commit
+│       ├── pre-push
+│       ├── pre-rebase
+│       └── prepare-commit-msg
+├── .husky-disabled/ (19 files)
+│   ├── _/ (17 files)
+│   │   ├── .gitignore ← Git ignore patterns
+│   │   ├── applypatch-msg
+│   │   ├── commit-msg
+│   │   ├── h
+│   │   ├── husky.sh
+│   │   ├── post-applypatch
+│   │   ├── post-checkout
+│   │   ├── post-commit
+│   │   ├── post-merge
+│   │   ├── post-rewrite
+│   │   ├── pre-applypatch
+│   │   ├── pre-auto-gc
+│   │   ├── pre-commit
+│   │   ├── pre-merge-commit
+│   │   ├── pre-push
+│   │   ├── pre-rebase
+│   │   └── prepare-commit-msg
+│   ├── commit-msg
+│   └── pre-commit
+├── .turbo/ [collapsed]
+├── apps/ (1171 files) ← Directory for independent applications
+│   ├── api/ (185 files) ← Backend application (NestJS)
+│   │   ├── .turbo/ [collapsed]
+│   │   ├── dist/ [collapsed] ← Build output (collapsed)
+│   │   ├── node_modules/ [collapsed] ← Dependencies (collapsed)
+│   │   ├── src/ (17 files) ← Source code directory
+│   │   │   ├── auth/ (5 files)
+│   │   │   │   ├── auth.module.ts
+│   │   │   │   ├── jwt-auth.guard.ts
+│   │   │   │   ├── jwt.strategy.ts
+│   │   │   │   ├── roles.decorator.ts
+│   │   │   │   └── roles.guard.ts
+│   │   │   ├── common/ (1 files)
+│   │   │   │   └── rate-limiter.middleware.ts
+│   │   │   ├── prisma/ (2 files) ← Shared Prisma/database package
+│   │   │   │   ├── prisma.module.ts
+│   │   │   │   └── prisma.service.ts
+│   │   │   ├── utils/ (1 files)
+│   │   │   │   └── auditLogger.ts
+│   │   │   ├── webhooks/ (3 files)
+│   │   │   │   ├── webhooks.controller.ts
+│   │   │   │   ├── webhooks.module.ts
+│   │   │   │   └── webhooks.service.ts
+│   │   │   ├── app.controller.spec.ts
+│   │   │   ├── app.controller.ts
+│   │   │   ├── app.module.ts ← Root application module
+│   │   │   ├── app.service.ts
+│   │   │   └── main.ts ← Application entry point
+│   │   ├── test/ (2 files) ← Test files
+│   │   │   ├── app.e2e-spec.ts
+│   │   │   └── jest-e2e.json
+│   │   ├── .env ← Environment variables (not tracked in git)
+│   │   ├── .gitignore ← Git ignore patterns
+│   │   ├── .prettierrc ← Prettier configuration for code formatting
+│   │   ├── eslint.config.mjs
+│   │   ├── jest.config.js ← Jest testing configuration
+│   │   ├── jwt_private.pem
+│   │   ├── jwt_public.pem
+│   │   ├── nest-cli.json ← NestJS CLI configuration
+│   │   ├── package.json ← Package configuration and dependencies
+│   │   ├── README.md ← Project documentation
+│   │   ├── tsconfig.build.json
+│   │   └── tsconfig.json ← TypeScript configuration
+│   └── web/ (986 files) ← Frontend application (Next.js)
+│       ├── .next/ [collapsed] ← Next.js build output (collapsed)
+│       ├── .turbo/ [collapsed]
+│       ├── data/ (1 files) ← Data directory (collapsed)
+│       │   └── submissions.json
+│       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
+│       ├── public/ (51 files) ← Static assets
+│       │   ├── services/ (31 files)
+│       │   │   ├── architecture/ (8 files)
+│       │   │   │   ├── 1.png
+│       │   │   │   ├── a.png
+│       │   │   │   ├── b.png
+│       │   │   │   ├── c.png
+│       │   │   │   ├── d.png
+│       │   │   │   ├── i.png
+│       │   │   │   ├── ii.png
+│       │   │   │   └── iv.png
+│       │   │   ├── construction/ (4 files)
+│       │   │   │   ├── a.png
+│       │   │   │   ├── b.png
+│       │   │   │   ├── i.png
+│       │   │   │   └── ii.png
+│       │   │   ├── printing/ (3 files)
+│       │   │   │   ├── 2-ii.png
+│       │   │   │   ├── a.png
+│       │   │   │   └── i.png
+│       │   │   ├── stylisme/ (6 files)
+│       │   │   │   ├── a.png
+│       │   │   │   ├── b.png
+│       │   │   │   ├── c.png
+│       │   │   │   ├── i.png
+│       │   │   │   ├── ii.png
+│       │   │   │   └── iii.png
+│       │   │   ├── vitraux/ (6 files)
+│       │   │   │   ├── a.png
+│       │   │   │   ├── b.png
+│       │   │   │   ├── c.png
+│       │   │   │   ├── i.png
+│       │   │   │   ├── ii.png
+│       │   │   │   └── iii.png
+│       │   │   └── web-development/ (4 files)
+│       │   │       ├── a.png
+│       │   │       ├── b.png
+│       │   │       ├── i.png
+│       │   │       └── ii.png
+│       │   ├── architecture.jpg
+│       │   ├── construction.jpg
+│       │   ├── file.svg
+│       │   ├── globe.svg
+│       │   ├── hero-bg.jpg
+│       │   ├── icon.png
+│       │   ├── LOGO MYGALE 2.png
+│       │   ├── LOGO MYGALE.jpg
+│       │   ├── manifest.json
+│       │   ├── next.svg
+│       │   ├── print.jpg
+│       │   ├── robots.txt
+│       │   ├── sitemap-0.xml
+│       │   ├── sitemap.xml
+│       │   ├── style.jpg
+│       │   ├── vercel.svg
+│       │   ├── vitreaux.jpg
+│       │   ├── web-dev.jpg
+│       │   ├── webdev.jpg
+│       │   └── window.svg
+│       ├── src/ (37 files) ← Source code directory
+│       │   ├── app/ (16 files)
+│       │   │   ├── about/ (1 files)
+│       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── api/ (1 files) ← Backend application (NestJS)
+│       │   │   │   ├── contact/
+│       │   │   │   └── og/ (1 files)
+│       │   │   │       └── route.tsx
+│       │   │   ├── auth/ (2 files)
+│       │   │   │   ├── signin/ (1 files)
+│       │   │   │   │   └── page.tsx ← Page component
+│       │   │   │   └── signup/ (1 files)
+│       │   │   │       └── page.tsx ← Page component
+│       │   │   ├── contact/ (1 files)
+│       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── login/ (1 files)
+│       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── privacy/ (1 files)
+│       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── services/ (3 files)
+│       │   │   │   ├── [slug]/ (2 files)
+│       │   │   │   │   ├── page.tsx ← Page component
+│       │   │   │   │   └── ServiceClient.tsx
+│       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── terms/ (1 files)
+│       │   │   │   └── page.tsx ← Page component
+│       │   │   ├── favicon.ico
+│       │   │   ├── HomeClient.tsx
+│       │   │   ├── layout.tsx ← Root layout component
+│       │   │   ├── page.tsx ← Page component
+│       │   │   └── providers.tsx
+│       │   ├── components/ (13 files)
+│       │   │   ├── AdminSidebar.tsx
+│       │   │   ├── AssigneeSelector.tsx
+│       │   │   ├── Footer.tsx
+│       │   │   ├── Navbar.tsx
+│       │   │   ├── PageTransitions.tsx
+│       │   │   ├── Pagination.tsx
+│       │   │   ├── RichTextComposer.tsx
+│       │   │   ├── SearchBar.tsx
+│       │   │   ├── ServicesSidebar.tsx
+│       │   │   ├── StatusChip.tsx
+│       │   │   ├── StatusFilter.tsx
+│       │   │   ├── SuccessAnim.tsx
+│       │   │   └── ToastProvider.tsx
+│       │   ├── hooks/ (3 files)
+│       │   │   ├── useLocale.ts
+│       │   │   ├── useReveal.tsx
+│       │   │   └── useSocket.ts
+│       │   ├── lib/ (3 files)
+│       │   │   ├── locale.server.ts
+│       │   │   ├── locale.tsx
+│       │   │   └── socket.ts
+│       │   ├── pages/
+│       │   ├── styles/ (1 files)
+│       │   │   └── globals.css ← Global styles
+│       │   └── types/ (1 files)
+│       │       └── next-auth.d.ts
+│       ├── tests/ (6 files)
+│       │   └── e2e/ (6 files)
+│       │       ├── utils/ (1 files)
+│       │       │   └── ws.ts
+│       │       ├── auth-protect.spec.ts
+│       │       ├── global.d.ts
+│       │       ├── login.spec.ts
+│       │       ├── realtime.spec.ts
+│       │       └── status-update.spec.ts
+│       ├── .env.local
+│       ├── .env.production
+│       ├── .gitignore ← Git ignore patterns
+│       ├── bun.lock
+│       ├── eslint.config.mjs
+│       ├── middleware.ts
+│       ├── next-auth.d.ts
+│       ├── next-env.d.ts
+│       ├── next-sitemap.config.js
+│       ├── next-sitemap.config.jsnext-sitemap.config.js
+│       ├── next.config.-no-mjs
+│       ├── next.config.-no-ts
+│       ├── next.config.js ← Next.js configuration
+│       ├── package.json ← Package configuration and dependencies
+│       ├── playwright.config.ts
+│       ├── postcss.config.mjs
+│       ├── README.md ← Project documentation
+│       ├── tailwind.config.mjs
+│       ├── tsconfig.json ← TypeScript configuration
+│       └── vercel.json
+├── data/ (1273 files) ← Data directory (collapsed)
+│   └── postgres/ (1273 files) ← PostgreSQL data directory (collapsed)
+│       └── 18/ (1273 files)
+│           └── docker/ [collapsed]
+├── node_modules/ [collapsed] ← Dependencies (collapsed)
+├── packages/ (40 files) ← Directory for shared packages/libraries
+│   └── prisma/ (40 files) ← Shared Prisma/database package
+│       ├── node_modules/ [collapsed] ← Dependencies (collapsed)
+│       ├── prisma/ (16 files) ← Shared Prisma/database package
+│       │   ├── migrations/ (13 files) ← Database migrations
+│       │   │   ├── 20251113015902_init/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251113062736_init_enum_and_relations/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251113073736_new_schema_structure_rel_enum/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251113081816_reform_schema/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251114040428_add_auth_models/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251114055539_restore_schema/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251114060119/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251115021026_phase_6_refine/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251115022949_make_contact_submission_id_required/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251115023503_make_contact_submission_id_optional/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251115023638_make_contact_submission_id_optional/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   ├── 20251115145654_added_webhook_attempt/ (1 files)
+│       │   │   │   └── migration.sql
+│       │   │   └── migration_lock.toml
+│       │   ├── prisma.service.ts
+│       │   ├── schema.prisma ← Prisma database schema
+│       │   └── seed.ts
+│       ├── .env ← Environment variables (not tracked in git)
+│       ├── .gitignore ← Git ignore patterns
+│       ├── package.json ← Package configuration and dependencies
+│       └── prisma.config.ts
+├── scripts/ (1 files)
+│   └── dev-with-cleanup.js
+├── .env ← Environment variables (not tracked in git)
+├── .gitignore ← Git ignore patterns
+├── .prettierrc ← Prettier configuration for code formatting
+├── bun.lock
+├── commitlint.config.js ← Configuration for linting commit messages
+├── concatenate-files.js
+├── docker-compose.yml ← Defines and runs multi-container Docker applications
+├── eslint.config.js ← ESLint configuration for code quality
+├── generate-structure.js
+├── MyProjectContent.txt
+├── package.json ← Package configuration and dependencies
+├── pnpm-workspace.yaml ← Defines the project as a pnpm monorepo workspace
+├── project-structure.txt
+├── tsconfig.json ← TypeScript configuration
+└── turbo.json ← Turborepo configuration for monorepo build system

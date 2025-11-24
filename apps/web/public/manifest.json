@@ -1,0 +1,21 @@
+{
+  "name": "MYGALE Art & Services",
+  "short_name": "MYGALE",
+  "description": "Architecture, Printing, Fashion design, Web development and more — based in Yaoundé, Cameroon.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
