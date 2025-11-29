@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Image from 'next/image'
 import PageTransitions from '@/components/PageTransitions' // client wrapper for AnimatePresence
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata = {
   title: 'Mygale Art & Services – Architecture, Stylisme, Vitraux, Imprimerie',
@@ -53,6 +54,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             priority
           />
         </div>
+
+        <Analytics />
       </body>
     </html>
   )

@@ -9,9 +9,11 @@ export type Translations = {
   heroSubtitle: string
   contactUs: string
   ourServices: string
+  findUs: string
   servicesTitle: string
   aboutTitle: string
   aboutText: string
+  Location: string
   name?: string
   email?: string
   phone?: string
@@ -53,9 +55,11 @@ const TRANSLATIONS: Record<Lang, Translations> = {
     contactUs: 'Contactez-nous',
     ourServices: 'Nos services',
     servicesTitle: 'Nos services',
+    findUs: 'Nous trouver',
     aboutTitle: 'À propos',
     aboutText:
       'Nous sommes une agence basée au Cameroun, proposant des services en architecture, stylisme, imprimerie sur tissus et art des vitraux. Basée à Yaoundé, nous réalisons des projets sur mesure.',
+    Location: 'Notre Localisation',
     name: 'Nom',
     email: 'Email',
     phone: 'Téléphone (optionnel)',
@@ -95,9 +99,11 @@ const TRANSLATIONS: Record<Lang, Translations> = {
     contactUs: 'Contact us',
     ourServices: 'Our services',
     servicesTitle: 'Our services',
+    findUs: 'Find us',
     aboutTitle: 'About',
     aboutText:
       'We are a Yaoundé-based agency offering architecture, fashion design, textile printing and stained glass services. We provide bespoke solutions.',
+    Location: 'Our Location',
     name: 'Name',
     email: 'Email',
     phone: 'Phone (optional)',
