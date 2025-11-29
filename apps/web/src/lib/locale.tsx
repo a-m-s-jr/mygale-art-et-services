@@ -13,7 +13,7 @@ export type Translations = {
   servicesTitle: string
   aboutTitle: string
   aboutText: string
-  Location: string
+  location: string
   name?: string
   email?: string
   phone?: string
@@ -59,7 +59,7 @@ const TRANSLATIONS: Record<Lang, Translations> = {
     aboutTitle: 'À propos',
     aboutText:
       'Nous sommes une agence basée au Cameroun, proposant des services en architecture, stylisme, imprimerie sur tissus et art des vitraux. Basée à Yaoundé, nous réalisons des projets sur mesure.',
-    Location: 'Notre Localisation',
+    location: 'Notre Localisation',
     name: 'Nom',
     email: 'Email',
     phone: 'Téléphone (optionnel)',
@@ -103,7 +103,7 @@ const TRANSLATIONS: Record<Lang, Translations> = {
     aboutTitle: 'About',
     aboutText:
       'We are a Yaoundé-based agency offering architecture, fashion design, textile printing and stained glass services. We provide bespoke solutions.',
-    Location: 'Our Location',
+    location: 'Our Location',
     name: 'Name',
     email: 'Email',
     phone: 'Phone (optional)',
