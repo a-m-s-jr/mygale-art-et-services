@@ -5,6 +5,7 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Image from 'next/image'
 import PageTransitions from '@/components/PageTransitions' // client wrapper for AnimatePresence
+import { PromoBannerWrapper } from '@/components/PromoBannerWrapper'
 
 export const metadata = {
   title: 'Mygale Art & Services – Architecture, Stylisme, Vitraux, Imprimerie',
@@ -31,6 +32,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <LocaleProvider>
           <div className="min-h-screen flex flex-col">
             <Navbar />
+            {/* Promotional Banner - Featured Products/Services */}
+            <PromoBannerWrapper />
             {/* PageTransitions handles the AnimatePresence keyed by pathname */}
             <PageTransitions>
               <main className="flex-1">{children}</main>
