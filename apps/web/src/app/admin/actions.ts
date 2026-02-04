@@ -11,10 +11,7 @@ const prisma = new PrismaClient()
  * Example: Admin-only action to update product publish status
  * This demonstrates how to protect Server Actions with admin verification
  */
-export async function updateProductPublishStatus(
-  productId: string,
-  published: boolean
-) {
+export async function updateProductPublishStatus(productId: string, published: boolean) {
   // Verify admin role - throws error if not admin
   await verifyAdmin()
 
@@ -25,7 +22,7 @@ export async function updateProductPublishStatus(
     })
 
     revalidatePath('/admin/products')
-    
+
     return {
       success: true,
       product,
@@ -52,7 +49,7 @@ export async function deleteProduct(productId: string) {
     })
 
     revalidatePath('/admin/products')
-    
+
     return {
       success: true,
     }
@@ -97,7 +94,7 @@ export async function createProduct(input: CreateProductInput) {
     })
 
     revalidatePath('/admin/products')
-    
+
     return {
       success: true,
       product,
@@ -147,7 +144,7 @@ export async function updateProduct(productId: string, input: CreateProductInput
     revalidatePath('/products')
     revalidatePath('/services')
     revalidatePath('/')
-    
+
     return {
       success: true,
       product,

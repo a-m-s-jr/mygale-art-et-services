@@ -32,7 +32,7 @@ setTimeout(() => {
   // Pipe output
   webProcess.stdout.pipe(process.stdout)
   webProcess.stderr.pipe(process.stderr)
-  
+
   // Handle web process exit
   webProcess.on('exit', (code) => {
     if (!isShuttingDown) {

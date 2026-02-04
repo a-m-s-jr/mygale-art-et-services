@@ -37,13 +37,13 @@ export async function getPublishedProducts(params?: {
   offset?: number
 }): Promise<ApiResponse<Product[]>> {
   const searchParams = new URLSearchParams()
-  
+
   if (params?.type) searchParams.set('type', params.type)
   if (params?.limit) searchParams.set('limit', params.limit.toString())
   if (params?.offset) searchParams.set('offset', params.offset.toString())
 
   const url = `/api/products${searchParams.toString() ? `?${searchParams}` : ''}`
-  
+
   const response = await fetch(url)
   return response.json()
 }
@@ -66,14 +66,14 @@ export async function getAllProducts(params?: {
   offset?: number
 }): Promise<ApiResponse<Product[]>> {
   const searchParams = new URLSearchParams()
-  
+
   if (params?.type) searchParams.set('type', params.type)
   if (params?.published !== undefined) searchParams.set('published', params.published.toString())
   if (params?.limit) searchParams.set('limit', params.limit.toString())
   if (params?.offset) searchParams.set('offset', params.offset.toString())
 
   const url = `/api/admin/products${searchParams.toString() ? `?${searchParams}` : ''}`
-  
+
   const response = await fetch(url)
   return response.json()
 }
@@ -81,9 +81,7 @@ export async function getAllProducts(params?: {
 /**
  * Admin: Create a new product
  */
-export async function createProductApi(
-  data: CreateProductInput
-): Promise<ApiResponse<Product>> {
+export async function createProductApi(data: CreateProductInput): Promise<ApiResponse<Product>> {
   const response = await fetch('/api/products', {
     method: 'POST',
     headers: {
@@ -91,7 +89,7 @@ export async function createProductApi(
     },
     body: JSON.stringify(data),
   })
-  
+
   return response.json()
 }
 
@@ -100,7 +98,7 @@ export async function createProductApi(
  */
 export async function updateProductApi(
   id: string,
-  data: CreateProductInput
+  data: CreateProductInput,
 ): Promise<ApiResponse<Product>> {
   const response = await fetch(`/api/products/${id}`, {
     method: 'PUT',
@@ -109,20 +107,18 @@ export async function updateProductApi(
     },
     body: JSON.stringify(data),
   })
-  
+
   return response.json()
 }
 
 /**
  * Admin: Delete a product
  */
-export async function deleteProductApi(
-  id: string
-): Promise<ApiResponse<{ message: string }>> {
+export async function deleteProductApi(id: string): Promise<ApiResponse<{ message: string }>> {
   const response = await fetch(`/api/products/${id}`, {
     method: 'DELETE',
   })
-  
+
   return response.json()
 }
 
@@ -131,7 +127,7 @@ export async function deleteProductApi(
  */
 export async function togglePublishStatus(
   id: string,
-  currentProduct: Product
+  currentProduct: Product,
 ): Promise<ApiResponse<Product>> {
   return updateProductApi(id, {
     ...currentProduct,

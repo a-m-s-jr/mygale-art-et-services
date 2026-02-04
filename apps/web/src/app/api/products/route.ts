@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         success: false,
         error: 'Failed to fetch products',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
           success: false,
           error: 'Unauthorized',
         },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
           success: false,
           error: 'Forbidden: Admin access required',
         },
-        { status: 403 }
+        { status: 403 },
       )
     }
 
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
           error: 'Validation failed',
           errors: validation.error.flatten().fieldErrors,
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
         success: true,
         data: product,
       },
-      { status: 201 }
+      { status: 201 },
     )
   } catch (error) {
     console.error('Failed to create product:', error)
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to create product',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

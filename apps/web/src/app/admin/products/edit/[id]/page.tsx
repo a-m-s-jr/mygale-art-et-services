@@ -36,7 +36,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           throw new Error('Failed to load product')
         }
         const product: Product & { featured?: boolean } = await response.json()
-        
+
         setTitle(product.title)
         setDescription(product.description || '')
         setPrice(product.price?.toString() ?? '')
@@ -64,7 +64,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
 
     try {
       // Filter out empty image URLs
-      const validImages = images.filter(img => img.trim() !== '')
+      const validImages = images.filter((img) => img.trim() !== '')
 
       // Prepare data
       const data = {
@@ -179,9 +179,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             placeholder="Enter product/service title"
             required
           />
-          {fieldErrors.title && (
-            <p className="mt-1 text-sm text-red-600">{fieldErrors.title[0]}</p>
-          )}
+          {fieldErrors.title && <p className="mt-1 text-sm text-red-600">{fieldErrors.title[0]}</p>}
         </div>
 
         {/* Description */}
@@ -218,9 +216,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
             <option value={ProductType.PRODUCT}>Product</option>
             <option value={ProductType.SERVICE}>Service</option>
           </select>
-          {fieldErrors.type && (
-            <p className="mt-1 text-sm text-red-600">{fieldErrors.type[0]}</p>
-          )}
+          {fieldErrors.type && <p className="mt-1 text-sm text-red-600">{fieldErrors.type[0]}</p>}
         </div>
 
         {/* Price */}
@@ -241,16 +237,12 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
               placeholder="0.00"
             />
           </div>
-          {fieldErrors.price && (
-            <p className="mt-1 text-sm text-red-600">{fieldErrors.price[0]}</p>
-          )}
+          {fieldErrors.price && <p className="mt-1 text-sm text-red-600">{fieldErrors.price[0]}</p>}
         </div>
 
         {/* Images */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Images
-          </label>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Images</label>
           <ImageUpload images={images} onChange={setImages} />
           {fieldErrors.images && (
             <p className="mt-1 text-sm text-red-600">{fieldErrors.images[0]}</p>
@@ -302,7 +294,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
           >
             {isSubmitting ? 'Updating...' : 'Update Product/Service'}
           </button>
-          
+
           <button
             type="button"
             onClick={() => setShowDeleteConfirm(true)}

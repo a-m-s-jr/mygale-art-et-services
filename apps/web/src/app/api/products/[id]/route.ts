@@ -10,10 +10,7 @@ const prisma = new PrismaClient()
  * GET /api/products/[id]
  * Public endpoint - returns only if published
  */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const product = await prisma.product.findUnique({
       where: { id: params.id },
@@ -25,7 +22,7 @@ export async function GET(
           success: false,
           error: 'Product not found',
         },
-        { status: 404 }
+        { status: 404 },
       )
     }
 
@@ -40,7 +37,7 @@ export async function GET(
           success: false,
           error: 'Product not found',
         },
-        { status: 404 }
+        { status: 404 },
       )
     }
 
@@ -55,7 +52,7 @@ export async function GET(
         success: false,
         error: 'Failed to fetch product',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -64,10 +61,7 @@ export async function GET(
  * PUT /api/products/[id]
  * Admin-only endpoint - update a product
  */
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Check authentication and authorization
     const session = await getServerSession(authOptions)
@@ -78,7 +72,7 @@ export async function PUT(
           success: false,
           error: 'Unauthorized',
         },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -88,7 +82,7 @@ export async function PUT(
           success: false,
           error: 'Forbidden: Admin access required',
         },
-        { status: 403 }
+        { status: 403 },
       )
     }
 
@@ -103,7 +97,7 @@ export async function PUT(
           success: false,
           error: 'Product not found',
         },
-        { status: 404 }
+        { status: 404 },
       )
     }
 
@@ -118,7 +112,7 @@ export async function PUT(
           error: 'Validation failed',
           errors: validation.error.flatten().fieldErrors,
         },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -146,7 +140,7 @@ export async function PUT(
         success: false,
         error: error instanceof Error ? error.message : 'Failed to update product',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -155,10 +149,7 @@ export async function PUT(
  * DELETE /api/products/[id]
  * Admin-only endpoint - delete a product
  */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // Check authentication and authorization
     const session = await getServerSession(authOptions)
@@ -169,7 +160,7 @@ export async function DELETE(
           success: false,
           error: 'Unauthorized',
         },
-        { status: 401 }
+        { status: 401 },
       )
     }
 
@@ -179,7 +170,7 @@ export async function DELETE(
           success: false,
           error: 'Forbidden: Admin access required',
         },
-        { status: 403 }
+        { status: 403 },
       )
     }
 
@@ -194,7 +185,7 @@ export async function DELETE(
           success: false,
           error: 'Product not found',
         },
-        { status: 404 }
+        { status: 404 },
       )
     }
 
@@ -214,7 +205,7 @@ export async function DELETE(
         success: false,
         error: error instanceof Error ? error.message : 'Failed to delete product',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }

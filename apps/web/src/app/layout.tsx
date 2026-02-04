@@ -25,7 +25,6 @@ export const metadata = {
   metadataBase: new URL('https://www.mygaleartetservices.org/'),
 }
 
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fr">

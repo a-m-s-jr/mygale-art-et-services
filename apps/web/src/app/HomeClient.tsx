@@ -99,7 +99,10 @@ export default function HomeClient() {
             >
               {t.ourServices}
             </a>
-            <a href="#location" className="px-4 py-2 rounded-lg border transition hover:bg-gray-100 hover:scale-105">
+            <a
+              href="#location"
+              className="px-4 py-2 rounded-lg border transition hover:bg-gray-100 hover:scale-105"
+            >
               {t.findUs}
             </a>
           </div>
