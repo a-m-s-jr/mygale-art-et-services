@@ -9,9 +9,11 @@ export type Translations = {
   heroSubtitle: string
   contactUs: string
   ourServices: string
+  findUs: string
   servicesTitle: string
   aboutTitle: string
   aboutText: string
+  location: string
   name?: string
   email?: string
   phone?: string
@@ -52,10 +54,12 @@ const TRANSLATIONS: Record<Lang, Translations> = {
       "Innovation, Créativité et Excellence au service de vos projets. Nous sommes une agence basée au Cameroun, proposant nos services dans l'art : Architecture, Stylisme, Imprimerie sur tissus, Art des vitraux.",
     contactUs: 'Contactez-nous',
     ourServices: 'Nos services',
+    findUs: 'Nous trouver',
     servicesTitle: 'Nos services',
     aboutTitle: 'À propos',
     aboutText:
       'Nous sommes une agence basée au Cameroun, proposant des services en architecture, stylisme, imprimerie sur tissus et art des vitraux. Basée à Yaoundé, nous réalisons des projets sur mesure.',
+    location: 'Notre Localisation',
     name: 'Nom',
     email: 'Email',
     phone: 'Téléphone (optionnel)',
@@ -94,10 +98,12 @@ const TRANSLATIONS: Record<Lang, Translations> = {
       'Innovation, creativity and excellence for your projects. Yaoundé-based agency specialized in architecture, fashion design, textile printing and stained glass art.',
     contactUs: 'Contact us',
     ourServices: 'Our services',
+    findUs: 'Find us',
     servicesTitle: 'Our services',
     aboutTitle: 'About',
     aboutText:
       'We are a Yaoundé-based agency offering architecture, fashion design, textile printing and stained glass services. We provide bespoke solutions.',
+    location: 'Our Location',
     name: 'Name',
     email: 'Email',
     phone: 'Phone (optional)',

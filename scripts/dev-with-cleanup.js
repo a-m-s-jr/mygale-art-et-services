@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const { spawn } = require('child_process')
+const { spawn, exec } = require('child_process')
 const { execSync } = require('child_process')
 const path = require('path')
 
@@ -7,12 +7,11 @@ console.log('🚀 Starting development environment...\n')
 
 let isShuttingDown = false
 let webProcess = null
-let apiProcess = null
 
 // Start Docker database
 console.log('📦 Starting PostgreSQL database...')
 try {
-  execSync('pnpm db:up', { stdio: 'inherit' })
+  execSync('bun db:up', { stdio: 'inherit' })
   console.log('✅ Database started\n')
 } catch (error) {
   console.error('❌ Failed to start database')
@@ -21,26 +20,19 @@ try {
 
 // Delay to ensure database is ready
 setTimeout(() => {
-  console.log('🔄 Starting web and api servers...\n')
+  console.log('🔄 Starting web server...\n')
 
-  // Determine shell based on platform
-  const isWindows = process.platform === 'win32'
-  const shell = isWindows ? true : '/bin/sh'
+  const webDir = path.join(process.cwd(), 'apps', 'web')
 
-  // Start web server
-  webProcess = spawn('pnpm', ['dev'], {
-    cwd: path.join(process.cwd(), 'apps', 'web'),
-    stdio: ['inherit', 'inherit', 'inherit'],
-    shell: shell,
+  // Use exec which handles shell better on Windows
+  webProcess = exec('bun dev', {
+    cwd: webDir,
   })
 
-  // Start api server
-  apiProcess = spawn('pnpm', ['start:dev'], {
-    cwd: path.join(process.cwd(), 'apps', 'api'),
-    stdio: ['inherit', 'inherit', 'inherit'],
-    shell: shell,
-  })
-
+  // Pipe output
+  webProcess.stdout.pipe(process.stdout)
+  webProcess.stderr.pipe(process.stderr)
+  
   // Handle web process exit
   webProcess.on('exit', (code) => {
     if (!isShuttingDown) {
@@ -49,12 +41,9 @@ setTimeout(() => {
     }
   })
 
-  // Handle api process exit
-  apiProcess.on('exit', (code) => {
-    if (!isShuttingDown) {
-      console.log(`\n⚠️  API server exited with code ${code}`)
-      cleanup()
-    }
+  webProcess.on('error', (error) => {
+    console.error(`\n❌ Error starting web server:`, error.message)
+    cleanup()
   })
 }, 1000)
 
@@ -66,7 +55,7 @@ async function cleanup() {
   console.log('\n\n🛑 Shutting down...')
 
   // Kill the processes
-  console.log('⏹️  Stopping web and api servers...')
+  console.log('⏹️  Stopping web server...')
 
   try {
     if (webProcess && !webProcess.killed) {
@@ -82,27 +71,13 @@ async function cleanup() {
     console.error('⚠️  Error stopping web server:', error.message)
   }
 
-  try {
-    if (apiProcess && !apiProcess.killed) {
-      apiProcess.kill('SIGTERM')
-      // Force kill if needed on Windows
-      if (process.platform === 'win32') {
-        setTimeout(() => {
-          if (!apiProcess.killed) apiProcess.kill('SIGKILL')
-        }, 2000)
-      }
-    }
-  } catch (error) {
-    console.error('⚠️  Error stopping api server:', error.message)
-  }
-
   // Give processes time to shut down gracefully
   await new Promise((resolve) => setTimeout(resolve, 2000))
 
   // Stop Docker database
   console.log('🗄️  Stopping database...')
   try {
-    execSync('pnpm db:down', { stdio: 'inherit' })
+    execSync('bun db:down', { stdio: 'inherit' })
     console.log('✅ Database stopped')
   } catch (error) {
     console.error('⚠️  Error stopping database:', error.message)

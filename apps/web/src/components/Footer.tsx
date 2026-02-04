@@ -3,8 +3,8 @@ import React from 'react'
 
 export default function Footer() {
   return (
-    <footer className="border-t mt-12 py-8 bg-white">
-      <div className="max-w-6xl mx-auto px-4 text-sm text-gray-600 flex flex-col md:flex-row justify-between items-start gap-4">
+    <footer className="border-t mt-12 py-8 bg-neutral-400">
+      <div className="max-w-6xl mx-auto px-4 text-sm text-gray-800 flex flex-col md:flex-row justify-between items-start gap-4">
         <div>
           <div className="font-semibold text-[#003366]">MYGALE ART ET SERVICES</div>
           <div>Yaoundé, Cameroon</div>

@@ -85,9 +85,10 @@ export async function createProduct(input: CreateProductInput) {
   try {
     const product = await prisma.product.create({
       data: {
+        name: validation.data.title,
         title: validation.data.title,
         description: validation.data.description,
-        price: validation.data.price ?? null,
+        price: validation.data.price ?? 0,
         type: validation.data.type,
         images: validation.data.images,
         published: validation.data.published,
@@ -133,7 +134,7 @@ export async function updateProduct(productId: string, input: CreateProductInput
       data: {
         title: validation.data.title,
         description: validation.data.description,
-        price: validation.data.price ?? null,
+        price: validation.data.price ?? 0,
         type: validation.data.type,
         images: validation.data.images,
         published: validation.data.published,

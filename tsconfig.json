@@ -22,7 +22,7 @@
       "@shared/webhooks/*": ["packages/shared-webhooks/src/*"]
     }
   },
-  "references": [{ "path": "./apps/api" }, { "path": "./apps/web" }],
+  "references": [{ "path": "./apps/web" }],
   "include": ["apps/**/*", "packages/**/*"],
   "exclude": ["node_modules", "dist"]
 }

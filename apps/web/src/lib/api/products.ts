@@ -7,12 +7,14 @@ import { CreateProductInput } from '@/lib/schemas/product'
 
 export interface Product {
   id: string
+  name: string
   title: string
   description: string
   price: number | null
   images: string[]
   type: ProductType
   published: boolean
+  featured: boolean
   createdAt: string
   updatedAt: string
 }

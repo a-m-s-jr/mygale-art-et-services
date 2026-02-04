@@ -38,7 +38,7 @@ export default function EditProductPage({ params }: { params: { id: string } }) 
         const product: Product & { featured?: boolean } = await response.json()
         
         setTitle(product.title)
-        setDescription(product.description)
+        setDescription(product.description || '')
         setPrice(product.price?.toString() ?? '')
         setType(product.type)
         setImages(product.images.length > 0 ? product.images : [''])

@@ -1,5 +1,9 @@
 import { defineConfig, env } from 'prisma/config'
-import 'dotenv/config'
+import { config } from 'dotenv'
+import { resolve } from 'path'
+
+// Load .env from the prisma package directory
+config({ path: resolve(__dirname, '.env') })
 
 export default defineConfig({
   schema: 'prisma/schema.prisma',

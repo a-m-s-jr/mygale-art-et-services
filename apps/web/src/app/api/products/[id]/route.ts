@@ -128,7 +128,7 @@ export async function PUT(
       data: {
         title: validation.data.title,
         description: validation.data.description,
-        price: validation.data.price ?? null,
+        price: validation.data.price ?? 0,
         type: validation.data.type,
         images: validation.data.images,
         published: validation.data.published,

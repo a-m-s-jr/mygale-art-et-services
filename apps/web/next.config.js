@@ -2,6 +2,7 @@
 const path = require('path')
 
 module.exports = {
+  allowedDevOrigins: ['192.168.85.1', 'mygale-art-et-services.vercel.app/'],
   reactStrictMode: true,
 
   images: {

@@ -6,6 +6,7 @@ import Footer from '@/components/Footer'
 import Image from 'next/image'
 import PageTransitions from '@/components/PageTransitions' // client wrapper for AnimatePresence
 import { PromoBannerWrapper } from '@/components/PromoBannerWrapper'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata = {
   title: 'Mygale Art & Services – Architecture, Stylisme, Vitraux, Imprimerie',
@@ -15,13 +16,13 @@ export const metadata = {
     title: 'Mygale Art & Services',
     description: 'Architecture, stylisme, art des vitraux, impression textile – Yaoundé.',
     images: ['/LOGO MYGALE 2.png'],
-    url: 'https://mygale.vercel.app',
+    url: 'https://www.mygaleartetservices.org/',
     siteName: 'Mygale Art & Services',
   },
   icons: {
     icon: '/LOGO MYGALE 2.png',
   },
-  metadataBase: new URL('https://mygale-art-and-services.com'),
+  metadataBase: new URL('https://www.mygaleartetservices.org/'),
 }
 
 
@@ -56,6 +57,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             priority
           />
         </div>
+        <Analytics />
       </body>
     </html>
   )

@@ -99,6 +99,9 @@ export default function HomeClient() {
             >
               {t.ourServices}
             </a>
+            <a href="#location" className="px-4 py-2 rounded-lg border transition hover:bg-gray-100 hover:scale-105">
+              {t.findUs}
+            </a>
           </div>
         </div>
       </section>
@@ -149,6 +152,32 @@ export default function HomeClient() {
         <div className="max-w-6xl mx-auto px-4 reveal text-center">
           <h2 className="text-2xl font-semibold mb-4">{t.aboutTitle}</h2>
           <p className="text-gray-600">{t.aboutText}</p>
+        </div>
+      </section>
+      {/* LOCATION SECTION */}
+      <section className="py-16 bg-[#F4F6F8]" id="location">
+        <div className="max-w-6xl mx-auto px-4 reveal text-center">
+          <h2 className="text-3xl font-semibold mb-6">{t.location}</h2>
+          <div className="w-full h-[350px] md:h-[450px] rounded-xl overflow-hidden shadow-lg border">
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3981.0515640715926!2d11.4931364!3d3.7989195!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x108bd11b473e59f7%3A0x4ce5c73b687f7408!2sMygale%20Art%20et%20Services!5e0!3m2!1sen!2scm!4v1764379907631!5m2!1sen!2scm"
+              title="Mygale Art et Services location map"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen={true}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+          <a
+            href="https://www.google.com/maps/place/Mygale+Art+et+Services/@3.7989195,11.4931364,17z/data=!3m1!4b1!4m6!3m5!1s0x108bd11b473e59f7:0x4ce5c73b687f7408!8m2!3d3.7989195!4d11.4931364!16s%2Fg%2F11mrrj1_wr?entry=ttu&g_ep=EgoyMDI1MTEyMy4xIKXMDSoASAFQAw%3D%3D"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-block px-6 py-3 rounded-lg bg-[#003366] text-white font-medium shadow hover:scale-105 transition"
+          >
+            Google Maps
+          </a>
         </div>
       </section>
     </main>

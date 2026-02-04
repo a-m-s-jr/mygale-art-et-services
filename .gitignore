@@ -19,3 +19,6 @@ apps/**/.next/
 .turbo/
 apps/**/.turbo/
 apps/web/.next
+.env
+.env.*.local
+.env.*.local.*
