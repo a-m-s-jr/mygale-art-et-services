@@ -8,12 +8,17 @@ import MarkdownRenderer from '@/components/MarkdownRenderer'
 export const revalidate = 300
 
 export async function generateStaticParams() {
-  const posts = await prisma.blogPost.findMany({
-    where: { published: true },
-    select: { slug: true },
-  })
+  try {
+    const posts = await prisma.blogPost.findMany({
+      where: { published: true },
+      select: { slug: true },
+    })
 
-  return posts.map((post) => ({ slug: post.slug }))
+    return posts.map((post) => ({ slug: post.slug }))
+  } catch (error) {
+    console.warn('Database not available during build, skipping static generation:', error)
+    return []
+  }
 }
 
 export async function generateMetadata({

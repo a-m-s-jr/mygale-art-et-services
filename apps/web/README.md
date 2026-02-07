@@ -4,7 +4,6 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 First, run the development server:
 
-
 ```bash
 bun dev
 ```
@@ -46,4 +45,4 @@ GitHub Actions workflow: `.github/workflows/db-migrate.yml`
 
 Required GitHub repo secret:
 
-- `DIRECT_URL`: Supabase *direct* Postgres connection string (include `?sslmode=require`)
+- `DIRECT_URL`: Supabase _direct_ Postgres connection string (include `?sslmode=require`)
