@@ -1,0 +1,50 @@
+name: Database Migrations (Prisma)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'packages/prisma/prisma/migrations/**'
+      - 'packages/prisma/prisma/schema.prisma'
+
+concurrency:
+  group: db-migrate-main
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+        env:
+          # Prisma expects a datasource url at generate-time; value doesn't matter for client generation.
+          DATABASE_URL: ${{ secrets['DIRECT_URL'] }}
+          DIRECT_URL: ${{ secrets['DIRECT_URL'] }}
+
+      - name: Apply migrations
+        run: pnpm db:migrate:deploy
+        env:
+          # Use direct (non-pooler) URL to avoid PgBouncer issues during migrations.
+          DATABASE_URL: ${{ secrets['DIRECT_URL'] }}
+          DIRECT_URL: ${{ secrets['DIRECT_URL'] }}

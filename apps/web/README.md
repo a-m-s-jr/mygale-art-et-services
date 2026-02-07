@@ -29,3 +29,21 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+### Database (Supabase Postgres + Prisma)
+
+This repo uses Prisma with two connection strings:
+
+- `DATABASE_URL`: pooled/runtime connection (Supabase Pooler / PgBouncer)
+- `DIRECT_URL`: direct connection (used for migrations; must not be PgBouncer)
+
+Recommended approach on Vercel:
+
+- Vercel build should **not** run migrations.
+- Run `prisma migrate deploy` via GitHub Actions against the production database.
+
+GitHub Actions workflow: `.github/workflows/db-migrate.yml`
+
+Required GitHub repo secret:
+
+- `DIRECT_URL`: Supabase *direct* Postgres connection string (include `?sslmode=require`)
