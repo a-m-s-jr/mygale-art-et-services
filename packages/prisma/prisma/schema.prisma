@@ -4,7 +4,10 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // Use pooled connection for runtime queries (can be Supabase Pooler / PgBouncer)
+  url       = env("DATABASE_URL")
+  // Use direct connection for migrations/introspection (must NOT be PgBouncer)
+  directUrl = env("DIRECT_URL")
 }
 
 /* ----------------------------
