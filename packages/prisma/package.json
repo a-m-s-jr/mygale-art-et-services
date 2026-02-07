@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "src/client/index.js",
   "types": "src/client/index.d.ts",
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "scripts": {
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
@@ -14,6 +17,9 @@
     "@prisma/client": "^6.19.0"
   },
   "devDependencies": {
-    "prisma": "^6.19.0"
+    "prisma": "^6.19.0",
+    "tsx": "^4.19.2",
+    "@types/bcryptjs": "^2.4.6",
+    "bcryptjs": "^2.4.3"
   }
 }

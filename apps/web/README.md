@@ -34,6 +34,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 This repo uses Prisma ORM with Supabase PostgreSQL.
 
 **Connection Setup (in `packages/prisma/prisma/.env` and `apps/web/.env.local`):**
+
 - `DATABASE_URL`: Supabase Pooler, **transaction mode** (port 6543, `?pgbouncer=true`) — used at runtime
 - `DIRECT_URL`: Supabase Pooler, **session mode** (port 5432) — used for migrations (supports advisory locks)
 
@@ -41,6 +42,7 @@ This repo uses Prisma ORM with Supabase PostgreSQL.
 > Session-mode pooler (port 5432) is a reliable alternative that supports Prisma migrations.
 
 **Local Development:**
+
 ```bash
 pnpm db:generate        # Generate Prisma client
 pnpm db:migrate:deploy  # Apply migrations
@@ -48,12 +50,14 @@ pnpm db:seed            # Seed database
 ```
 
 **Migrations (CI/CD):**
+
 - Migrations run automatically via GitHub Actions (`.github/workflows/db-migrate.yml`)
 - Triggered on push to `main` when migration files or schema change, or manually via workflow_dispatch
 - Required GitHub repo secret: `DIRECT_URL` — session-mode pooler URL (port **5432**, `?sslmode=require`)
 - Vercel build should **not** run migrations
 
 **Vercel Deployment:**
+
 - Root Directory: `apps/web`
 - Install: `pnpm install --frozen-lockfile`
 - Build: `pnpm -w db:generate && pnpm build`

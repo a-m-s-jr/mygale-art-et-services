@@ -1,37 +1,59 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { PrismaClient, SubmissionStatus } from '@prisma/client'
-const prisma = new PrismaClient()
 
-const passwordPlainAdmin = process.env.SEED_ADMIN_PASSWORD
-
-if (!passwordPlainAdmin) {
-  throw new Error('Missing environment variable: SEED_ADMIN_PASSWORD')
-}
-
-const adminPasswordHash = await bcrypt.hash(passwordPlainAdmin, 10)
-
-const admin = await prisma.user.create({
-  data: {
-    name: 'Admin',
-    email: 'admin@ask-o.app',
-    role: 'ADMIN',
-    phone: '+237600000000',
-    createdAt: new Date(),
-    accounts: {
-      create: {
-        id: crypto.randomUUID(),
-        accountId: 'admin-account',
-        providerId: 'credential',
-        password: adminPasswordHash,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    },
-  },
+// Use DIRECT_URL for seed (session-mode pooler supports connection pooling better)
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.DIRECT_URL || process.env.DATABASE_URL
+    }
+  }
 })
 
-console.log('✅ Seed data inserted')
+async function main() {
+  const passwordPlainAdmin = process.env.SEED_ADMIN_PASSWORD
+
+  if (!passwordPlainAdmin) {
+    throw new Error('Missing environment variable: SEED_ADMIN_PASSWORD')
+  }
+
+  const adminPasswordHash = await bcrypt.hash(passwordPlainAdmin, 10)
+
+  // Check if admin already exists
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: 'admin@ask-o.app' }
+  })
+
+  if (existingAdmin) {
+    console.log('⚠️  Admin user already exists, skipping seed')
+    return
+  }
+
+  const admin = await prisma.user.create({
+    data: {
+      name: 'Admin',
+      passwordHash: adminPasswordHash,
+      email: 'admin@ask-o.app',
+      role: 'ADMIN',
+      phone: '+237600000000',
+      createdAt: new Date(),
+    },
+  })
+
+  console.log('✅ Seed data inserted')
+  console.log('Admin email: admin@ask-o.app')
+  console.log('Admin password:', passwordPlainAdmin)
+}
+
+main()
+  .catch((error) => {
+    console.error('❌ Seed failed:', error)
+    process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
+  })
 
 /*
 async function main() {
