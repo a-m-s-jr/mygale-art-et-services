@@ -17,9 +17,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      # Use direct (non-pooler) URL for migrations.
+      # Use direct (non-pooler) URL for migrations if available, otherwise pooler.
       DIRECT_URL: ${{ secrets.DIRECT_URL }}
       DATABASE_URL: ${{ secrets.DIRECT_URL }}
+      # Increase lock timeout for pooler connections
+      PRISMA_MIGRATE_LOCK_TIMEOUT_MS: 60000
 
     steps:
       - name: Checkout
