@@ -87,6 +87,13 @@ export default function Navbar() {
             {t.contactUs}
           </Link>
 
+          <Link
+            href="/blog"
+            className={`hover:underline ${pathname.startsWith('/blog') ? 'font-semibold text-[#003366]' : ''}`}
+          >
+            Blog
+          </Link>
+
           <button
             aria-label="switch language"
             onClick={() => setLang(lang === 'fr' ? 'en' : 'fr')}
@@ -162,6 +169,14 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
             >
               {t.contactUs}
+            </Link>
+
+            <Link
+              href="/blog"
+              className={`hover:underline py-2 ${pathname.startsWith('/blog') ? 'font-semibold text-[#003366]' : ''}`}
+              onClick={() => setOpen(false)}
+            >
+              Blog
             </Link>
 
             <button

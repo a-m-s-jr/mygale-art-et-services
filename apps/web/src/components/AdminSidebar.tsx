@@ -15,14 +15,11 @@ export default function AdminSidebar() {
         <Link href="/admin" className="px-3 py-2 rounded hover:bg-neutral-900">
           Overview
         </Link>
-        <Link href="/admin/contact-submissions" className="px-3 py-2 rounded hover:bg-neutral-900">
-          Contact Submissions
+        <Link href="/admin/blog" className="px-3 py-2 rounded hover:bg-neutral-900">
+          Blog
         </Link>
-        <Link href="/admin/webhooks" className="px-3 py-2 rounded hover:bg-neutral-900">
-          Webhooks
-        </Link>
-        <Link href="/admin/settings" className="px-3 py-2 rounded hover:bg-neutral-900">
-          Settings
+        <Link href="/admin/announcements" className="px-3 py-2 rounded hover:bg-neutral-900">
+          Announcements
         </Link>
       </nav>
     </aside>

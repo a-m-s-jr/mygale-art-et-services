@@ -1,0 +1,260 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import { useActionState } from 'react'
+import { useFormStatus } from 'react-dom'
+import slugify from 'slugify'
+import MarkdownPreview from '@/components/MarkdownPreview'
+import { createBlogPost, updateBlogPost } from './actions'
+import { uploadMedia } from '@/lib/mediaClient'
+
+const initialState = { error: '' as string | undefined }
+
+type BlogPostFormData = {
+  id?: string
+  title: string
+  slug: string
+  excerpt: string
+  content: string
+  coverImage: string
+  locale: 'fr' | 'en'
+  published: boolean
+  publishedAt?: Date | null
+  seoTitle: string
+  seoDescription: string
+}
+
+function formatDateTime(value?: Date | null) {
+  if (!value) return ''
+  const iso = new Date(value).toISOString()
+  return iso.slice(0, 16)
+}
+
+function SubmitButton({ label }: { label: string }) {
+  const { pending } = useFormStatus()
+  return (
+    <button
+      type="submit"
+      className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold disabled:opacity-60"
+      disabled={pending}
+    >
+      {pending ? 'Saving...' : label}
+    </button>
+  )
+}
+
+export default function BlogPostForm({
+  mode,
+  initial,
+}: {
+  mode: 'create' | 'edit'
+  initial?: BlogPostFormData
+}) {
+  const [title, setTitle] = useState(initial?.title ?? '')
+  const [slug, setSlug] = useState(initial?.slug ?? '')
+  const [slugTouched, setSlugTouched] = useState(mode === 'edit')
+  const [excerpt, setExcerpt] = useState(initial?.excerpt ?? '')
+  const [content, setContent] = useState(initial?.content ?? '')
+  const [coverImage, setCoverImage] = useState(initial?.coverImage ?? '')
+  const [locale, setLocale] = useState<'fr' | 'en'>(initial?.locale ?? 'fr')
+  const [published, setPublished] = useState(initial?.published ?? false)
+  const [publishedAt, setPublishedAt] = useState(formatDateTime(initial?.publishedAt))
+  const [seoTitle, setSeoTitle] = useState(initial?.seoTitle ?? '')
+  const [seoDescription, setSeoDescription] = useState(initial?.seoDescription ?? '')
+  const [uploading, setUploading] = useState(false)
+
+  useEffect(() => {
+    if (!slugTouched) {
+      setSlug(slugify(title, { lower: true, strict: true, trim: true }))
+    }
+  }, [title, slugTouched])
+
+  const action = mode === 'create' ? createBlogPost : updateBlogPost
+  const [state, formAction] = useActionState(action, initialState)
+
+  const previewContent = useMemo(() => content || 'Start writing to see a preview...', [content])
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true)
+    const result = await uploadMedia(file, 'blog')
+    setUploading(false)
+    if (result.ok && result.url) {
+      setCoverImage(result.url)
+    } else {
+      alert(result.error || 'Upload failed')
+    }
+  }
+
+  return (
+    <form action={formAction} className="space-y-6">
+      {state.error ? (
+        <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {state.error}
+        </div>
+      ) : null}
+
+      {mode === 'edit' && initial?.id ? <input type="hidden" name="id" value={initial.id} /> : null}
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="text-sm text-neutral-300">Title *</label>
+          <input
+            name="title"
+            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm text-neutral-300">Slug *</label>
+          <input
+            name="slug"
+            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+            value={slug}
+            onChange={(e) => {
+              setSlugTouched(true)
+              setSlug(e.target.value)
+            }}
+            required
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="text-sm text-neutral-300">Excerpt *</label>
+        <textarea
+          name="excerpt"
+          className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+          rows={3}
+          value={excerpt}
+          onChange={(e) => setExcerpt(e.target.value)}
+          required
+        />
+      </div>
+
+      {/* Cover Image Upload */}
+      <div>
+        <label className="text-sm text-neutral-300">Cover Image</label>
+        <div className="mt-1 flex items-center gap-3">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            disabled={uploading}
+            className="block w-full text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-neutral-800 file:text-neutral-200 hover:file:bg-neutral-700 disabled:opacity-50"
+          />
+          {uploading && <span className="text-xs text-neutral-400">Uploading...</span>}
+        </div>
+        {coverImage && (
+          <div className="mt-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={coverImage}
+              alt="Cover preview"
+              className="h-32 rounded border border-neutral-700 object-cover"
+            />
+          </div>
+        )}
+        <input
+          type="text"
+          name="coverImage"
+          className="mt-2 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm"
+          placeholder="Or paste image URL"
+          value={coverImage}
+          onChange={(e) => setCoverImage(e.target.value)}
+        />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="text-sm text-neutral-300">Locale *</label>
+          <select
+            name="locale"
+            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+            value={locale}
+            onChange={(e) => setLocale(e.target.value as 'fr' | 'en')}
+            required
+          >
+            <option value="fr">FR</option>
+            <option value="en">EN</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="text-sm text-neutral-300">SEO Title *</label>
+          <input
+            name="seoTitle"
+            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+            value={seoTitle}
+            onChange={(e) => setSeoTitle(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label className="text-sm text-neutral-300">SEO Description *</label>
+          <input
+            name="seoDescription"
+            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+            value={seoDescription}
+            onChange={(e) => setSeoDescription(e.target.value)}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-6">
+        <label className="flex items-center gap-2 text-sm text-neutral-300">
+          <input
+            type="checkbox"
+            name="published"
+            className="h-4 w-4"
+            checked={published}
+            onChange={(e) => setPublished(e.target.checked)}
+          />
+          Published
+        </label>
+
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-neutral-300">Published At</label>
+          <input
+            type="datetime-local"
+            name="publishedAt"
+            className="rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+            value={publishedAt}
+            onChange={(e) => setPublishedAt(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div>
+          <label className="text-sm text-neutral-300">Markdown Content *</label>
+          <textarea
+            name="content"
+            className="mt-1 min-h-80 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 font-mono text-sm"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <div className="text-sm text-neutral-300">Live Preview</div>
+          <div className="mt-1 min-h-80 rounded-lg border border-neutral-800 bg-neutral-900 px-4 py-3">
+            <MarkdownPreview content={previewContent} />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <SubmitButton label={mode === 'create' ? 'Create Post' : 'Save Changes'} />
+        <span className="text-xs text-neutral-400">Fields marked * are required.</span>
+      </div>
+    </form>
+  )
+}

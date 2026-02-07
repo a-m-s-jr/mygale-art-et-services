@@ -8,7 +8,7 @@ dist
 bun.lock
 data
 # Snyk Security Extension - AI Rules (auto-generated)
-.github\instructions\snyk_rules.instructions.md
+.github/instructions/snyk_rules.instructions.md
 .vercel
 .turbo/
 .turbo/*
@@ -22,3 +22,4 @@ apps/web/.next
 
 # Snyk Security Extension - AI Rules (auto-generated)
 .github/instructions/snyk_rules.instructions.md
+.env

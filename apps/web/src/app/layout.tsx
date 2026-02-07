@@ -1,11 +1,12 @@
 import '../styles/globals.css'
-import React from 'react'
+import React, { Suspense } from 'react'
 import { LocaleProvider } from '@/lib/locale'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import Image from 'next/image'
 import PageTransitions from '@/components/PageTransitions' // client wrapper for AnimatePresence
 import { Analytics } from '@vercel/analytics/next'
+import AnnouncementBanner from '@/components/AnnouncementBanner'
 
 export const metadata = {
   title: 'Mygale Art & Services – Architecture, Stylisme, Vitraux, Imprimerie',
@@ -31,6 +32,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-white text-black antialiased">
         <LocaleProvider>
           <div className="min-h-screen flex flex-col">
+            <Suspense fallback={<div className="min-h-12" aria-hidden />}>
+              <AnnouncementBanner />
+            </Suspense>
             <Navbar />
             {/* PageTransitions handles the AnimatePresence keyed by pathname */}
             <PageTransitions>
