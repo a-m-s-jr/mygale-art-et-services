@@ -16,6 +16,10 @@ jobs:
   migrate:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # Use direct (non-pooler) URL for migrations.
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      DATABASE_URL: ${{ secrets.DIRECT_URL }}
 
     steps:
       - name: Checkout
@@ -37,14 +41,6 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm db:generate
-        env:
-          # Prisma expects a datasource url at generate-time; value doesn't matter for client generation.
-          DATABASE_URL: ${{ secrets['DIRECT_URL'] }}
-          DIRECT_URL: ${{ secrets['DIRECT_URL'] }}
 
       - name: Apply migrations
         run: pnpm db:migrate:deploy
-        env:
-          # Use direct (non-pooler) URL to avoid PgBouncer issues during migrations.
-          DATABASE_URL: ${{ secrets['DIRECT_URL'] }}
-          DIRECT_URL: ${{ secrets['DIRECT_URL'] }}
