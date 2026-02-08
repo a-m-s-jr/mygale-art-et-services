@@ -1,14 +1,20 @@
-import bcrypt from "bcryptjs";
-import crypto from "crypto";
+import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 import { PrismaClient, SubmissionStatus } from '@prisma/client'
+import * as dotenv from 'dotenv'
+import * as path from 'path'
+
+// Load environment variables from root .env
+dotenv.config({ path: path.resolve(__dirname, '../../.env') })
+dotenv.config({ path: path.resolve(__dirname, '.env') })
 
 // Use DIRECT_URL for seed (session-mode pooler supports connection pooling better)
 const prisma = new PrismaClient({
   datasources: {
     db: {
-      url: process.env.DIRECT_URL || process.env.DATABASE_URL
-    }
-  }
+      url: process.env.DIRECT_URL || process.env.DATABASE_URL,
+    },
+  },
 })
 
 async function main() {
@@ -22,7 +28,7 @@ async function main() {
 
   // Check if admin already exists
   const existingAdmin = await prisma.user.findUnique({
-    where: { email: 'admin@ask-o.app' }
+    where: { email: 'admin@ask-o.app' },
   })
 
   if (existingAdmin) {
