@@ -38,6 +38,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Navbar />
             {/* PageTransitions handles the AnimatePresence keyed by pathname */}
             <PageTransitions>
+              <meta
+                name="google-site-verification"
+                content="K-VuRffW84Xt4A_DPHJnM5x3Hs_YduHLc7U1lyYhYAo"
+              />
               <main className="flex-1">{children}</main>
             </PageTransitions>
             <Footer />
