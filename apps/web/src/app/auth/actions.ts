@@ -7,8 +7,14 @@ import bcrypt from 'bcryptjs'
 import prisma from '@/lib/prisma'
 import { getCurrentUser } from '@/lib/auth'
 import { writeAuditLog } from '@/lib/revisions'
+import { getClientIp, rateLimit } from '@/lib/rateLimit'
 
 const SESSION_TTL_DAYS = 30
+
+// 10 attempts per 15 minutes per client IP, to slow down credential
+// brute-forcing without locking out legitimate users on a shared IP.
+const LOGIN_RATE_LIMIT = 10
+const LOGIN_RATE_WINDOW_MS = 15 * 60_000
 
 const ROLE_RANK: Record<string, number> = {
   SUPER_ADMIN: 5,
@@ -27,20 +33,18 @@ function asString(value: FormDataEntryValue | null) {
   return typeof value === 'string' ? value : ''
 }
 
-function isBcryptHash(value: string) {
-  return value.startsWith('$2a$') || value.startsWith('$2b$') || value.startsWith('$2y$')
-}
-
-function safeEquals(a: string, b: string) {
-  if (a.length !== b.length) return false
-  return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b))
-}
-
 type ActionState = {
   error?: string
 }
 
 export async function signInWithPassword(_prevState: ActionState, formData: FormData) {
+  const headerStoreForRateLimit = await headers()
+  const clientIp = getClientIp(headerStoreForRateLimit)
+  const rate = rateLimit(`login:${clientIp}`, LOGIN_RATE_LIMIT, LOGIN_RATE_WINDOW_MS)
+  if (!rate.success) {
+    return { error: 'Too many login attempts. Please try again later.' }
+  }
+
   const email = normalizeEmail(formData.get('email'))
   const password = asString(formData.get('password'))
 
@@ -63,14 +67,10 @@ export async function signInWithPassword(_prevState: ActionState, formData: Form
   }
 
   let validPassword = false
-  if (isBcryptHash(user.passwordHash)) {
-    try {
-      validPassword = await bcrypt.compare(password, user.passwordHash)
-    } catch {
-      validPassword = false
-    }
-  } else {
-    validPassword = safeEquals(user.passwordHash, password)
+  try {
+    validPassword = await bcrypt.compare(password, user.passwordHash)
+  } catch {
+    validPassword = false
   }
 
   if (!validPassword) {
