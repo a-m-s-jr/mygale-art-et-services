@@ -1,0 +1,50 @@
+name: Database Seed
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed_target:
+        description: 'What to seed'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - seed.ts
+          - seed-cms
+          - both
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: ${{ secrets.DIRECT_URL }}
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
+      SEED_ADMIN_PASSWORD: ${{ secrets.SEED_ADMIN_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Run seed.ts
+        if: ${{ inputs.seed_target == 'seed.ts' || inputs.seed_target == 'both' }}
+        run: pnpm --filter @mygale/prisma prisma db seed
+
+      - name: Run seed-cms
+        if: ${{ inputs.seed_target == 'seed-cms' || inputs.seed_target == 'both' }}
+        run: pnpm --filter @mygale/prisma db:seed:cms

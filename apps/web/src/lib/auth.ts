@@ -1,7 +1,16 @@
 ﻿import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import prisma from '@/lib/prisma'
-import type { User } from '@prisma/client'
+import type { Role, User } from '@prisma/client'
+
+const ROLE_RANK: Record<Role, number> = {
+  SUPER_ADMIN: 5,
+  ADMIN: 4,
+  EDITOR: 3,
+  STAFF: 2,
+  VIEWER: 1,
+  USER: 0,
+}
 
 const SESSION_COOKIE_NAMES = [
   '__Secure-authjs.session-token',
@@ -35,13 +44,18 @@ export async function getCurrentUser(): Promise<User | null> {
     await prisma.session.delete({ where: { id: session.id } })
     return null
   }
+  if (!session.user.active) return null
   return session.user
 }
 
-export async function requireAdmin(): Promise<User> {
+export async function requireRole(minRole: Role): Promise<User> {
   const user = await getCurrentUser()
-  if (!user || user.role !== 'ADMIN') {
+  if (!user || !user.role || ROLE_RANK[user.role] < ROLE_RANK[minRole]) {
     redirect('/login')
   }
   return user
+}
+
+export async function requireAdmin(): Promise<User> {
+  return requireRole('ADMIN')
 }

@@ -38,15 +38,18 @@ export const markdownSanitizeSchema: any = {
   },
 }
 
+// Markdown headings are demoted one level (h1 -> h2, h2 -> h3, h3 -> h4) so
+// user-authored content never introduces a second <h1> on a page that
+// already has its own title heading — visual sizing is kept as-authored.
 export const markdownComponents: Components = {
   h1: ({ node, ...props }) => (
-    <h1 className="mt-10 text-3xl font-bold tracking-tight text-neutral-900" {...props} />
+    <h2 className="mt-10 text-3xl font-bold tracking-tight text-neutral-900" {...props} />
   ),
   h2: ({ node, ...props }) => (
-    <h2 className="mt-8 text-2xl font-semibold tracking-tight text-neutral-900" {...props} />
+    <h3 className="mt-8 text-2xl font-semibold tracking-tight text-neutral-900" {...props} />
   ),
   h3: ({ node, ...props }) => (
-    <h3 className="mt-6 text-xl font-semibold text-neutral-900" {...props} />
+    <h4 className="mt-6 text-xl font-semibold text-neutral-900" {...props} />
   ),
   p: ({ node, ...props }) => (
     <p className="mt-4 leading-7 text-neutral-700" {...props} />

@@ -21,17 +21,24 @@ model User {
   email               String              @unique
   role                Role?
   phone               String?
+  active              Boolean             @default(true)
   createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
   auditLogs           AuditLog[]
   assignedSubmissions ContactSubmission[]
 
   accounts Account[]
   sessions Session[]
+
+  media     Media[]
+  revisions Revision[]
 }
 
 enum Role {
+  SUPER_ADMIN
   ADMIN
+  EDITOR
   STAFF
   VIEWER
   USER
@@ -226,23 +233,323 @@ enum AnnouncementType {
 ----------------------------- */
 
 model BlogPost {
-  id             String      @id @default(cuid())
-  title          String
-  slug           String      @unique
-  content        String
-  excerpt        String?
-  coverImage     String?
-  seoTitle       String?
-  seoDescription String?
-  published      Boolean     @default(false)
-  featured       Boolean     @default(false)
-  publishedAt    DateTime?
-  locale         BlogLocale  @default(fr)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id                 String        @id @default(cuid())
+  title              String
+  slug               String        @unique
+  content            String
+  excerpt            String?
+  coverImage         String?
+  seoTitle           String?
+  seoDescription     String?
+  published          Boolean       @default(false)
+  featured           Boolean       @default(false)
+  publishedAt        DateTime?
+  locale             BlogLocale    @default(fr)
+  categoryId         String?
+  category           BlogCategory? @relation(fields: [categoryId], references: [id])
+  tags               BlogTag[]
+  /** Shared across the fr/en pair of the same article so they can link to each other. */
+  translationGroupId String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([translationGroupId])
+}
+
+model BlogCategory {
+  id        String     @id @default(cuid())
+  slug      String     @unique
+  nameFr    String
+  nameEn    String
+  order     Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  posts     BlogPost[]
+}
+
+model BlogTag {
+  id        String     @id @default(cuid())
+  slug      String     @unique
+  nameFr    String
+  nameEn    String
+  createdAt DateTime   @default(now())
+  posts     BlogPost[]
 }
 
 enum BlogLocale {
   fr
   en
+}
+
+/* ----------------------------
+   CMS FOUNDATION (Phase 1)
+----------------------------- */
+
+enum BlockType {
+  RICHTEXT
+  BULLET_LIST
+  IMAGE
+  VIDEO
+}
+
+enum HomepageSectionType {
+  HERO
+  SERVICES_GRID
+  ABOUT
+  MAP
+  STATS
+  PARTNERS
+  TESTIMONIALS
+}
+
+enum NavLinkType {
+  INTERNAL
+  EXTERNAL
+  SERVICES_DROPDOWN
+}
+
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+  WHATSAPP
+  LINKEDIN
+  TIKTOK
+  X
+  YOUTUBE
+  OTHER
+}
+
+enum RevisionAction {
+  CREATE
+  UPDATE
+  SOFT_DELETE
+  RESTORE
+}
+
+model Media {
+  id           String    @id @default(cuid())
+  key          String    @unique
+  url          String
+  thumbnailUrl String?
+  webpUrl      String?
+  folder       String    @default("uploads")
+  altFr        String?
+  altEn        String?
+  width        Int?
+  height       Int?
+  mimeType     String?
+  size         Int?
+  uploadedById String?
+  uploadedBy   User?     @relation(fields: [uploadedById], references: [id])
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  aboutPageHeroOf   AboutPage[]
+  serviceHeroOf     Service[]         @relation("ServiceHeroImage")
+  serviceOgOf       Service[]         @relation("ServiceOgImage")
+  serviceSectionOf  ServiceSection[]
+  homepageSectionOf HomepageSection[]
+  settingsLogoOf    SiteSettings[]    @relation("SettingsLogo")
+  settingsFaviconOf SiteSettings[]    @relation("SettingsFavicon")
+  settingsOgOf      SiteSettings[]    @relation("SettingsOgImage")
+
+  @@index([folder])
+}
+
+model Service {
+  id               String    @id @default(cuid())
+  slug             String    @unique
+  titleFr          String
+  titleEn          String
+  summaryFr        String
+  summaryEn        String
+  heroImageId      String?
+  heroImage        Media?    @relation("ServiceHeroImage", fields: [heroImageId], references: [id])
+  ogImageId        String?
+  ogImage          Media?    @relation("ServiceOgImage", fields: [ogImageId], references: [id])
+  seoTitleFr       String?
+  seoTitleEn       String?
+  seoDescriptionFr String?
+  seoDescriptionEn String?
+  order            Int       @default(0)
+  featured         Boolean   @default(false)
+  published        Boolean   @default(true)
+  deletedAt        DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdById      String?
+  updatedById      String?
+
+  sections ServiceSection[]
+
+  @@index([published, deletedAt, order])
+}
+
+model ServiceSection {
+  id        String    @id @default(cuid())
+  serviceId String
+  service   Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  key       String
+  type      BlockType @default(BULLET_LIST)
+  titleFr   String
+  titleEn   String
+  bodyFr    String?
+  bodyEn    String?
+  itemsFr   String[]  @default([])
+  itemsEn   String[]  @default([])
+  videoUrl  String?
+  mediaId   String?
+  media     Media?    @relation(fields: [mediaId], references: [id])
+  order     Int       @default(0)
+  visible   Boolean   @default(true)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([serviceId, key])
+  @@index([serviceId, order])
+}
+
+model HomepageSection {
+  id         String              @id @default(cuid())
+  key        String              @unique
+  type       HomepageSectionType
+  titleFr    String?
+  titleEn    String?
+  subtitleFr String?
+  subtitleEn String?
+  bodyFr     String?
+  bodyEn     String?
+  mediaId    String?
+  media      Media?              @relation(fields: [mediaId], references: [id])
+  ctaLabelFr String?
+  ctaLabelEn String?
+  ctaHref    String?
+  data       Json?
+  order      Int                 @default(0)
+  visible    Boolean             @default(true)
+  deletedAt  DateTime?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  @@index([order])
+}
+
+model SiteSettings {
+  id                       String   @id @default("singleton")
+  companyNameFr            String
+  companyNameEn            String
+  taglineFr                String?
+  taglineEn                String?
+  addressFr                String?
+  addressEn                String?
+  city                     String?
+  country                  String?
+  phonePrimary             String?
+  phoneSecondary           String?
+  whatsapp                 String?
+  emailPrimary             String?
+  emailContact             String?
+  mapEmbedUrl              String?
+  mapPlaceUrl              String?
+  latitude                 Float?
+  longitude                Float?
+  businessHoursFr          String?
+  businessHoursEn          String?
+  logoId                   String?
+  logo                     Media?   @relation("SettingsLogo", fields: [logoId], references: [id])
+  faviconId                String?
+  favicon                  Media?   @relation("SettingsFavicon", fields: [faviconId], references: [id])
+  defaultSeoTitleFr        String?
+  defaultSeoTitleEn        String?
+  defaultSeoDescriptionFr  String?
+  defaultSeoDescriptionEn  String?
+  defaultOgImageId         String?
+  defaultOgImage           Media?   @relation("SettingsOgImage", fields: [defaultOgImageId], references: [id])
+  googleSiteVerification   String?
+  analyticsId              String?
+  smtpFromName             String?
+  smtpFromEmail            String?
+  smtpReplyTo              String?
+  updatedAt                DateTime @updatedAt
+  updatedById              String?
+}
+
+model NavigationItem {
+  id           String           @id @default(cuid())
+  key          String?          @unique
+  labelFr      String
+  labelEn      String
+  href         String?
+  linkType     NavLinkType      @default(INTERNAL)
+  parentId     String?
+  parent       NavigationItem?  @relation("NavChildren", fields: [parentId], references: [id])
+  children     NavigationItem[] @relation("NavChildren")
+  order        Int              @default(0)
+  visible      Boolean          @default(true)
+  openInNewTab Boolean          @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([parentId, order])
+}
+
+model SocialLink {
+  id        String         @id @default(cuid())
+  key       String?        @unique
+  platform  SocialPlatform
+  label     String?
+  url       String
+  order     Int            @default(0)
+  visible   Boolean        @default(true)
+  deletedAt DateTime?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([order])
+}
+
+model AboutPage {
+  id               String   @id @default("singleton")
+  titleFr          String
+  titleEn          String
+  introFr          String
+  introEn          String
+  bodyFr           String
+  bodyEn           String
+  heroImageId      String?
+  heroImage        Media?   @relation(fields: [heroImageId], references: [id])
+  seoTitleFr       String?
+  seoTitleEn       String?
+  seoDescriptionFr String?
+  seoDescriptionEn String?
+  updatedAt        DateTime @updatedAt
+  updatedById      String?
+}
+
+model Redirect {
+  id         String   @id @default(cuid())
+  fromPath   String   @unique
+  toPath     String
+  statusCode Int      @default(308)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([active])
+}
+
+model Revision {
+  id          String         @id @default(cuid())
+  entityType  String
+  entityId    String
+  action      RevisionAction
+  snapshot    Json
+  createdAt   DateTime       @default(now())
+  createdById String?
+  createdBy   User?          @relation(fields: [createdById], references: [id])
+
+  @@index([entityType, entityId, createdAt])
 }

@@ -1,35 +1,62 @@
 import React from 'react'
+import Image from 'next/image'
+import type { Metadata } from 'next'
+import { getAboutPage } from '@/lib/queries/about'
+import { getLocale } from '@/lib/getLocale'
 
-export default function AboutPage() {
-  return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <h2 className="text-3xl font-semibold">About MyGale</h2>
-      <p className="text-gray-300">
-        MyGale helps teams capture and respond to customer messages quickly and reliably. We focus
-        on real-time delivery, safe retries for webhooks, and an admin experience that reduces
-        friction.
-      </p>
+export const revalidate = 300
 
-      <div className="grid md:grid-cols-3 gap-6 mt-6">
-        <div className="bg-neutral-850 p-4 rounded-lg border border-neutral-800">
-          <h4 className="font-semibold">Mission</h4>
-          <p className="text-sm text-gray-300 mt-2">
-            Make customer communication delightful and accountable.
-          </p>
-        </div>
-        <div className="bg-neutral-850 p-4 rounded-lg border border-neutral-800">
-          <h4 className="font-semibold">Security</h4>
-          <p className="text-sm text-gray-300 mt-2">
-            We take data privacy seriously and follow least-privilege access.
-          </p>
-        </div>
-        <div className="bg-neutral-850 p-4 rounded-lg border border-neutral-800">
-          <h4 className="font-semibold">Scale</h4>
-          <p className="text-sm text-gray-300 mt-2">
-            Design that scales from solo founders to enterprise teams.
-          </p>
-        </div>
+export async function generateMetadata(): Promise<Metadata> {
+  const [about, locale] = await Promise.all([getAboutPage(), getLocale()])
+  if (!about) return {}
+
+  const title = (locale === 'en' ? about.seoTitleEn : about.seoTitleFr) || undefined
+  const description = (locale === 'en' ? about.seoDescriptionEn : about.seoDescriptionFr) || undefined
+
+  return {
+    title,
+    description,
+    alternates: { canonical: 'https://mygale-art-and-services.com/about' },
+  }
+}
+
+export default async function AboutPage() {
+  const [about, locale] = await Promise.all([getAboutPage(), getLocale()])
+
+  if (!about) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-16">
+        <p className="text-gray-600">Content coming soon.</p>
       </div>
+    )
+  }
+
+  const title = locale === 'en' ? about.titleEn : about.titleFr
+  const intro = locale === 'en' ? about.introEn : about.introFr
+  const body = locale === 'en' ? about.bodyEn : about.bodyFr
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-16">
+      {about.heroImage?.url ? (
+        <div className="mb-8 h-56 w-full overflow-hidden rounded-xl md:h-72">
+          <Image
+            src={about.heroImage.url}
+            alt={title}
+            width={1200}
+            height={500}
+            className="h-full w-full object-cover"
+            priority
+          />
+        </div>
+      ) : null}
+
+      <h1 className="text-4xl font-bold text-[#003366] mb-4">{title}</h1>
+      <p className="text-lg text-gray-700 leading-relaxed mb-8">{intro}</p>
+
+      <div
+        className="prose max-w-none text-gray-700 leading-relaxed"
+        dangerouslySetInnerHTML={{ __html: body }}
+      />
     </div>
   )
 }

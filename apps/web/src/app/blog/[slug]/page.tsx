@@ -5,21 +5,11 @@ import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import MarkdownRenderer from '@/components/MarkdownRenderer'
 
-export const revalidate = 300
-
-export async function generateStaticParams() {
-  try {
-    const posts = await prisma.blogPost.findMany({
-      where: { published: true },
-      select: { slug: true },
-    })
-
-    return posts.map((post) => ({ slug: post.slug }))
-  } catch (error) {
-    console.warn('Database not available during build, skipping static generation:', error)
-    return []
-  }
-}
+// Rendered per-request (like every other CMS-driven page in this app) rather
+// than via generateStaticParams/ISR: the root layout reads the locale cookie,
+// which conflicts with Next's on-demand-ISR-fallback rendering mode and
+// throws DYNAMIC_SERVER_USAGE in production for any post not present in the
+// static param set at build time — i.e. every post published after a deploy.
 
 export async function generateMetadata({
   params,
@@ -58,11 +48,23 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
   const { slug } = await params
   const post = await prisma.blogPost.findFirst({
     where: { slug, published: true },
+    include: { category: true, tags: true },
   })
 
   if (!post) {
     notFound()
   }
+
+  const translation = post.translationGroupId
+    ? await prisma.blogPost.findFirst({
+        where: {
+          translationGroupId: post.translationGroupId,
+          id: { not: post.id },
+          published: true,
+        },
+        select: { slug: true, locale: true },
+      })
+    : null
 
   const dateLocale = post.locale === 'en' ? 'en-US' : 'fr-FR'
 
@@ -98,6 +100,45 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
       )}
 
       <div className="max-w-4xl mx-auto px-4 py-12">
+        {!post.coverImage && (
+          <header className="mb-8">
+            <p className="text-xs uppercase tracking-[0.2em] text-gray-500">
+              {post.publishedAt
+                ? new Intl.DateTimeFormat(dateLocale, { dateStyle: 'long' }).format(
+                    post.publishedAt,
+                  )
+                : ''}
+            </p>
+            <h1 className="mt-3 text-3xl md:text-4xl font-semibold leading-tight text-neutral-900">
+              {post.title}
+            </h1>
+            {post.excerpt ? <p className="mt-4 text-gray-600 max-w-3xl">{post.excerpt}</p> : null}
+          </header>
+        )}
+
+        {post.category || post.tags.length > 0 || translation ? (
+          <div className="mb-8 flex flex-wrap items-center gap-2 text-xs">
+            {post.category ? (
+              <span className="rounded-full bg-[#003366]/10 px-3 py-1 font-semibold text-[#003366]">
+                {post.locale === 'en' ? post.category.nameEn : post.category.nameFr}
+              </span>
+            ) : null}
+            {post.tags.map((tag) => (
+              <span key={tag.id} className="rounded-full border px-3 py-1 text-gray-500">
+                #{post.locale === 'en' ? tag.nameEn : tag.nameFr}
+              </span>
+            ))}
+            {translation ? (
+              <Link
+                href={`/blog/${translation.slug}`}
+                className="ml-auto rounded-full border border-[#003366] px-3 py-1 font-semibold text-[#003366] hover:bg-[#003366] hover:text-white transition"
+              >
+                {translation.locale === 'en' ? 'Read in English' : 'Lire en français'}
+              </Link>
+            ) : null}
+          </div>
+        ) : null}
+
         <MarkdownRenderer content={post.content} />
 
         <div className="mt-12 border-t pt-6">

@@ -51,6 +51,7 @@ export default async function BlogPage({
     orderBy: [{ createdAt: 'desc' }],
     skip: (currentPage - 1) * PAGE_SIZE,
     take: PAGE_SIZE,
+    include: { category: true },
   })
 
   return (
@@ -117,13 +118,20 @@ export default async function BlogPage({
                     </div>
                   )}
                   <div className="p-6">
-                    <p className="text-xs uppercase tracking-[0.2em] text-gray-400">
-                      {post.publishedAt
-                        ? new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-US', {
-                            dateStyle: 'medium',
-                          }).format(post.publishedAt)
-                        : ''}
-                    </p>
+                    <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-gray-400">
+                      <span>
+                        {post.publishedAt
+                          ? new Intl.DateTimeFormat(locale === 'fr' ? 'fr-FR' : 'en-US', {
+                              dateStyle: 'medium',
+                            }).format(post.publishedAt)
+                          : ''}
+                      </span>
+                      {post.category ? (
+                        <span className="rounded-full bg-[#003366]/10 px-2 py-0.5 text-[#003366] normal-case tracking-normal">
+                          {locale === 'en' ? post.category.nameEn : post.category.nameFr}
+                        </span>
+                      ) : null}
+                    </div>
                     <h2 className="mt-2 text-xl font-semibold text-[#003366]">{post.title}</h2>
                     <p className="mt-3 text-sm text-gray-600">{post.excerpt}</p>
                     <span className="mt-4 inline-flex items-center text-sm font-semibold text-[#003366]">

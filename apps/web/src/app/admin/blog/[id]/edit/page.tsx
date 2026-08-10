@@ -6,11 +6,22 @@ export default async function EditBlogPostPage({ params }: { params: Promise<{ i
   const { id } = await params
   const post = await prisma.blogPost.findUnique({
     where: { id },
+    include: { tags: true },
   })
 
   if (!post) {
     notFound()
   }
+
+  const [categories, translationCandidates] = await Promise.all([
+    prisma.blogCategory.findMany({ orderBy: { order: 'asc' } }),
+    prisma.blogPost.findMany({
+      where: { id: { not: id }, locale: post.locale === 'fr' ? 'en' : 'fr' },
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, title: true, locale: true },
+      take: 100,
+    }),
+  ])
 
   return (
     <div className="space-y-6">
@@ -20,6 +31,8 @@ export default async function EditBlogPostPage({ params }: { params: Promise<{ i
       </div>
       <BlogPostForm
         mode="edit"
+        categories={categories}
+        translationOptions={translationCandidates}
         initial={{
           id: post.id,
           title: post.title,
@@ -32,6 +45,9 @@ export default async function EditBlogPostPage({ params }: { params: Promise<{ i
           publishedAt: post.publishedAt,
           seoTitle: post.seoTitle || '',
           seoDescription: post.seoDescription || '',
+          categoryId: post.categoryId || '',
+          tags: post.tags.map((t) => t.nameFr).join(', '),
+          translationOfId: '',
         }}
       />
     </div>

@@ -10,11 +10,7 @@ const initialState = { error: '' as string | undefined }
 function SubmitButton() {
   const { pending } = useFormStatus()
   return (
-    <button
-      type="submit"
-      className="w-full rounded-lg bg-[#003366] px-4 py-2 text-white font-semibold disabled:opacity-60"
-      disabled={pending}
-    >
+    <button type="submit" className="btn-primary w-full disabled:opacity-60" disabled={pending}>
       {pending ? 'Signing in...' : 'Sign in'}
     </button>
   )
@@ -27,34 +23,42 @@ export default function LoginForm() {
   return (
     <form action={formAction} className="space-y-4">
       {state.error ? (
-        <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.error}
         </div>
       ) : null}
 
       <div>
-        <label className="text-sm text-gray-300">Email</label>
+        <label htmlFor="login-email" className="text-sm text-gray-600">
+          Email
+        </label>
         <input
+          id="login-email"
           name="email"
           type="email"
+          autoComplete="username"
           required
-          className="w-full mt-1 px-3 py-2 rounded bg-neutral-800 border border-neutral-700"
+          className="input mt-1"
         />
       </div>
 
       <div>
-        <label className="text-sm text-gray-300">Password</label>
+        <label htmlFor="login-password" className="text-sm text-gray-600">
+          Password
+        </label>
         <div className="relative">
           <input
+            id="login-password"
             name="password"
             type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
             required
-            className="w-full mt-1 px-3 py-2 pr-10 rounded bg-neutral-800 border border-neutral-700"
+            className="input mt-1 pr-10"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300 transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? (

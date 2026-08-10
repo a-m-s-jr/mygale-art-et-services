@@ -1,119 +1,158 @@
-'use client'
+import type { Metadata } from 'next'
+import { getSiteSettings } from '@/lib/queries/settings'
+import { getSocialLinks } from '@/lib/queries/socialLinks'
+import { getLocale } from '@/lib/getLocale'
+import { PLATFORM_LABEL } from '@/lib/socialPlatforms'
+import SocialIcon from '@/components/SocialIcon'
+import ContactForm from './ContactForm'
 
-import React, { useState } from 'react'
-import { useLocale } from '@/lib/locale'
-import { z } from 'zod'
-import SuccessAnim from '@/components/SuccessAnim'
-import confetti from 'canvas-confetti'
+export async function generateMetadata(): Promise<Metadata> {
+  const [settings, locale] = await Promise.all([getSiteSettings(), getLocale()])
+  const title =
+    locale === 'en'
+      ? `Contact us | ${settings.companyNameEn}`
+      : `Contactez-nous | ${settings.companyNameFr}`
+  const description =
+    (locale === 'en' ? settings.defaultSeoDescriptionEn : settings.defaultSeoDescriptionFr) ||
+    undefined
+  return { title, description }
+}
 
-const schema = z.object({
-  name: z.string().min(2, 'Name too short'),
-  email: z.string().email('Invalid email format'),
-  phone: z
-    .string()
-    .regex(/^\+?[0-9 ]{6,20}$/, 'Phone must contain only digits, spaces, or leading +')
-    .optional()
-    .or(z.literal('')),
-  message: z.string().min(5, 'Message too short'),
-})
+export default async function ContactPage() {
+  const [settings, socialLinks, locale] = await Promise.all([
+    getSiteSettings(),
+    getSocialLinks(),
+    getLocale(),
+  ])
 
-export default function ContactPage() {
-  const { t } = useLocale()
+  const isEn = locale === 'en'
+  const address = (isEn ? settings.addressEn : settings.addressFr) || settings.city
+  const hours = isEn ? settings.businessHoursEn : settings.businessHoursFr
+  const phones = [settings.phonePrimary, settings.phoneSecondary].filter(Boolean) as string[]
+  const emails = [settings.emailPrimary, settings.emailContact].filter(
+    (v, i, arr) => Boolean(v) && arr.indexOf(v) === i,
+  ) as string[]
 
-  const [inputs, setInputs] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: '',
-  })
-
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle')
-
-  function handleChange(field: string, value: string) {
-    setInputs((prev) => ({ ...prev, [field]: value }))
-
-    // Live validation
-    const check = schema.safeParse({ ...inputs, [field]: value })
-    if (check.success) {
-      setErrors({})
-    } else {
-      const flattened = check.error.flatten().fieldErrors
-      const message = (flattened as Record<string, string[]>)[field]?.[0] || ''
-      setErrors((prev) => ({ ...prev, [field]: message }))
-    }
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-
-    const result = schema.safeParse(inputs)
-    if (!result.success) {
-      const flattened = result.error.flatten().fieldErrors
-
-      const formatted: Record<string, string> = {}
-      Object.entries(flattened as Record<string, string[]>).forEach(([k, v]) => {
-        if (v && v.length > 0) formatted[k] = v[0]
-      })
-
-      setErrors(formatted)
-      return
-    }
-
-    setStatus('sending')
-
-    try {
-      await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(inputs),
-      })
-
-      setStatus('sent')
-      setInputs({ name: '', email: '', phone: '', message: '' })
-      setErrors({})
-
-      confetti({ particleCount: 70, spread: 70, origin: { y: 0.65 } })
-    } catch {
-      alert('Network error')
-      setStatus('idle')
-    }
+  const t = {
+    heading: isEn ? 'Contact us' : 'Contactez-nous',
+    contactInfo: isEn ? 'Contact Information' : 'Informations de contact',
+    address: isEn ? 'Address' : 'Adresse',
+    phone: isEn ? 'Phone' : 'Téléphone',
+    email: 'Email',
+    openingHours: isEn ? 'Opening Hours' : "Horaires d'ouverture",
+    followUs: isEn ? 'Follow us' : 'Suivez-nous',
+    findUs: isEn ? 'Find us' : 'Nous trouver',
+    openInMaps: isEn ? 'Open in Google Maps' : 'Ouvrir dans Google Maps',
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-16">
-      {status === 'sent' && <SuccessAnim />}
+    <div className="bg-white text-black">
+      <div className="max-w-6xl mx-auto px-4 py-16">
+        <h1 className="text-3xl font-semibold mb-10">{t.heading}</h1>
 
-      <h1 className="text-3xl font-semibold mb-4">{t.contactUs}</h1>
+        <div className="grid gap-10 md:grid-cols-2">
+          {/* LEFT: company contact information, configured by the admin */}
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-[#003366]">{t.contactInfo}</h2>
 
-      <form onSubmit={handleSubmit} className="space-y-4 mt-4">
-        {(['name', 'email', 'phone', 'message'] as const).map((field) => (
-          <div key={field}>
-            {field === 'message' ? (
-              <textarea
-                value={inputs[field]}
-                onChange={(e) => handleChange(field, e.target.value)}
-                className={`input h-36 ${errors[field] ? 'input-error' : ''}`}
-                placeholder={t[field]}
-              />
-            ) : (
-              <input
-                type={field === 'email' ? 'email' : 'text'}
-                value={inputs[field]}
-                onChange={(e) => handleChange(field, e.target.value)}
-                className={`input ${errors[field] ? 'input-error' : ''}`}
-                placeholder={t[field]}
-              />
-            )}
+            {address ? (
+              <div>
+                <div className="text-sm font-semibold text-gray-500">{t.address}</div>
+                <div className="text-gray-800">{address}</div>
+              </div>
+            ) : null}
 
-            {errors[field] && <p className="text-red-600 text-sm mt-1">{errors[field]}</p>}
+            {phones.length > 0 ? (
+              <div>
+                <div className="text-sm font-semibold text-gray-500">{t.phone}</div>
+                {phones.map((phone) => (
+                  <div key={phone}>
+                    <a className="text-gray-800 hover:underline" href={`tel:${phone.replace(/[^\d+]/g, '')}`}>
+                      {phone}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {emails.length > 0 ? (
+              <div>
+                <div className="text-sm font-semibold text-gray-500">{t.email}</div>
+                {emails.map((email) => (
+                  <div key={email}>
+                    <a className="text-gray-800 hover:underline" href={`mailto:${email}`}>
+                      {email}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+
+            {hours ? (
+              <div>
+                <div className="text-sm font-semibold text-gray-500">{t.openingHours}</div>
+                <div className="text-gray-800 whitespace-pre-line">{hours}</div>
+              </div>
+            ) : null}
+
+            {socialLinks.length > 0 ? (
+              <div>
+                <div className="text-sm font-semibold text-gray-500">{t.followUs}</div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {socialLinks.map((link) => (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={link.label || PLATFORM_LABEL[link.platform] || link.platform}
+                      title={link.label || PLATFORM_LABEL[link.platform] || link.platform}
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F4F6F8] text-[#003366] shadow-sm transition hover:scale-110 hover:bg-[#003366] hover:text-white"
+                    >
+                      <SocialIcon platform={link.platform} className="h-4 w-4" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ) : null}
           </div>
-        ))}
 
-        <button type="submit" className="btn-primary w-full" disabled={status === 'sending'}>
-          {status === 'sending' ? 'Sending…' : t.send}
-        </button>
-      </form>
+          {/* RIGHT: contact form */}
+          <div>
+            <ContactForm />
+          </div>
+        </div>
+
+        {settings.mapEmbedUrl ? (
+          <div className="mt-16">
+            <h2 className="text-2xl font-semibold mb-6 text-center">{t.findUs}</h2>
+            <div className="w-full h-[350px] md:h-[450px] rounded-xl overflow-hidden shadow-lg border">
+              <iframe
+                src={settings.mapEmbedUrl}
+                title="Mygale Art et Services location map"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+            {settings.mapPlaceUrl ? (
+              <div className="text-center">
+                <a
+                  href={settings.mapPlaceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 inline-block px-6 py-3 rounded-lg bg-[#003366] text-white font-medium shadow hover:scale-105 transition"
+                >
+                  {t.openInMaps}
+                </a>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
     </div>
   )
 }

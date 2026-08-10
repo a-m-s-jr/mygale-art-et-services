@@ -1,34 +1,30 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* apps/web/src/components/ServicesSidebar.tsx */
 'use client'
 
 import React from 'react'
 import Link from 'next/link'
-import { useLocale } from '@/lib/locale'
+import type { Lang } from '@/lib/locale'
 
 type Props = {
   activeSlug?: string
+  services: { slug: string; titleFr: string; titleEn: string }[]
+  locale: Lang
 }
 
-const SERVICES = [
-  { slug: 'architecture', key: 'architectureTitle' },
-  { slug: 'stylisme', key: 'stylismeTitle' },
-  { slug: 'printing', key: 'printTitle' },
-  { slug: 'vitraux', key: 'vitrauxTitle' },
-  { slug: 'construction', key: 'constructionTitle' },
-  { slug: 'web-development', key: 'webdevTitle' },
-]
-
-export default function ServicesSidebar({ activeSlug }: Props) {
-  const { t } = useLocale()
+export default function ServicesSidebar({ activeSlug, services, locale }: Props) {
+  const title = locale === 'en' ? 'Our services' : 'Nos services'
+  const tagline =
+    locale === 'en'
+      ? 'Discover our experience, past projects and tailor-made solutions for each service.'
+      : 'Découvrez nos expériences, projets passés et solutions sur-mesure pour chaque service.'
 
   return (
     <div className="sticky top-24 p-4 border rounded-lg bg-white">
-      <h4 className="text-sm font-semibold text-gray-700 mb-3">{t.servicesTitle}</h4>
+      <h4 className="text-sm font-semibold text-gray-700 mb-3">{title}</h4>
 
       <ul className="space-y-2 text-sm">
-        {SERVICES.map((s) => {
-          const label = (t.services as any)[s.key] ?? s.slug
+        {services.map((s) => {
+          const label = locale === 'en' ? s.titleEn : s.titleFr
           const active = activeSlug === s.slug
           return (
             <li key={s.slug}>
@@ -42,9 +38,7 @@ export default function ServicesSidebar({ activeSlug }: Props) {
           )
         })}
       </ul>
-      <div className="mt-4 text-xs text-gray-500">
-        Découvrez nos expériences, projets passés et solutions sur-mesure pour chaque service.
-      </div>
+      <div className="mt-4 text-xs text-gray-500">{tagline}</div>
     </div>
   )
 }

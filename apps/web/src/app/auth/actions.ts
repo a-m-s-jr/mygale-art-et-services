@@ -5,8 +5,19 @@ import { cookies, headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import bcrypt from 'bcryptjs'
 import prisma from '@/lib/prisma'
+import { getCurrentUser } from '@/lib/auth'
+import { writeAuditLog } from '@/lib/revisions'
 
 const SESSION_TTL_DAYS = 30
+
+const ROLE_RANK: Record<string, number> = {
+  SUPER_ADMIN: 5,
+  ADMIN: 4,
+  EDITOR: 3,
+  STAFF: 2,
+  VIEWER: 1,
+  USER: 0,
+}
 
 function normalizeEmail(value: FormDataEntryValue | null) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
@@ -41,7 +52,13 @@ export async function signInWithPassword(_prevState: ActionState, formData: Form
     where: { email },
   })
 
-  if (!user || user.role !== 'ADMIN' || !user.passwordHash) {
+  if (
+    !user ||
+    !user.role ||
+    ROLE_RANK[user.role] < ROLE_RANK.EDITOR ||
+    !user.passwordHash ||
+    !user.active
+  ) {
     return { error: 'Invalid credentials.' }
   }
 
@@ -92,5 +109,24 @@ export async function signInWithPassword(_prevState: ActionState, formData: Form
     expires: expiresAt,
   })
 
+  await writeAuditLog('auth.login', { entityType: 'User', entityId: user.id }, user.id)
+
   redirect('/admin')
+}
+
+export async function signOut() {
+  const user = await getCurrentUser()
+  const cookieStore = await cookies()
+  const token = cookieStore.get('authjs.session-token')?.value
+
+  if (token) {
+    await prisma.session.deleteMany({ where: { token } })
+  }
+  cookieStore.delete('authjs.session-token')
+
+  if (user) {
+    await writeAuditLog('auth.logout', { entityType: 'User', entityId: user.id }, user.id)
+  }
+
+  redirect('/login')
 }

@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import prisma from '@/lib/prisma'
-import { requireAdmin } from '@/lib/auth'
+import { requireAdmin, requireRole } from '@/lib/auth'
 import type { AnnouncementType } from '@prisma/client'
 
 type ActionState = {
@@ -21,7 +21,7 @@ function parseDate(value: FormDataEntryValue | null) {
 }
 
 export async function createAnnouncement(_prevState: ActionState, formData: FormData) {
-  await requireAdmin()
+  await requireRole('EDITOR')
 
   const title = asString(formData.get('title'))
   const message = asString(formData.get('message'))
@@ -54,7 +54,7 @@ export async function createAnnouncement(_prevState: ActionState, formData: Form
 }
 
 export async function updateAnnouncement(_prevState: ActionState, formData: FormData) {
-  await requireAdmin()
+  await requireRole('EDITOR')
 
   const id = asString(formData.get('id'))
   const title = asString(formData.get('title'))

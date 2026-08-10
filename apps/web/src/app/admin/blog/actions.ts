@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import slugify from 'slugify'
 import prisma from '@/lib/prisma'
-import { requireAdmin } from '@/lib/auth'
+import { requireAdmin, requireRole } from '@/lib/auth'
 import type { BlogLocale } from '@prisma/client'
 
 type ActionState = {
@@ -25,8 +25,39 @@ function normalizeSlug(value: string) {
   return slugify(value, { lower: true, strict: true, trim: true })
 }
 
+async function resolveTagIds(rawTags: string): Promise<string[]> {
+  const names = rawTags
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean)
+  const ids: string[] = []
+  for (const name of names) {
+    const slug = slugify(name, { lower: true, strict: true, trim: true })
+    if (!slug) continue
+    const tag = await prisma.blogTag.upsert({
+      where: { slug },
+      update: {},
+      create: { slug, nameFr: name, nameEn: name },
+    })
+    ids.push(tag.id)
+  }
+  return ids
+}
+
+/** Links this post's translationGroupId with an existing post in the other locale. */
+async function linkTranslation(postId: string, translationOfId: string) {
+  const other = await prisma.blogPost.findUnique({ where: { id: translationOfId } })
+  if (!other) return
+
+  const groupId = other.translationGroupId ?? crypto.randomUUID()
+  if (!other.translationGroupId) {
+    await prisma.blogPost.update({ where: { id: other.id }, data: { translationGroupId: groupId } })
+  }
+  await prisma.blogPost.update({ where: { id: postId }, data: { translationGroupId: groupId } })
+}
+
 export async function createBlogPost(_prevState: ActionState, formData: FormData) {
-  await requireAdmin()
+  await requireRole('EDITOR')
 
   const title = asString(formData.get('title'))
   const rawSlug = asString(formData.get('slug')) || title
@@ -39,6 +70,9 @@ export async function createBlogPost(_prevState: ActionState, formData: FormData
   const publishedAtInput = parseDate(formData.get('publishedAt'))
   const seoTitle = asString(formData.get('seoTitle'))
   const seoDescription = asString(formData.get('seoDescription'))
+  const categoryId = asString(formData.get('categoryId')) || null
+  const tagIds = await resolveTagIds(asString(formData.get('tags')))
+  const translationOfId = asString(formData.get('translationOfId'))
 
   if (!title || !slug || !excerpt || !content || !seoTitle || !seoDescription) {
     return { error: 'Please fill in all required fields.' }
@@ -63,8 +97,14 @@ export async function createBlogPost(_prevState: ActionState, formData: FormData
       publishedAt,
       seoTitle,
       seoDescription,
+      categoryId,
+      tags: { connect: tagIds.map((id) => ({ id })) },
     },
   })
+
+  if (translationOfId) {
+    await linkTranslation(post.id, translationOfId)
+  }
 
   revalidatePath('/blog')
   revalidatePath(`/blog/${post.slug}`)
@@ -72,7 +112,7 @@ export async function createBlogPost(_prevState: ActionState, formData: FormData
 }
 
 export async function updateBlogPost(_prevState: ActionState, formData: FormData) {
-  await requireAdmin()
+  await requireRole('EDITOR')
 
   const id = asString(formData.get('id'))
   const title = asString(formData.get('title'))
@@ -86,6 +126,9 @@ export async function updateBlogPost(_prevState: ActionState, formData: FormData
   const publishedAtInput = parseDate(formData.get('publishedAt'))
   const seoTitle = asString(formData.get('seoTitle'))
   const seoDescription = asString(formData.get('seoDescription'))
+  const categoryId = asString(formData.get('categoryId')) || null
+  const tagIds = await resolveTagIds(asString(formData.get('tags')))
+  const translationOfId = asString(formData.get('translationOfId'))
 
   if (!id || !title || !slug || !excerpt || !content || !seoTitle || !seoDescription) {
     return { error: 'Please fill in all required fields.' }
@@ -116,8 +159,14 @@ export async function updateBlogPost(_prevState: ActionState, formData: FormData
       publishedAt,
       seoTitle,
       seoDescription,
+      categoryId,
+      tags: { set: tagIds.map((tagId) => ({ id: tagId })) },
     },
   })
+
+  if (translationOfId) {
+    await linkTranslation(post.id, translationOfId)
+  }
 
   revalidatePath('/blog')
   revalidatePath(`/blog/${post.slug}`)

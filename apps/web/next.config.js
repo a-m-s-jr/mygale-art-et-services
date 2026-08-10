@@ -39,8 +39,6 @@ module.exports = {
   serverExternalPackages: [],
 
   webpack(config) {
-    // Fix case sensitivity issues on Windows
-    config.resolve.symlinks = false
     config.resolve.cacheWithContext = false
 
     // Ensure consistent module resolution

@@ -4,43 +4,32 @@ import React from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { useLocale } from '@/lib/locale'
 import ServicesSidebar from '@/components/ServicesSidebar'
+import type { Lang } from '@/lib/locale'
+import type { getServiceBySlug } from '@/lib/queries/services'
 
-type ContentBlock = {
-  title: string
-  items: string[]
-  img?: string
+type ServiceData = NonNullable<Awaited<ReturnType<typeof getServiceBySlug>>>
+
+function pick(locale: Lang, fr: string | null | undefined, en: string | null | undefined) {
+  return (locale === 'en' ? en : fr) ?? fr ?? en ?? ''
 }
 
 type Props = {
-  slug: string
-  data: {
-    titleKey: string
-    descKey: string
-    img?: string
-    content: {
-      fr: ContentBlock[]
-      en: ContentBlock[]
-    }
-  }
+  service: ServiceData
+  locale: Lang
+  sidebarServices: { slug: string; titleFr: string; titleEn: string }[]
 }
 
 /**
  * ServiceClient (client component)
  * - shows header + supporting image
- * - shows each content block with an image (block.img or fallback to service img)
+ * - shows each structured content section with an image (section.media or fallback to hero)
  * - displays a sidebar (ServicesSidebar) with the activeSlug highlighted
  */
-export default function ServiceClient({ slug, data }: Props) {
-  const { t, lang } = useLocale()
-  const locale = lang === 'fr' ? 'fr' : 'en'
-
-  // Safe read from translations — cast to indexable keys
-  const title = t.services[data.titleKey as unknown as keyof typeof t.services] as string
-  const desc = t.services[data.descKey as unknown as keyof typeof t.services] as string
-
-  const blocks = data.content?.[locale] ?? []
+export default function ServiceClient({ service, locale, sidebarServices }: Props) {
+  const title = pick(locale, service.titleFr, service.titleEn)
+  const desc = pick(locale, service.summaryFr, service.summaryEn)
+  const heroImg = service.heroImage?.url ?? '/hero-bg.jpg'
 
   return (
     <motion.div
@@ -53,11 +42,11 @@ export default function ServiceClient({ slug, data }: Props) {
       {/* Breadcrumbs */}
       <nav className="text-sm text-gray-500 mb-6">
         <Link href="/" className="hover:underline">
-          {lang === 'fr' ? 'Accueil' : 'Home'}
+          {locale === 'fr' ? 'Accueil' : 'Home'}
         </Link>
         <span className="mx-2">/</span>
         <Link href="/services" className="hover:underline">
-          {t.servicesTitle}
+          {locale === 'fr' ? 'Nos services' : 'Our services'}
         </Link>
         <span className="mx-2">/</span>
         <span className="text-gray-700">{title}</span>
@@ -78,8 +67,8 @@ export default function ServiceClient({ slug, data }: Props) {
               {/* supporting image on right (desktop) / below on mobile */}
               <div className="mt-6 md:mt-0 md:w-80 md:shrink-0">
                 <Image
-                  src={data.img ?? '/hero-bg.jpg'}
-                  alt={title ?? ''}
+                  src={heroImg}
+                  alt={title}
                   width={900}
                   height={600}
                   className="w-full h-48 md:h-56 object-cover rounded-lg"
@@ -88,29 +77,39 @@ export default function ServiceClient({ slug, data }: Props) {
             </div>
           </div>
 
-          {/* Blocks */}
+          {/* Sections */}
           <div className="space-y-12">
-            {blocks.map((block, i) => {
-              // ensure blockImg is a plain string for the Image component
-              const blockImg: string = block.img ?? data.img ?? '/hero-bg.jpg'
+            {service.sections.map((block) => {
+              const blockTitle = pick(locale, block.titleFr, block.titleEn)
+              const blockItems = locale === 'en' ? block.itemsEn : block.itemsFr
+              const blockImg = block.media?.url || heroImg
 
               return (
-                <div key={i} className="md:grid md:grid-cols-2 md:gap-6 items-start">
+                <div key={block.id} className="md:grid md:grid-cols-2 md:gap-6 items-start">
                   {/* text */}
                   <div>
-                    <h2 className="text-2xl font-semibold text-[#003366] mb-3">{block.title}</h2>
-                    <ul className="list-disc list-inside text-gray-700 space-y-1">
-                      {block.items.map((it, idx) => (
-                        <li key={idx}>{it}</li>
-                      ))}
-                    </ul>
+                    <h2 className="text-2xl font-semibold text-[#003366] mb-3">{blockTitle}</h2>
+                    {block.type === 'BULLET_LIST' ? (
+                      <ul className="list-disc list-inside text-gray-700 space-y-1">
+                        {blockItems.map((it, idx) => (
+                          <li key={idx}>{it}</li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <div
+                        className="prose prose-sm max-w-none text-gray-700 leading-relaxed"
+                        dangerouslySetInnerHTML={{
+                          __html: pick(locale, block.bodyFr, block.bodyEn),
+                        }}
+                      />
+                    )}
                   </div>
 
                   {/* image (appears below on small screens, right on md+) */}
                   <div className="mt-4 md:mt-0">
                     <Image
                       src={blockImg}
-                      alt={`${title} - ${block.title}`}
+                      alt={`${title} - ${blockTitle}`}
                       width={900}
                       height={600}
                       className="w-full h-full md:h-40 object-cover rounded-lg"
@@ -124,7 +123,7 @@ export default function ServiceClient({ slug, data }: Props) {
 
         {/* Sidebar */}
         <aside className="mt-10 md:mt-0">
-          <ServicesSidebar activeSlug={slug} />
+          <ServicesSidebar activeSlug={service.slug} services={sidebarServices} locale={locale} />
         </aside>
       </div>
     </motion.div>

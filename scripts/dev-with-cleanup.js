@@ -1,17 +1,41 @@
 #!/usr/bin/env node
 const { spawn, exec } = require('child_process')
 const { execSync } = require('child_process')
+const fs = require('fs')
 const path = require('path')
 
 console.log('🚀 Starting development environment...\n')
 
+// Sync root .env to all apps
+console.log('🔄 Syncing .env to apps...')
+try {
+  execSync('node scripts/sync-env.js', { stdio: 'inherit' })
+} catch (error) {
+  console.error('❌ Failed to sync .env')
+  process.exit(1)
+}
+
 let isShuttingDown = false
 let webProcess = null
+
+// Kill any stale process on port 3000
+try {
+  const pid = execSync('for /f "tokens=5" %a in (\'netstat -ano ^| findstr :3000 ^| findstr LISTENING\') do @echo %a', { shell: 'cmd.exe' }).toString().trim()
+  if (pid) execSync(`taskkill /PID ${pid} /F`, { stdio: 'ignore' })
+} catch (_) {}
 
 // Start Docker database
 console.log('📦 Starting PostgreSQL database...')
 try {
-  execSync('bun db:up', { stdio: 'inherit' })
+  execSync('docker compose up -d postgres', { stdio: 'inherit' })
+  // Wait for healthy status (up to 30s)
+  for (let i = 0; i < 15; i++) {
+    const status = execSync(
+      'docker inspect --format={{.State.Health.Status}} mygale_postgres',
+    ).toString().trim()
+    if (status === 'healthy') break
+    execSync('ping -n 3 127.0.0.1 >nul', { stdio: 'ignore', shell: true })
+  }
   console.log('✅ Database started\n')
 } catch (error) {
   console.error('❌ Failed to start database')
@@ -23,6 +47,13 @@ setTimeout(() => {
   console.log('🔄 Starting web server...\n')
 
   const webDir = path.join(process.cwd(), 'apps', 'web')
+
+  // Clear stale Next.js dev lock
+  const lockPath = path.join(webDir, '.next', 'dev', 'lock')
+  if (fs.existsSync(lockPath)) {
+    fs.rmSync(lockPath, { force: true })
+    console.log('🧹 Cleared stale .next/dev/lock\n')
+  }
 
   // Use exec which handles shell better on Windows
   webProcess = exec('bun dev', {
@@ -77,7 +108,7 @@ async function cleanup() {
   // Stop Docker database
   console.log('🗄️  Stopping database...')
   try {
-    execSync('bun db:down', { stdio: 'inherit' })
+    execSync('docker compose down', { stdio: 'inherit' })
     console.log('✅ Database stopped')
   } catch (error) {
     console.error('⚠️  Error stopping database:', error.message)

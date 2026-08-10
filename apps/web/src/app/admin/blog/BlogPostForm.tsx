@@ -23,7 +23,13 @@ type BlogPostFormData = {
   publishedAt?: Date | null
   seoTitle: string
   seoDescription: string
+  categoryId: string
+  tags: string
+  translationOfId: string
 }
+
+type CategoryOption = { id: string; nameFr: string; nameEn: string }
+type TranslationOption = { id: string; title: string; locale: string }
 
 function formatDateTime(value?: Date | null) {
   if (!value) return ''
@@ -47,9 +53,13 @@ function SubmitButton({ label }: { label: string }) {
 export default function BlogPostForm({
   mode,
   initial,
+  categories,
+  translationOptions,
 }: {
   mode: 'create' | 'edit'
   initial?: BlogPostFormData
+  categories: CategoryOption[]
+  translationOptions: TranslationOption[]
 }) {
   const [title, setTitle] = useState(initial?.title ?? '')
   const [slug, setSlug] = useState(initial?.slug ?? '')
@@ -62,6 +72,9 @@ export default function BlogPostForm({
   const [publishedAt, setPublishedAt] = useState(formatDateTime(initial?.publishedAt))
   const [seoTitle, setSeoTitle] = useState(initial?.seoTitle ?? '')
   const [seoDescription, setSeoDescription] = useState(initial?.seoDescription ?? '')
+  const [categoryId, setCategoryId] = useState(initial?.categoryId ?? '')
+  const [tags, setTags] = useState(initial?.tags ?? '')
+  const [translationOfId, setTranslationOfId] = useState(initial?.translationOfId ?? '')
   const [uploading, setUploading] = useState(false)
 
   useEffect(() => {
@@ -182,6 +195,54 @@ export default function BlogPostForm({
             <option value="fr">FR</option>
             <option value="en">EN</option>
           </select>
+        </div>
+        <div>
+          <label className="text-sm text-neutral-300">Category</label>
+          <select
+            name="categoryId"
+            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+          >
+            <option value="">None</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nameFr} / {c.nameEn}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="text-sm text-neutral-300">Tags (comma-separated)</label>
+          <input
+            name="tags"
+            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+            value={tags}
+            onChange={(e) => setTags(e.target.value)}
+            placeholder="architecture, yaoundé, projet"
+          />
+        </div>
+        <div>
+          <label className="text-sm text-neutral-300">Linked translation</label>
+          <select
+            name="translationOfId"
+            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+            value={translationOfId}
+            onChange={(e) => setTranslationOfId(e.target.value)}
+          >
+            <option value="">None</option>
+            {translationOptions.map((p) => (
+              <option key={p.id} value={p.id}>
+                [{p.locale.toUpperCase()}] {p.title}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-neutral-500">
+            Link this post to its FR/EN counterpart so readers can switch language on the article.
+          </p>
         </div>
       </div>
 

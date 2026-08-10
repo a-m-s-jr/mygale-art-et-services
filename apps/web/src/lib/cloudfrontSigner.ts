@@ -1,7 +1,7 @@
 import { getSignedCookies, getSignedUrl } from 'aws-cloudfront-sign'
 
 const KEY_PAIR_ID = process.env.CLOUDFRONT_KEY_PAIR_ID
-const PRIVATE_KEY = process.env.CLOUDFRONT_PRIVATE_KEY
+const PRIVATE_KEY = process.env.CLOUDFRONT_PRIVATE_KEY?.replace(/\\n/g, '\n')
 const COOKIE_DOMAIN = process.env.CLOUDFRONT_COOKIE_DOMAIN
 const COOKIE_TTL_SECONDS = Number(process.env.CLOUDFRONT_COOKIE_TTL_SECONDS || '3600')
 const CDN_URL = process.env.CDN_URL
