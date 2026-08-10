@@ -1,8 +1,43 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const path = require('path')
 
+// Baseline security headers (report finding F.1 #4). CSP is intentionally
+// scoped to what this app actually needs (self-hosted assets, the media
+// CDN, and the WebSocket API) rather than a maximally strict policy that
+// would require a broader nonce/hash rollout across the admin editor.
+const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "img-src 'self' data: blob: https://media.mygaleartetservices.org https://www.media.mygaleartetservices.org",
+  "font-src 'self' data:",
+  "style-src 'self' 'unsafe-inline'",
+  "script-src 'self' 'unsafe-inline'",
+  "connect-src 'self' https: wss:",
+].join('; ')
+
+const SECURITY_HEADERS = [
+  { key: 'Content-Security-Policy', value: CONTENT_SECURITY_POLICY },
+  { key: 'X-Frame-Options', value: 'DENY' },
+  { key: 'X-Content-Type-Options', value: 'nosniff' },
+  { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+  { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+]
+
 module.exports = {
   allowedDevOrigins: ['192.168.85.1', 'mygale-art-et-services.vercel.app/'],
+
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: SECURITY_HEADERS,
+      },
+    ]
+  },
 
   reactStrictMode: true,
 
