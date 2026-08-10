@@ -2,6 +2,11 @@ name: Database Migrations (Prisma)
 
 on:
   workflow_dispatch:
+    inputs:
+      resolve_rolled_back:
+        description: 'Migration name to mark as rolled-back before deploying (recovery from a failed migration, e.g. after fixing its SQL). Leave empty for a normal run.'
+        required: false
+        type: string
   push:
     branches: [main]
     paths:
@@ -39,6 +44,10 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm db:generate
+
+      - name: Resolve rolled-back migration (manual recovery only)
+        if: ${{ github.event.inputs.resolve_rolled_back != '' }}
+        run: pnpm exec prisma migrate resolve --rolled-back "${{ github.event.inputs.resolve_rolled_back }}" --schema packages/prisma/prisma/schema.prisma
 
       - name: Apply migrations
         run: pnpm db:migrate:deploy
