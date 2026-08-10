@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import nodemailer from 'nodemailer'
 import prisma from '@/lib/prisma'
+import { escapeHtml } from '@/lib/escapeHtml'
+import { getClientIp, rateLimit } from '@/lib/rateLimit'
 
 const schema = z.object({
   name: z.string().min(2),
@@ -10,8 +12,21 @@ const schema = z.object({
   message: z.string().min(5),
 })
 
+// 5 submissions per 10 minutes per client IP.
+const CONTACT_RATE_LIMIT = 5
+const CONTACT_RATE_WINDOW_MS = 10 * 60_000
+
 export async function POST(request: Request) {
   console.log('[Contact API] Received POST request')
+
+  const clientIp = getClientIp(request.headers)
+  const rate = rateLimit(`contact:${clientIp}`, CONTACT_RATE_LIMIT, CONTACT_RATE_WINDOW_MS)
+  if (!rate.success) {
+    return NextResponse.json(
+      { error: 'Too many requests. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(rate.retryAfterSeconds) } },
+    )
+  }
 
   try {
     const body = await request.json()
@@ -55,7 +70,7 @@ export async function POST(request: Request) {
         to: process.env.CONTACT_TO,
         subject: `Contact form: ${data.name}`,
         text: `Name: ${data.name}\nEmail: ${data.email}\nPhone: ${data.phone || 'N/A'}\n\nMessage:\n${data.message}`,
-        html: `<p><strong>Name:</strong> ${data.name}</p><p><strong>Email:</strong> ${data.email}</p><p><strong>Phone:</strong> ${data.phone || 'N/A'}</p><p><strong>Message:</strong></p><p>${data.message}</p>`,
+        html: `<p><strong>Name:</strong> ${escapeHtml(data.name)}</p><p><strong>Email:</strong> ${escapeHtml(data.email)}</p><p><strong>Phone:</strong> ${escapeHtml(data.phone || 'N/A')}</p><p><strong>Message:</strong></p><p>${escapeHtml(data.message).replace(/\n/g, '<br/>')}</p>`,
       })
       console.log('[Contact API] Email sent successfully')
     } catch (emailError) {

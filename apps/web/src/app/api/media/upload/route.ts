@@ -27,6 +27,31 @@ const s3 = new S3Client({
 const BUCKET = process.env.AWS_S3_BUCKET || ''
 const THUMBNAIL_WIDTH = 400
 
+// Whitelist of accepted upload types. Extension is derived from the MIME
+// type (not trusted from the client-supplied filename) so a mismatched
+// extension can't be used to smuggle an unexpected file type past storage.
+const ALLOWED_MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/svg+xml': 'svg',
+  'application/pdf': 'pdf',
+}
+
+// Folder is a caller-supplied logical prefix for the S3 key. Restrict it to
+// a small safe character set and reject path traversal / absolute paths so
+// it can't be used to write outside the intended prefix or across folders.
+const FOLDER_PATTERN = /^[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*$/
+const MAX_FOLDER_LENGTH = 128
+
+function isSafeFolder(folder: string): boolean {
+  if (!folder || folder.length > MAX_FOLDER_LENGTH) return false
+  if (folder.startsWith('/') || folder.startsWith('\\')) return false
+  if (folder.includes('..')) return false
+  return FOLDER_PATTERN.test(folder)
+}
+
 function corsHeaders(): HeadersInit {
   return {
     'Access-Control-Allow-Credentials': 'true',
@@ -65,7 +90,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400, headers: corsHeaders() })
   }
 
-  const ext = file.name.split('.').pop()?.toLowerCase() || 'bin'
+  if (!isSafeFolder(folder)) {
+    return NextResponse.json(
+      { error: 'Invalid folder path' },
+      { status: 400, headers: corsHeaders() },
+    )
+  }
+
+  const ext = ALLOWED_MIME_TO_EXT[file.type]
+  if (!ext) {
+    return NextResponse.json(
+      { error: 'Unsupported file type' },
+      { status: 400, headers: corsHeaders() },
+    )
+  }
+
   const timestamp = Date.now()
   const key = `${folder}/${timestamp}.${ext}`
 
