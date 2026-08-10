@@ -28,7 +28,7 @@ async function main() {
 
   // Check if admin already exists
   const existingAdmin = await prisma.user.findUnique({
-    where: { email: 'admin@ask-o.app' },
+    where: { email: 'mygaleartetservices@gmail.com' },
   })
 
   if (existingAdmin) {
@@ -40,7 +40,7 @@ async function main() {
     data: {
       name: 'Admin',
       passwordHash: adminPasswordHash,
-      email: 'admin@ask-o.app',
+      email: 'mygaleartetservices@gmail.com',
       role: 'ADMIN',
       phone: '+237600000000',
       createdAt: new Date(),
@@ -48,7 +48,7 @@ async function main() {
   })
 
   console.log('✅ Seed data inserted')
-  console.log('Admin email: admin@ask-o.app')
+  console.log('Admin email: mygaleartetservices@gmail.com')
   console.log('Admin password:', passwordPlainAdmin)
 }
 
@@ -64,11 +64,11 @@ main()
 /*
 async function main() {
   const admin = await prisma.user.upsert({
-    where: { email: 'anjohsamuelr@gmail.com' },
+    where: { email: 'mygaleartetservices@gmail.com' },
     update: {},
     create: {
       name: 'Admin',
-      email: 'anjohsamuelr@gmail.com',
+      email: 'mygaleartetservices@gmail.com',
       role: 'ADMIN',
     },
   })
@@ -76,7 +76,7 @@ async function main() {
   const submission = await prisma.contactSubmission.create({
     data: {
       name: 'Sample Client',
-      email: 'anjoh.s.junior@gmail.com',
+      email: 'mygaleartetservices@gmail.com',
       message: 'Interested in your art services!',
       status: SubmissionStatus.new,
       assignedTo: { connect: { id: admin.id } },

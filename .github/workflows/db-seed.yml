@@ -43,7 +43,7 @@ jobs:
 
       - name: Run seed.ts
         if: ${{ inputs.seed_target == 'seed.ts' || inputs.seed_target == 'both' }}
-        run: pnpm --filter @mygale/prisma prisma db seed
+        run: pnpm --filter @mygale/prisma exec prisma db seed
 
       - name: Run seed-cms
         if: ${{ inputs.seed_target == 'seed-cms' || inputs.seed_target == 'both' }}
