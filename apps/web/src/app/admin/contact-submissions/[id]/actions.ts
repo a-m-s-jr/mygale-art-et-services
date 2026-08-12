@@ -18,6 +18,9 @@ export async function sendReply(_prevState: { error?: string }, formData: FormDa
   const submissionId = asString(formData.get('submissionId'))
   const channel = asString(formData.get('channel')) as ReplyChannel
   const body = asString(formData.get('body'))
+  const returnToRaw = asString(formData.get('returnTo'))
+  // Only allow redirecting back within this section — never trust an arbitrary path from a form field.
+  const returnTo = returnToRaw.startsWith('/admin/contact-submissions/') ? returnToRaw : undefined
 
   if (!submissionId || !channel || !body) {
     return { error: 'A reply body and channel are required.' }
@@ -69,5 +72,7 @@ export async function sendReply(_prevState: { error?: string }, formData: FormDa
 
   revalidatePath(`/admin/contact-submissions/${submissionId}`)
   revalidatePath('/admin/contact-submissions')
-  redirect(`/admin/contact-submissions/${submissionId}`)
+  revalidatePath('/admin')
+  if (returnTo) revalidatePath(returnTo)
+  redirect(returnTo ?? `/admin/contact-submissions/${submissionId}`)
 }

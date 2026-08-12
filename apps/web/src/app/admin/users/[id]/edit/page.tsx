@@ -27,6 +27,8 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
           email: user.email,
           role: user.role ?? 'USER',
           active: user.active,
+          pagesRestricted: user.pagesRestricted,
+          allowedPages: user.allowedPages,
         }}
       />
     </div>

@@ -22,6 +22,7 @@ export async function updateSubmissionStatus(formData: FormData) {
   })
 
   revalidatePath('/admin/contact-submissions')
+  revalidatePath('/admin')
 }
 
 export async function assignSubmission(formData: FormData) {

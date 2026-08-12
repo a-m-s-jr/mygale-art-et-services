@@ -1,4 +1,4 @@
-const BASE_URL = 'https://mygale-art-and-services.com'
+const BASE_URL = 'https://www.mygaleartetservices.org'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function jsonLdScript(data: Record<string, any>) {

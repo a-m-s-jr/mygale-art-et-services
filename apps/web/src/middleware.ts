@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import prisma from '@/lib/prisma'
+import { OVERVIEW_SECTION_KEY } from '@/lib/adminPages'
 
 export const config = {
   runtime: 'nodejs',
@@ -31,13 +32,18 @@ async function getRedirectMap() {
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname
 
-  // Redirects only apply to public content paths — skip admin/api/static assets entirely.
-  if (
-    pathname.startsWith('/admin') ||
-    pathname.startsWith('/api') ||
-    pathname.startsWith('/_next') ||
-    pathname.includes('.')
-  ) {
+  // Admin routes: no redirect lookup needed, but stamp which section is being
+  // requested so admin/layout.tsx can check per-user page access centrally
+  // without every page needing to read the pathname itself.
+  if (pathname.startsWith('/admin')) {
+    const section = pathname.split('/').filter(Boolean)[1] ?? OVERVIEW_SECTION_KEY
+    const requestHeaders = new Headers(req.headers)
+    requestHeaders.set('x-admin-section', section)
+    return NextResponse.next({ request: { headers: requestHeaders } })
+  }
+
+  // Redirects only apply to public content paths — skip api/static assets entirely.
+  if (pathname.startsWith('/api') || pathname.startsWith('/_next') || pathname.includes('.')) {
     return NextResponse.next()
   }
 

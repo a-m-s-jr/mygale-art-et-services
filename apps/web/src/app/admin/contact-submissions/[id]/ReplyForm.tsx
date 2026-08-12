@@ -20,7 +20,13 @@ function SubmitButton() {
   )
 }
 
-export default function ReplyForm({ submissionId }: { submissionId: string }) {
+export default function ReplyForm({
+  submissionId,
+  returnTo,
+}: {
+  submissionId: string
+  returnTo?: string
+}) {
   const [channel, setChannel] = useState<'email' | 'phone' | 'whatsapp' | 'note'>('email')
   const [body, setBody] = useState('')
   const [state, formAction] = useActionState(sendReply, initialState)
@@ -34,6 +40,7 @@ export default function ReplyForm({ submissionId }: { submissionId: string }) {
       ) : null}
 
       <input type="hidden" name="submissionId" value={submissionId} />
+      {returnTo ? <input type="hidden" name="returnTo" value={returnTo} /> : null}
 
       <div>
         <label className="text-sm text-neutral-300">Channel</label>

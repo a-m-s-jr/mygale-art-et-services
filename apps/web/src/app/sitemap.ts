@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next'
 import prisma from '@/lib/prisma'
 
-const BASE_URL = 'https://mygale-art-and-services.com'
+const BASE_URL = 'https://www.mygaleartetservices.org'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [services, posts] = await Promise.all([

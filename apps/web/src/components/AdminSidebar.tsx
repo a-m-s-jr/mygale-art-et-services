@@ -1,40 +1,26 @@
-// apps/web/src/components/AdminSidebar.tsx
+/* apps/web/src/components/AdminSidebar.tsx */
 'use client'
 import Link from 'next/link'
 import React from 'react'
 import { signOut } from '@/app/auth/actions'
 import type { Role } from '@prisma/client'
+import { ADMIN_PAGES, hasPageAccess } from '@/lib/adminPages'
+import ContactUnreadBadge from '@/components/ContactUnreadBadge'
 
-const ROLE_RANK: Record<string, number> = {
-  SUPER_ADMIN: 5,
-  ADMIN: 4,
-  EDITOR: 3,
-  STAFF: 2,
-  VIEWER: 1,
-  USER: 0,
+type SidebarUser = {
+  role: Role | null
+  pagesRestricted: boolean
+  allowedPages: string[]
 }
 
-const LINKS = [
-  { href: '/admin', label: 'Overview', minRole: 'EDITOR' },
-  { href: '/admin/services', label: 'Services', minRole: 'EDITOR' },
-  { href: '/admin/homepage', label: 'Homepage', minRole: 'EDITOR' },
-  { href: '/admin/about', label: 'About Page', minRole: 'EDITOR' },
-  { href: '/admin/media', label: 'Media Library', minRole: 'EDITOR' },
-  { href: '/admin/blog', label: 'Blog', minRole: 'EDITOR' },
-  { href: '/admin/blog-categories', label: 'Blog Categories', minRole: 'EDITOR' },
-  { href: '/admin/announcements', label: 'Announcements', minRole: 'EDITOR' },
-  { href: '/admin/contact-submissions', label: 'Contact Submissions', minRole: 'EDITOR' },
-  { href: '/admin/navigation', label: 'Navigation', minRole: 'ADMIN' },
-  { href: '/admin/social-links', label: 'Social Links', minRole: 'ADMIN' },
-  { href: '/admin/redirects', label: 'Redirects', minRole: 'ADMIN' },
-  { href: '/admin/settings', label: 'Settings', minRole: 'ADMIN' },
-  { href: '/admin/users', label: 'Users', minRole: 'ADMIN' },
-  { href: '/admin/audit-log', label: 'Audit Log', minRole: 'ADMIN' },
-] as const
-
-export default function AdminSidebar({ role }: { role: Role | null }) {
-  const rank = role ? ROLE_RANK[role] : 0
-  const visibleLinks = LINKS.filter((link) => rank >= ROLE_RANK[link.minRole])
+export default function AdminSidebar({
+  user,
+  unreadContactCount,
+}: {
+  user: SidebarUser
+  unreadContactCount: number
+}) {
+  const visibleLinks = ADMIN_PAGES.filter((page) => hasPageAccess(user, page.key))
 
   return (
     <aside className="w-64 bg-neutral-950 border-r border-neutral-800 min-h-screen p-4 flex flex-col">
@@ -44,9 +30,19 @@ export default function AdminSidebar({ role }: { role: Role | null }) {
       </div>
 
       <nav className="flex flex-col gap-2 flex-1">
+        <Link href="/admin" className="px-3 py-2 rounded hover:bg-neutral-900">
+          Overview
+        </Link>
         {visibleLinks.map((link) => (
-          <Link key={link.href} href={link.href} className="px-3 py-2 rounded hover:bg-neutral-900">
+          <Link
+            key={link.href}
+            href={link.href}
+            className="flex items-center justify-between px-3 py-2 rounded hover:bg-neutral-900"
+          >
             {link.label}
+            {link.key === 'contact-submissions' ? (
+              <ContactUnreadBadge initialCount={unreadContactCount} />
+            ) : null}
           </Link>
         ))}
       </nav>

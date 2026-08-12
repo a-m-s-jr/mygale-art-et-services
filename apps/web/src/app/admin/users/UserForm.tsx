@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createUser, updateUser } from './actions'
+import { ADMIN_PAGES } from '@/lib/adminPages'
 
 const initialState = { error: '' as string | undefined }
 
@@ -15,6 +16,8 @@ type UserFormData = {
   email: string
   role: (typeof ALL_ROLES)[number]
   active: boolean
+  pagesRestricted: boolean
+  allowedPages: string[]
 }
 
 function SubmitButton({ label }: { label: string }) {
@@ -46,6 +49,10 @@ export default function UserForm({
   const [role, setRole] = useState<UserFormData['role']>(initial?.role ?? 'EDITOR')
   const [active, setActive] = useState(initial?.active ?? true)
   const [password, setPassword] = useState('')
+  const [pagesRestricted, setPagesRestricted] = useState(initial?.pagesRestricted ?? false)
+  const [allowedPages, setAllowedPages] = useState<string[]>(
+    initial?.allowedPages ?? ADMIN_PAGES.map((p) => p.key),
+  )
 
   const action = mode === 'create' ? createUser : updateUser
   const [state, formAction] = useActionState(action, initialState)
@@ -53,6 +60,11 @@ export default function UserForm({
   const availableRoles = ALL_ROLES.filter(
     (r) => canGrantAdmin || (r !== 'SUPER_ADMIN' && r !== 'ADMIN'),
   )
+  const isAdminRole = role === 'SUPER_ADMIN' || role === 'ADMIN'
+
+  function toggleAllowedPage(key: string) {
+    setAllowedPages((prev) => (prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]))
+  }
 
   return (
     <form action={formAction} className="space-y-6">
@@ -137,6 +149,67 @@ export default function UserForm({
           Active (unchecking immediately signs this user out everywhere)
         </label>
       ) : null}
+
+      <div className="space-y-3 rounded-lg border border-neutral-800 p-4">
+        <div className="text-sm font-semibold text-neutral-200">Admin page access</div>
+
+        {isAdminRole ? (
+          <p className="text-sm text-neutral-400">
+            {role === 'SUPER_ADMIN' ? 'Super Admins' : 'Admins'} always have full access to every
+            admin page — this can&apos;t be restricted.
+          </p>
+        ) : (
+          <>
+            <label className="flex items-center gap-2 text-sm text-neutral-300">
+              <input
+                type="checkbox"
+                name="pagesRestricted"
+                className="h-4 w-4"
+                checked={pagesRestricted}
+                onChange={(e) => setPagesRestricted(e.target.checked)}
+              />
+              Restrict this account to specific admin pages
+            </label>
+
+            {pagesRestricted ? (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {ADMIN_PAGES.map((page) => {
+                  // Admin-tier pages (Users, Settings, Navigation, ...) stay
+                  // off-limits below Admin rank no matter what's granted —
+                  // mirrors the server-side check in hasPageAccess().
+                  const reachable = page.minRole !== 'ADMIN'
+                  return (
+                    <label
+                      key={page.key}
+                      className={`flex items-center gap-2 text-sm ${
+                        reachable ? 'text-neutral-300' : 'text-neutral-600'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        name="allowedPages"
+                        value={page.key}
+                        className="h-4 w-4"
+                        checked={allowedPages.includes(page.key)}
+                        onChange={() => toggleAllowedPage(page.key)}
+                        disabled={!reachable}
+                      />
+                      {page.label}
+                      {!reachable ? <span className="text-xs text-neutral-600">(Admin only)</span> : null}
+                    </label>
+                  )
+                })}
+              </div>
+            ) : (
+              <p className="text-xs text-neutral-500">
+                Full access to every page this role&apos;s rank permits. Check the box above to pick
+                specific pages instead — this can grant a page below the account&apos;s usual rank
+                (e.g. Blog to a Staff account), but never an Admin-only page.
+              </p>
+            )}
+          </>
+        )}
+      </div>
 
       <SubmitButton label={mode === 'create' ? 'Create User' : 'Save Changes'} />
     </form>

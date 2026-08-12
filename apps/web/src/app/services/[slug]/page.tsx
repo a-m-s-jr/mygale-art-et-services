@@ -5,7 +5,6 @@ import type { Metadata } from 'next'
 import {
   getServiceBySlug,
   getServiceBySlugForPreview,
-  getAllServiceSlugs,
   getPublishedServices,
 } from '@/lib/queries/services'
 import { getSiteSettings } from '@/lib/queries/settings'
@@ -33,12 +32,13 @@ async function resolveService(slug: string, previewRequested: boolean) {
   return { service: await getServiceBySlugForPreview(slug), isPreview: true }
 }
 
-export const revalidate = 86400 // 24 hours
-
-export async function generateStaticParams() {
-  const slugs = await getAllServiceSlugs()
-  return slugs.map((slug) => ({ slug }))
-}
+// Rendered per-request (like every other CMS-driven page in this app) rather
+// than via generateStaticParams/ISR: the root layout reads the locale cookie,
+// which conflicts with Next's on-demand-ISR-fallback rendering mode and
+// throws DYNAMIC_SERVER_USAGE in production for any slug not present in the
+// static param set at build time — i.e. every service page, since this was
+// the one dynamic-segment route still wired up that way. See the same note
+// on blog/[slug]/page.tsx, where this was already fixed.
 
 export async function generateMetadata({
   params,
@@ -56,7 +56,7 @@ export async function generateMetadata({
     (locale === 'en' ? service.seoDescriptionEn : service.seoDescriptionFr) ||
     (locale === 'en' ? service.summaryEn : service.summaryFr)
 
-  const baseUrl = 'https://mygale-art-and-services.com'
+  const baseUrl = 'https://www.mygaleartetservices.org'
   const url = `${baseUrl}/services/${service.slug}`
   const ogImage = service.ogImage?.url || service.heroImage?.url || `${baseUrl}/hero-bg.jpg`
 
@@ -111,7 +111,7 @@ export default async function ServicePage({
     notFound()
   }
 
-  const baseUrl = 'https://mygale-art-and-services.com'
+  const baseUrl = 'https://www.mygaleartetservices.org'
   const title = locale === 'en' ? service.titleEn : service.titleFr
   const description = locale === 'en' ? service.summaryEn : service.summaryFr
   const servicesLabel = locale === 'en' ? 'Services' : 'Nos services'

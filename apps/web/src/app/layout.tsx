@@ -28,13 +28,13 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       images: [ogImage],
-      url: 'https://mygale-art-and-services.com',
+      url: 'https://www.mygaleartetservices.org',
       siteName: settings.companyNameFr,
     },
     icons: {
       icon: settings.favicon?.url || '/LOGO MYGALE 2.png',
     },
-    metadataBase: new URL('https://mygale-art-and-services.com'),
+    metadataBase: new URL('https://www.mygaleartetservices.org'),
     verification: settings.googleSiteVerification
       ? { google: settings.googleSiteVerification }
       : undefined,

@@ -16,15 +16,6 @@ const SESSION_TTL_DAYS = 30
 const LOGIN_RATE_LIMIT = 10
 const LOGIN_RATE_WINDOW_MS = 15 * 60_000
 
-const ROLE_RANK: Record<string, number> = {
-  SUPER_ADMIN: 5,
-  ADMIN: 4,
-  EDITOR: 3,
-  STAFF: 2,
-  VIEWER: 1,
-  USER: 0,
-}
-
 function normalizeEmail(value: FormDataEntryValue | null) {
   return typeof value === 'string' ? value.trim().toLowerCase() : ''
 }
@@ -56,13 +47,9 @@ export async function signInWithPassword(_prevState: ActionState, formData: Form
     where: { email },
   })
 
-  if (
-    !user ||
-    !user.role ||
-    ROLE_RANK[user.role] < ROLE_RANK.EDITOR ||
-    !user.passwordHash ||
-    !user.active
-  ) {
+  // Any account with a role can sign in — which admin pages they can actually
+  // see from there is governed by hasPageAccess() (see admin/layout.tsx).
+  if (!user || !user.role || !user.passwordHash || !user.active) {
     return { error: 'Invalid credentials.' }
   }
 

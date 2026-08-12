@@ -17,7 +17,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: title || undefined,
     description: description || undefined,
-    alternates: { canonical: 'https://mygale-art-and-services.com/services' },
+    alternates: { canonical: 'https://www.mygaleartetservices.org/services' },
   }
 }
 

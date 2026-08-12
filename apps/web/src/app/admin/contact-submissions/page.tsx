@@ -2,6 +2,7 @@ import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import StatusChip from '@/components/StatusChip'
 import { StatusSelect, AssigneeSelect } from './SubmissionRowControls'
+import type { SubmissionStatus } from '@prisma/client'
 
 const STATUS_TABS = [
   { id: 'all', label: 'All' },
@@ -17,17 +18,36 @@ function formatDate(value: Date) {
   )
 }
 
+function tabHref(status: string, q?: string) {
+  const params = new URLSearchParams()
+  if (status !== 'all') params.set('status', status)
+  if (q) params.set('q', q)
+  const qs = params.toString()
+  return qs ? `/admin/contact-submissions?${qs}` : '/admin/contact-submissions'
+}
+
 export default async function AdminContactSubmissionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>
+  searchParams: Promise<{ status?: string; q?: string }>
 }) {
-  const { status } = await searchParams
+  const { status, q } = await searchParams
   const activeStatus = status && status !== 'all' ? status : 'all'
 
   const [submissions, staff] = await Promise.all([
     prisma.contactSubmission.findMany({
-      where: activeStatus !== 'all' ? { status: activeStatus as never } : undefined,
+      where: {
+        ...(activeStatus !== 'all' ? { status: activeStatus as SubmissionStatus } : {}),
+        ...(q
+          ? {
+              OR: [
+                { name: { contains: q, mode: 'insensitive' as const } },
+                { email: { contains: q, mode: 'insensitive' as const } },
+                { message: { contains: q, mode: 'insensitive' as const } },
+              ],
+            }
+          : {}),
+      },
       orderBy: { createdAt: 'desc' },
       include: { assignedTo: { select: { id: true, name: true } } },
     }),
@@ -37,25 +57,62 @@ export default async function AdminContactSubmissionsPage({
     }),
   ])
 
+  // Group by sender email — submissions are already ordered newest-first, so
+  // the first row seen for an email is that sender's latest message, and the
+  // groups array naturally stays ordered by each sender's latest activity.
+  type Submission = (typeof submissions)[number]
+  type Group = { email: string; name: string; latest: Submission; count: number }
+
+  const groups: Group[] = []
+  const groupIndexByEmail = new Map<string, number>()
+  for (const s of submissions) {
+    const key = s.email.toLowerCase()
+    const idx = groupIndexByEmail.get(key)
+    if (idx === undefined) {
+      groupIndexByEmail.set(key, groups.length)
+      groups.push({ email: s.email, name: s.name, latest: s, count: 1 })
+    } else {
+      groups[idx].count += 1
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Contact Submissions</h1>
+        <h1 className="text-2xl font-semibold">Inbox</h1>
         <p className="text-sm text-neutral-400">Messages sent through the website contact form.</p>
       </div>
 
-      <div className="flex flex-wrap gap-2 text-sm">
-        {STATUS_TABS.map((tab) => (
-          <Link
-            key={tab.id}
-            href={tab.id === 'all' ? '/admin/contact-submissions' : `/admin/contact-submissions?status=${tab.id}`}
-            className={`rounded px-3 py-1 ${
-              activeStatus === tab.id ? 'bg-neutral-800' : 'border border-neutral-800'
-            }`}
-          >
-            {tab.label}
-          </Link>
-        ))}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap gap-2 text-sm">
+          {STATUS_TABS.map((tab) => (
+            <Link
+              key={tab.id}
+              href={tabHref(tab.id, q)}
+              className={`rounded px-3 py-1 ${
+                activeStatus === tab.id ? 'bg-neutral-800' : 'border border-neutral-800'
+              }`}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </div>
+
+        <form className="flex items-center gap-2" action="/admin/contact-submissions" method="get">
+          {activeStatus !== 'all' ? (
+            <input type="hidden" name="status" value={activeStatus} />
+          ) : null}
+          <input
+            type="text"
+            name="q"
+            defaultValue={q}
+            placeholder="Search name, email, or message..."
+            className="rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-sm"
+          />
+          <button type="submit" className="rounded border border-neutral-700 px-3 py-1.5 text-xs">
+            Search
+          </button>
+        </form>
       </div>
 
       <div className="overflow-hidden rounded-xl border border-neutral-800">
@@ -70,29 +127,37 @@ export default async function AdminContactSubmissionsPage({
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
-            {submissions.map((s) => (
-              <tr key={s.id} className="bg-neutral-950 align-top">
+            {groups.map((g) => (
+              <tr key={g.email} className="bg-neutral-950 align-top">
                 <td className="px-4 py-3">
-                  <Link href={`/admin/contact-submissions/${s.id}`} className="font-semibold hover:underline">
-                    {s.name}
+                  <Link
+                    href={`/admin/contact-submissions/thread/${encodeURIComponent(g.email)}`}
+                    className="font-semibold hover:underline"
+                  >
+                    {g.name}
                   </Link>
-                  <div className="text-xs text-neutral-400">{s.email}</div>
-                  {s.phone ? <div className="text-xs text-neutral-400">{s.phone}</div> : null}
+                  {g.count > 1 ? (
+                    <span className="ml-2 rounded-full bg-neutral-800 px-2 py-0.5 text-[10px] text-neutral-300">
+                      {g.count} messages
+                    </span>
+                  ) : null}
+                  <div className="text-xs text-neutral-400">{g.email}</div>
+                  {g.latest.phone ? <div className="text-xs text-neutral-400">{g.latest.phone}</div> : null}
                 </td>
                 <td className="px-4 py-3 text-neutral-300 max-w-md">
-                  <p className="line-clamp-3 whitespace-pre-wrap">{s.message}</p>
+                  <p className="line-clamp-3 whitespace-pre-wrap">{g.latest.message}</p>
                 </td>
                 <td className="px-4 py-3 text-neutral-400 whitespace-nowrap">
-                  {formatDate(s.createdAt)}
+                  {formatDate(g.latest.createdAt)}
                 </td>
                 <td className="px-4 py-3 space-y-2">
-                  <StatusChip status={s.status} />
-                  <StatusSelect submissionId={s.id} status={s.status} />
+                  <StatusChip status={g.latest.status} />
+                  <StatusSelect submissionId={g.latest.id} status={g.latest.status} />
                 </td>
                 <td className="px-4 py-3">
                   <AssigneeSelect
-                    submissionId={s.id}
-                    assignedToId={s.assignedToId}
+                    submissionId={g.latest.id}
+                    assignedToId={g.latest.assignedToId}
                     staff={staff}
                   />
                 </td>
@@ -100,8 +165,10 @@ export default async function AdminContactSubmissionsPage({
             ))}
           </tbody>
         </table>
-        {submissions.length === 0 ? (
-          <div className="px-4 py-6 text-sm text-neutral-400">No submissions yet.</div>
+        {groups.length === 0 ? (
+          <div className="px-4 py-6 text-sm text-neutral-400">
+            {q ? 'No messages match your search.' : 'No submissions yet.'}
+          </div>
         ) : null}
       </div>
     </div>

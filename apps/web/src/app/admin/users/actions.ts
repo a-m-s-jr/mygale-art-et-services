@@ -6,9 +6,26 @@ import bcrypt from 'bcryptjs'
 import prisma from '@/lib/prisma'
 import { requireRole } from '@/lib/auth'
 import { writeAuditLog } from '@/lib/revisions'
+import { ADMIN_PAGES } from '@/lib/adminPages'
 import type { Role } from '@prisma/client'
 
 type ActionState = { error?: string }
+
+const KNOWN_PAGE_KEYS = new Set(ADMIN_PAGES.map((p) => p.key))
+
+function readPagePermissions(formData: FormData, role: Role) {
+  // SUPER_ADMIN/ADMIN always have full access — never persist a restriction for them.
+  if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
+    return { pagesRestricted: false, allowedPages: [] as string[] }
+  }
+
+  const pagesRestricted = formData.get('pagesRestricted') === 'on'
+  const allowedPages = formData
+    .getAll('allowedPages')
+    .filter((v): v is string => typeof v === 'string' && KNOWN_PAGE_KEYS.has(v))
+
+  return { pagesRestricted, allowedPages }
+}
 
 const ROLE_RANK: Record<Role, number> = {
   SUPER_ADMIN: 5,
@@ -66,12 +83,17 @@ export async function createUser(_prevState: ActionState, formData: FormData) {
   }
 
   const passwordHash = await bcrypt.hash(password, 10)
+  const { pagesRestricted, allowedPages } = readPagePermissions(formData, role)
 
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, role, active: true },
+    data: { name, email, passwordHash, role, active: true, pagesRestricted, allowedPages },
   })
 
-  await writeAuditLog('user.create', { entityType: 'User', entityId: user.id, role }, actor.id)
+  await writeAuditLog(
+    'user.create',
+    { entityType: 'User', entityId: user.id, role, pagesRestricted, allowedPages },
+    actor.id,
+  )
 
   revalidatePath('/admin/users')
   redirect('/admin/users')
@@ -111,10 +133,21 @@ export async function updateUser(_prevState: ActionState, formData: FormData) {
     return { error: 'Password must be at least 8 characters.' }
   }
 
-  const data: { name: string; role: Role; active: boolean; passwordHash?: string } = {
+  const { pagesRestricted, allowedPages } = readPagePermissions(formData, role)
+
+  const data: {
+    name: string
+    role: Role
+    active: boolean
+    pagesRestricted: boolean
+    allowedPages: string[]
+    passwordHash?: string
+  } = {
     name,
     role,
     active,
+    pagesRestricted,
+    allowedPages,
   }
   if (password) {
     data.passwordHash = await bcrypt.hash(password, 10)
@@ -127,7 +160,11 @@ export async function updateUser(_prevState: ActionState, formData: FormData) {
     await prisma.session.deleteMany({ where: { userId: id } })
   }
 
-  await writeAuditLog('user.update', { entityType: 'User', entityId: id, role, active }, actor.id)
+  await writeAuditLog(
+    'user.update',
+    { entityType: 'User', entityId: id, role, active, pagesRestricted, allowedPages },
+    actor.id,
+  )
 
   revalidatePath('/admin/users')
   redirect('/admin/users')

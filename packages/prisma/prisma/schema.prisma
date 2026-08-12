@@ -20,6 +20,13 @@ model User {
   passwordHash        String
   email               String              @unique
   role                Role?
+  /** When true, this user can only access the admin pages listed in
+   *  allowedPages (see apps/web/src/lib/adminPages.ts), narrowed further by
+   *  their role's own rank ceiling. When false (default), access is
+   *  unrestricted within whatever their role rank already permits.
+   *  SUPER_ADMIN/ADMIN always have full access regardless of this flag. */
+  pagesRestricted     Boolean             @default(false)
+  allowedPages        String[]            @default([])
   phone               String?
   active              Boolean             @default(true)
   createdAt           DateTime            @default(now())
