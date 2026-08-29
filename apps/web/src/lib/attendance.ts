@@ -53,7 +53,7 @@ export async function resolveAttendanceWindow(
 export type CheckInResult =
   | { outcome: 'recorded'; arrivalAt: Date; status: AttendanceStatus }
   | { outcome: 'already_recorded'; arrivalAt: Date; status: AttendanceStatus }
-  | { outcome: 'error'; message: string }
+  | { outcome: 'error'; code: 'inactive_account' }
 
 /**
  * Records today's attendance for `userId`. The arrival timestamp is always
@@ -66,7 +66,7 @@ export type CheckInResult =
 export async function recordCheckIn(userId: string): Promise<CheckInResult> {
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user || !user.active) {
-    return { outcome: 'error', message: 'Your account is not active. Contact an administrator.' }
+    return { outcome: 'error', code: 'inactive_account' }
   }
 
   const now = new Date()
