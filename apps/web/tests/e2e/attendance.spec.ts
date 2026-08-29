@@ -75,7 +75,7 @@ test.describe('Admin: Departments and job roles', () => {
     expect(department).not.toBeNull()
 
     await goto(page, '/admin/departments')
-    const card = page.locator('div', { has: page.getByText(deptName, { exact: true }) }).first()
+    const card = page.locator('div.rounded-xl', { hasText: deptName })
     await card.locator('input[name="name"]').fill(roleName)
     await card.getByRole('button', { name: 'Add Role' }).click()
     await expect(page.getByText(roleName)).toBeVisible({ timeout: 15_000 })
@@ -225,7 +225,12 @@ test.describe('Attendance window configuration', () => {
     await login(page, ADMIN_EMAIL!, ADMIN_PASSWORD!)
     await goto(page, '/admin/attendance/config')
 
-    const defaultForm = page.locator('form').first()
+    // The sidebar's own sign-out <form> renders before <main> in the DOM, so
+    // scope to the input names (unique to WindowForm) rather than `form`
+    // itself, which would otherwise resolve to that sign-out form first.
+    const defaultForm = page
+      .locator('form', { has: page.locator('input[name="windowStart"]') })
+      .first()
     await defaultForm.locator('input[name="windowStart"]').fill('09:00')
     await defaultForm.locator('input[name="windowEnd"]').fill('08:00')
     await defaultForm.getByRole('button', { name: 'Save Window' }).click()
@@ -254,9 +259,10 @@ test.describe('Unauthorized access is blocked', () => {
     await goto(page, '/admin/departments')
     await expect(page.getByText('No access to this section')).toBeVisible()
 
-    // Their own attendance page must still work regardless.
+    // Their own attendance page must still work regardless. (The sidebar
+    // also has a "My Attendance" link, so scope to the page heading.)
     await goto(page, '/admin/my-attendance')
-    await expect(page.getByText('My Attendance')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'My Attendance' })).toBeVisible()
   })
 
   test.afterAll(async () => {
