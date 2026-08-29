@@ -18,7 +18,11 @@ type UserFormData = {
   active: boolean
   pagesRestricted: boolean
   allowedPages: string[]
+  departmentId?: string | null
+  jobRoleId?: string | null
 }
+
+type DepartmentOption = { id: string; name: string; jobRoles: { id: string; name: string }[] }
 
 function SubmitButton({ label }: { label: string }) {
   const { pending } = useFormStatus()
@@ -38,11 +42,13 @@ export default function UserForm({
   initial,
   canGrantAdmin,
   isSelf,
+  departments,
 }: {
   mode: 'create' | 'edit'
   initial?: UserFormData
   canGrantAdmin: boolean
   isSelf?: boolean
+  departments: DepartmentOption[]
 }) {
   const [name, setName] = useState(initial?.name ?? '')
   const [email, setEmail] = useState(initial?.email ?? '')
@@ -53,6 +59,9 @@ export default function UserForm({
   const [allowedPages, setAllowedPages] = useState<string[]>(
     initial?.allowedPages ?? ADMIN_PAGES.map((p) => p.key),
   )
+  const [departmentId, setDepartmentId] = useState(initial?.departmentId ?? '')
+  const [jobRoleId, setJobRoleId] = useState(initial?.jobRoleId ?? '')
+  const jobRolesForDepartment = departments.find((d) => d.id === departmentId)?.jobRoles ?? []
 
   const action = mode === 'create' ? createUser : updateUser
   const [state, formAction] = useActionState(action, initialState)
@@ -134,6 +143,42 @@ export default function UserForm({
             </p>
           ) : null}
         </div>
+        <div>
+          <label className="text-sm text-neutral-300">Department</label>
+          <select
+            name="departmentId"
+            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
+            value={departmentId}
+            onChange={(e) => {
+              setDepartmentId(e.target.value)
+              setJobRoleId('')
+            }}
+          >
+            <option value="">No department (not an attendance employee)</option>
+            {departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="text-sm text-neutral-300">Job Role</label>
+          <select
+            name="jobRoleId"
+            className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 disabled:opacity-50"
+            value={jobRoleId}
+            onChange={(e) => setJobRoleId(e.target.value)}
+            disabled={!departmentId}
+          >
+            <option value="">No job role</option>
+            {jobRolesForDepartment.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {mode === 'edit' ? (
@@ -195,7 +240,9 @@ export default function UserForm({
                         disabled={!reachable}
                       />
                       {page.label}
-                      {!reachable ? <span className="text-xs text-neutral-600">(Admin only)</span> : null}
+                      {!reachable ? (
+                        <span className="text-xs text-neutral-600">(Admin only)</span>
+                      ) : null}
                     </label>
                   )
                 })}

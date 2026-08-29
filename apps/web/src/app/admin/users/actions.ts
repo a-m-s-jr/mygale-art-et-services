@@ -59,6 +59,29 @@ function asString(value: FormDataEntryValue | null) {
   return typeof value === 'string' ? value.trim() : ''
 }
 
+async function readDepartmentAssignment(formData: FormData) {
+  const departmentId = asString(formData.get('departmentId')) || null
+  const jobRoleId = asString(formData.get('jobRoleId')) || null
+
+  if (!departmentId) {
+    return { ok: true as const, departmentId: null, jobRoleId: null }
+  }
+
+  const department = await prisma.department.findUnique({ where: { id: departmentId } })
+  if (!department) {
+    return { ok: false as const, error: 'Selected department not found.' }
+  }
+
+  if (jobRoleId) {
+    const jobRole = await prisma.jobRole.findUnique({ where: { id: jobRoleId } })
+    if (!jobRole || jobRole.departmentId !== departmentId) {
+      return { ok: false as const, error: 'Selected job role does not belong to that department.' }
+    }
+  }
+
+  return { ok: true as const, departmentId, jobRoleId }
+}
+
 export async function createUser(_prevState: ActionState, formData: FormData) {
   const actor = await requireRole('ADMIN')
 
@@ -85,13 +108,36 @@ export async function createUser(_prevState: ActionState, formData: FormData) {
   const passwordHash = await bcrypt.hash(password, 10)
   const { pagesRestricted, allowedPages } = readPagePermissions(formData, role)
 
+  const assignment = await readDepartmentAssignment(formData)
+  if (!assignment.ok) {
+    return { error: assignment.error }
+  }
+
   const user = await prisma.user.create({
-    data: { name, email, passwordHash, role, active: true, pagesRestricted, allowedPages },
+    data: {
+      name,
+      email,
+      passwordHash,
+      role,
+      active: true,
+      pagesRestricted,
+      allowedPages,
+      departmentId: assignment.departmentId,
+      jobRoleId: assignment.jobRoleId,
+    },
   })
 
   await writeAuditLog(
     'user.create',
-    { entityType: 'User', entityId: user.id, role, pagesRestricted, allowedPages },
+    {
+      entityType: 'User',
+      entityId: user.id,
+      role,
+      pagesRestricted,
+      allowedPages,
+      departmentId: assignment.departmentId,
+      jobRoleId: assignment.jobRoleId,
+    },
     actor.id,
   )
 
@@ -135,12 +181,19 @@ export async function updateUser(_prevState: ActionState, formData: FormData) {
 
   const { pagesRestricted, allowedPages } = readPagePermissions(formData, role)
 
+  const assignment = await readDepartmentAssignment(formData)
+  if (!assignment.ok) {
+    return { error: assignment.error }
+  }
+
   const data: {
     name: string
     role: Role
     active: boolean
     pagesRestricted: boolean
     allowedPages: string[]
+    departmentId: string | null
+    jobRoleId: string | null
     passwordHash?: string
   } = {
     name,
@@ -148,6 +201,8 @@ export async function updateUser(_prevState: ActionState, formData: FormData) {
     active,
     pagesRestricted,
     allowedPages,
+    departmentId: assignment.departmentId,
+    jobRoleId: assignment.jobRoleId,
   }
   if (password) {
     data.passwordHash = await bcrypt.hash(password, 10)
@@ -162,7 +217,16 @@ export async function updateUser(_prevState: ActionState, formData: FormData) {
 
   await writeAuditLog(
     'user.update',
-    { entityType: 'User', entityId: id, role, active, pagesRestricted, allowedPages },
+    {
+      entityType: 'User',
+      entityId: id,
+      role,
+      active,
+      pagesRestricted,
+      allowedPages,
+      departmentId: assignment.departmentId,
+      jobRoleId: assignment.jobRoleId,
+    },
     actor.id,
   )
 

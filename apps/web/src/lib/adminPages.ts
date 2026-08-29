@@ -12,6 +12,14 @@ const ROLE_RANK: Record<Role, number> = {
 /** The bare /admin dashboard — always accessible to anyone who can open the admin panel. */
 export const OVERVIEW_SECTION_KEY = 'overview'
 
+/**
+ * Every active account's own attendance check-in page — always accessible
+ * regardless of role rank or page restrictions, same as the overview. An
+ * employee's ability to record their own attendance is not an "admin page"
+ * permission.
+ */
+export const MY_ATTENDANCE_SECTION_KEY = 'my-attendance'
+
 type AdminPage = {
   key: string
   href: string
@@ -53,6 +61,8 @@ export const ADMIN_PAGES: AdminPage[] = [
   { key: 'redirects', href: '/admin/redirects', label: 'Redirects', minRole: 'ADMIN' },
   { key: 'settings', href: '/admin/settings', label: 'Settings', minRole: 'ADMIN' },
   { key: 'users', href: '/admin/users', label: 'Users', minRole: 'ADMIN' },
+  { key: 'departments', href: '/admin/departments', label: 'Departments', minRole: 'ADMIN' },
+  { key: 'attendance', href: '/admin/attendance', label: 'Attendance', minRole: 'ADMIN' },
   { key: 'audit-log', href: '/admin/audit-log', label: 'Audit Log', minRole: 'ADMIN' },
 ]
 
@@ -77,7 +87,7 @@ export type PageAccessUser = {
  * can be handed just Blog and Inbox without also being made an Editor.
  */
 export function hasPageAccess(user: PageAccessUser, sectionKey: string): boolean {
-  if (sectionKey === OVERVIEW_SECTION_KEY) return true
+  if (sectionKey === OVERVIEW_SECTION_KEY || sectionKey === MY_ATTENDANCE_SECTION_KEY) return true
 
   const rank = user.role ? ROLE_RANK[user.role] : 0
   const page = ADMIN_PAGES.find((p) => p.key === sectionKey)

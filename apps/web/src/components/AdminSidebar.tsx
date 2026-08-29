@@ -33,6 +33,9 @@ export default function AdminSidebar({
         <Link href="/admin" className="px-3 py-2 rounded hover:bg-neutral-900">
           Overview
         </Link>
+        <Link href="/admin/my-attendance" className="px-3 py-2 rounded hover:bg-neutral-900">
+          My Attendance
+        </Link>
         {visibleLinks.map((link) => (
           <Link
             key={link.href}

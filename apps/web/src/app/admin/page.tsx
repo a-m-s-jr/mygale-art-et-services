@@ -18,6 +18,8 @@ const CARD_DESCRIPTIONS: Record<string, string> = {
   redirects: 'Manage URL redirects so old links never break.',
   settings: 'Company info, contact details, map, and default SEO.',
   users: 'Manage admin panel accounts, roles, and page access.',
+  departments: 'Manage departments and job roles used across employee accounts.',
+  attendance: 'Daily attendance dashboard, window configuration, and QR code.',
   'audit-log': 'Every create, edit, publish, delete, and login across the admin panel.',
 }
 
@@ -35,6 +37,10 @@ export default async function AdminHomePage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
+        <Link href="/admin/my-attendance" className="rounded-xl border border-neutral-800 bg-neutral-900 p-6">
+          <div className="text-lg font-semibold">My Attendance</div>
+          <p className="text-sm text-neutral-400 mt-2">Scan the attendance QR and see today&apos;s status.</p>
+        </Link>
         {cards.map((card) => (
           <Link
             key={card.href}
