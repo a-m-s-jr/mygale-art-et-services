@@ -26,6 +26,18 @@ async function main() {
 
   const adminPasswordHash = await bcrypt.hash(passwordPlainAdmin, 10)
 
+  // Default attendance window (08:00-08:30), editable by an admin from
+  // /admin/attendance/config. Departments without their own window fall
+  // back to this one. Idempotent, so it's safe to run every seed pass.
+  const existingDefaultWindow = await prisma.attendanceWindow.findFirst({
+    where: { departmentId: null },
+  })
+  if (!existingDefaultWindow) {
+    await prisma.attendanceWindow.create({
+      data: { departmentId: null, windowStartMinutes: 8 * 60, windowEndMinutes: 8 * 60 + 30 },
+    })
+  }
+
   // Check if admin already exists
   const existingAdmin = await prisma.user.findUnique({
     where: { email: 'mygaleartetservices@gmail.com' },

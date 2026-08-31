@@ -4,7 +4,10 @@ import { requireRole } from '@/lib/auth'
 
 export default async function AdminUsersPage() {
   const currentUser = await requireRole('ADMIN')
-  const users = await prisma.user.findMany({ orderBy: { createdAt: 'asc' } })
+  const users = await prisma.user.findMany({
+    orderBy: { createdAt: 'asc' },
+    include: { department: { select: { name: true } }, jobRole: { select: { name: true } } },
+  })
 
   return (
     <div className="space-y-6">
@@ -30,6 +33,8 @@ export default async function AdminUsersPage() {
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Role</th>
+              <th className="px-4 py-3">Department</th>
+              <th className="px-4 py-3">Job Role</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Actions</th>
             </tr>
@@ -47,6 +52,8 @@ export default async function AdminUsersPage() {
                 </td>
                 <td className="px-4 py-3 text-neutral-300">{u.email}</td>
                 <td className="px-4 py-3 text-neutral-300">{u.role}</td>
+                <td className="px-4 py-3 text-neutral-300">{u.department?.name ?? '—'}</td>
+                <td className="px-4 py-3 text-neutral-300">{u.jobRole?.name ?? '—'}</td>
                 <td className="px-4 py-3">
                   <span
                     className={`rounded-full px-2 py-1 text-xs font-semibold ${
