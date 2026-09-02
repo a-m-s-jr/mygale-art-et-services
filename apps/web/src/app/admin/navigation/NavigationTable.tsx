@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import SortableList from '@/components/admin/SortableList'
 import { SortableRow, DragHandle } from '@/components/admin/SortableRow'
 import { bulkReorderNavigationItems, toggleNavigationItemVisibility } from './actions'
+import { useAdminT } from '@/lib/locale'
 
 type NavRow = { id: string; labelFr: string; labelEn: string; href: string | null; visible: boolean }
 
@@ -13,6 +14,9 @@ export default function NavigationTable({ items: initial }: { items: NavRow[] })
   const [items, setItems] = useState(initial)
   const [, startTransition] = useTransition()
   const router = useRouter()
+  const adminT = useAdminT()
+  const t = adminT.navigation
+  const common = adminT.common
 
   // See ServicesTable for why this sync is required after same-route redirects.
   useEffect(() => {
@@ -37,10 +41,10 @@ export default function NavigationTable({ items: initial }: { items: NavRow[] })
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
               <th className="px-4 py-3 w-10"></th>
-              <th className="px-4 py-3">Label</th>
-              <th className="px-4 py-3">Link</th>
-              <th className="px-4 py-3">Visible</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{t.tableLabel}</th>
+              <th className="px-4 py-3">{t.tableLink}</th>
+              <th className="px-4 py-3">{t.tableVisible}</th>
+              <th className="px-4 py-3">{t.tableActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -64,7 +68,7 @@ export default function NavigationTable({ items: initial }: { items: NavRow[] })
                             : 'bg-neutral-700/40 text-neutral-300'
                         }`}
                       >
-                        {item.visible ? 'Visible' : 'Hidden'}
+                        {item.visible ? common.visible : common.hidden}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -73,7 +77,7 @@ export default function NavigationTable({ items: initial }: { items: NavRow[] })
                           href={`/admin/navigation/${item.id}/edit`}
                           className="rounded border border-neutral-700 px-3 py-1 text-xs"
                         >
-                          Edit
+                          {t.edit}
                         </Link>
 
                         <form action={toggleNavigationItemVisibility}>
@@ -83,7 +87,7 @@ export default function NavigationTable({ items: initial }: { items: NavRow[] })
                             type="submit"
                             className="rounded border border-neutral-700 px-3 py-1 text-xs"
                           >
-                            {item.visible ? 'Hide' : 'Show'}
+                            {item.visible ? t.hide : t.show}
                           </button>
                         </form>
                       </div>

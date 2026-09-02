@@ -2,15 +2,10 @@ import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import StatusChip from '@/components/StatusChip'
 import { StatusSelect, AssigneeSelect } from './SubmissionRowControls'
+import { getAdminT } from '@/lib/getLocale'
 import type { SubmissionStatus } from '@prisma/client'
 
-const STATUS_TABS = [
-  { id: 'all', label: 'All' },
-  { id: 'new', label: 'New' },
-  { id: 'in_review', label: 'In Review' },
-  { id: 'responded', label: 'Responded' },
-  { id: 'closed', label: 'Closed' },
-]
+const STATUS_TAB_IDS = ['all', 'new', 'in_review', 'responded', 'closed'] as const
 
 function formatDate(value: Date) {
   return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(
@@ -34,7 +29,7 @@ export default async function AdminContactSubmissionsPage({
   const { status, q } = await searchParams
   const activeStatus = status && status !== 'all' ? status : 'all'
 
-  const [submissions, staff] = await Promise.all([
+  const [submissions, staff, adminT] = await Promise.all([
     prisma.contactSubmission.findMany({
       where: {
         ...(activeStatus !== 'all' ? { status: activeStatus as SubmissionStatus } : {}),
@@ -55,7 +50,9 @@ export default async function AdminContactSubmissionsPage({
       where: { role: { in: ['SUPER_ADMIN', 'ADMIN', 'EDITOR', 'STAFF'] } },
       select: { id: true, name: true },
     }),
+    getAdminT(),
   ])
+  const t = adminT.contactSubmissions
 
   // Group by sender email — submissions are already ordered newest-first, so
   // the first row seen for an email is that sender's latest message, and the
@@ -79,21 +76,21 @@ export default async function AdminContactSubmissionsPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Inbox</h1>
-        <p className="text-sm text-neutral-400">Messages sent through the website contact form.</p>
+        <h1 className="text-2xl font-semibold">{t.inboxTitle}</h1>
+        <p className="text-sm text-neutral-400">{t.inboxSubtitle}</p>
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2 text-sm">
-          {STATUS_TABS.map((tab) => (
+          {STATUS_TAB_IDS.map((id) => (
             <Link
-              key={tab.id}
-              href={tabHref(tab.id, q)}
+              key={id}
+              href={tabHref(id, q)}
               className={`rounded px-3 py-1 ${
-                activeStatus === tab.id ? 'bg-neutral-800' : 'border border-neutral-800'
+                activeStatus === id ? 'bg-neutral-800' : 'border border-neutral-800'
               }`}
             >
-              {tab.label}
+              {t.statusTabs[id]}
             </Link>
           ))}
         </div>
@@ -106,11 +103,11 @@ export default async function AdminContactSubmissionsPage({
             type="text"
             name="q"
             defaultValue={q}
-            placeholder="Search name, email, or message..."
+            placeholder={t.searchPlaceholder}
             className="rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-sm"
           />
           <button type="submit" className="rounded border border-neutral-700 px-3 py-1.5 text-xs">
-            Search
+            {t.searchButton}
           </button>
         </form>
       </div>
@@ -119,11 +116,11 @@ export default async function AdminContactSubmissionsPage({
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
-              <th className="px-4 py-3">From</th>
-              <th className="px-4 py-3">Message</th>
-              <th className="px-4 py-3">Received</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Assignee</th>
+              <th className="px-4 py-3">{t.tableFrom}</th>
+              <th className="px-4 py-3">{t.tableMessage}</th>
+              <th className="px-4 py-3">{t.tableReceived}</th>
+              <th className="px-4 py-3">{t.tableStatus}</th>
+              <th className="px-4 py-3">{t.tableAssignee}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -138,7 +135,7 @@ export default async function AdminContactSubmissionsPage({
                   </Link>
                   {g.count > 1 ? (
                     <span className="ml-2 rounded-full bg-neutral-800 px-2 py-0.5 text-[10px] text-neutral-300">
-                      {g.count} messages
+                      {t.messagesCount(g.count)}
                     </span>
                   ) : null}
                   <div className="text-xs text-neutral-400">{g.email}</div>
@@ -151,7 +148,7 @@ export default async function AdminContactSubmissionsPage({
                   {formatDate(g.latest.createdAt)}
                 </td>
                 <td className="px-4 py-3 space-y-2">
-                  <StatusChip status={g.latest.status} />
+                  <StatusChip status={g.latest.status} label={t.statusTabs[g.latest.status as keyof typeof t.statusTabs]} />
                   <StatusSelect submissionId={g.latest.id} status={g.latest.status} />
                 </td>
                 <td className="px-4 py-3">
@@ -167,7 +164,7 @@ export default async function AdminContactSubmissionsPage({
         </table>
         {groups.length === 0 ? (
           <div className="px-4 py-6 text-sm text-neutral-400">
-            {q ? 'No messages match your search.' : 'No submissions yet.'}
+            {q ? t.noResultsSearch : t.noSubmissions}
           </div>
         ) : null}
       </div>

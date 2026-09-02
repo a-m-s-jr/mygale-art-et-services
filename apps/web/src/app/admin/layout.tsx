@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast'
 import { requireRole } from '@/lib/auth'
 import { hasPageAccess, OVERVIEW_SECTION_KEY } from '@/lib/adminPages'
 import { getUnreadContactCount } from '@/lib/queries/contactSubmissions'
+import { getAdminT } from '@/lib/getLocale'
 import AdminSidebar from '@/components/AdminSidebar'
 
 export const metadata = {
@@ -22,6 +23,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const unreadContactCount = hasPageAccess(user, 'contact-submissions')
     ? await getUnreadContactCount()
     : 0
+  const t = await getAdminT()
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white flex">
@@ -36,11 +38,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             children
           ) : (
             <div className="rounded-xl border border-neutral-800 bg-neutral-900 p-6">
-              <h1 className="text-lg font-semibold">No access to this section</h1>
-              <p className="mt-2 text-sm text-neutral-400">
-                Your account doesn&apos;t have access to this admin page. Ask an Admin to grant it
-                from Users.
-              </p>
+              <h1 className="text-lg font-semibold">{t.layout.noAccessTitle}</h1>
+              <p className="mt-2 text-sm text-neutral-400">{t.layout.noAccessBody}</p>
             </div>
           )}
         </div>

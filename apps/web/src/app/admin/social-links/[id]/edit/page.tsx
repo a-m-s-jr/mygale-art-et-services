@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import { requireRole } from '@/lib/auth'
+import { getAdminT } from '@/lib/getLocale'
 import SocialLinkForm from '../../SocialLinkForm'
 
 export default async function EditSocialLinkPage({
@@ -10,16 +11,20 @@ export default async function EditSocialLinkPage({
 }) {
   await requireRole('ADMIN')
   const { id } = await params
-  const link = await prisma.socialLink.findUnique({ where: { id } })
+  const [link, adminT] = await Promise.all([
+    prisma.socialLink.findUnique({ where: { id } }),
+    getAdminT(),
+  ])
 
   if (!link) {
     notFound()
   }
+  const t = adminT.socialLinks
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Edit Social Link</h1>
+        <h1 className="text-2xl font-semibold">{t.editTitle}</h1>
       </div>
       <SocialLinkForm
         mode="edit"

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
+import { getAdminT } from '@/lib/getLocale'
 import BlogPostForm from '../../BlogPostForm'
 
 export default async function EditBlogPostPage({ params }: { params: Promise<{ id: string }> }) {
@@ -13,7 +14,7 @@ export default async function EditBlogPostPage({ params }: { params: Promise<{ i
     notFound()
   }
 
-  const [categories, translationCandidates] = await Promise.all([
+  const [categories, translationCandidates, adminT] = await Promise.all([
     prisma.blogCategory.findMany({ orderBy: { order: 'asc' } }),
     prisma.blogPost.findMany({
       where: { id: { not: id }, locale: post.locale === 'fr' ? 'en' : 'fr' },
@@ -21,13 +22,15 @@ export default async function EditBlogPostPage({ params }: { params: Promise<{ i
       select: { id: true, title: true, locale: true },
       take: 100,
     }),
+    getAdminT(),
   ])
+  const t = adminT.blog
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Edit Blog Post</h1>
-        <p className="text-sm text-neutral-400">Update content, SEO, and publishing settings.</p>
+        <h1 className="text-2xl font-semibold">{t.editTitle}</h1>
+        <p className="text-sm text-neutral-400">{t.editSubtitle}</p>
       </div>
       <BlogPostForm
         mode="edit"

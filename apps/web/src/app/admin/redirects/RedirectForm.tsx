@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createRedirect, updateRedirect } from './actions'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
@@ -15,7 +16,7 @@ type RedirectFormData = {
   active: boolean
 }
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -23,7 +24,7 @@ function SubmitButton({ label }: { label: string }) {
       className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : label}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -42,6 +43,9 @@ export default function RedirectForm({
 
   const action = mode === 'create' ? createRedirect : updateRedirect
   const [state, formAction] = useActionState(action, initialState)
+  const adminT = useAdminT()
+  const t = adminT.redirects
+  const common = adminT.common
 
   return (
     <form action={formAction} className="space-y-6">
@@ -55,7 +59,7 @@ export default function RedirectForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">From path *</label>
+          <label className="text-sm text-neutral-300">{t.fromPathLabel}</label>
           <input
             name="fromPath"
             placeholder="/old-page"
@@ -66,7 +70,7 @@ export default function RedirectForm({
           />
         </div>
         <div>
-          <label className="text-sm text-neutral-300">To path *</label>
+          <label className="text-sm text-neutral-300">{t.toPathLabel}</label>
           <input
             name="toPath"
             placeholder="/new-page or https://..."
@@ -80,16 +84,16 @@ export default function RedirectForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">Status code</label>
+          <label className="text-sm text-neutral-300">{t.statusCodeLabel}</label>
           <select
             name="statusCode"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
             value={statusCode}
             onChange={(e) => setStatusCode(Number(e.target.value))}
           >
-            <option value={308}>308 — Permanent (preserves method)</option>
-            <option value={301}>301 — Permanent</option>
-            <option value={302}>302 — Temporary</option>
+            <option value={308}>{t.statusPermanentMethod}</option>
+            <option value={301}>{t.statusPermanent}</option>
+            <option value={302}>{t.statusTemporary}</option>
           </select>
         </div>
         <label className="flex items-center gap-2 text-sm text-neutral-300 mt-6">
@@ -100,11 +104,14 @@ export default function RedirectForm({
             checked={active}
             onChange={(e) => setActive(e.target.checked)}
           />
-          Active
+          {t.activeCheckbox}
         </label>
       </div>
 
-      <SubmitButton label={mode === 'create' ? 'Create Redirect' : 'Save Changes'} />
+      <SubmitButton
+        label={mode === 'create' ? t.createButton : common.saveChanges}
+        pendingLabel={common.saving}
+      />
     </form>
   )
 }

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useActionState } from 'react'
 import { updateSiteSettings } from './actions'
 import MediaPicker from '@/components/admin/MediaPicker'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
@@ -87,6 +88,7 @@ export default function SettingsForm({ initial }: { initial: SettingsFormData })
   const [ogImageKey, setOgImageKey] = useState('')
 
   const [state, formAction] = useActionState(updateSiteSettings, initialState)
+  const t = useAdminT().settings
 
   function set<K extends keyof SettingsFormData>(key: K, v: string) {
     setValues((prev) => ({ ...prev, [key]: v }))
@@ -108,70 +110,65 @@ export default function SettingsForm({ initial }: { initial: SettingsFormData })
       <input type="hidden" name="ogImageUrl" value={ogImageUrl} />
 
       <div className="space-y-4 rounded-xl border border-neutral-800 p-4">
-        <h2 className="text-sm font-semibold text-neutral-200">Company Info</h2>
+        <h2 className="text-sm font-semibold text-neutral-200">{t.companyInfoSection}</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Company Name (FR) *" name="companyNameFr" value={values.companyNameFr} onChange={(v) => set('companyNameFr', v)} />
-          <Field label="Company Name (EN) *" name="companyNameEn" value={values.companyNameEn} onChange={(v) => set('companyNameEn', v)} />
-          <Field label="Tagline (FR)" name="taglineFr" value={values.taglineFr} onChange={(v) => set('taglineFr', v)} />
-          <Field label="Tagline (EN)" name="taglineEn" value={values.taglineEn} onChange={(v) => set('taglineEn', v)} />
-          <MediaPicker label="Logo" folder="site" url={logoUrl} compact onChange={(url, key) => { setLogoUrl(url); setLogoKey(key) }} />
-          <MediaPicker label="Favicon" folder="site" url={faviconUrl} compact onChange={(url, key) => { setFaviconUrl(url); setFaviconKey(key) }} />
+          <Field label={t.companyNameFr} name="companyNameFr" value={values.companyNameFr} onChange={(v) => set('companyNameFr', v)} />
+          <Field label={t.companyNameEn} name="companyNameEn" value={values.companyNameEn} onChange={(v) => set('companyNameEn', v)} />
+          <Field label={t.taglineFr} name="taglineFr" value={values.taglineFr} onChange={(v) => set('taglineFr', v)} />
+          <Field label={t.taglineEn} name="taglineEn" value={values.taglineEn} onChange={(v) => set('taglineEn', v)} />
+          <MediaPicker label={t.logo} folder="site" url={logoUrl} compact onChange={(url, key) => { setLogoUrl(url); setLogoKey(key) }} />
+          <MediaPicker label={t.favicon} folder="site" url={faviconUrl} compact onChange={(url, key) => { setFaviconUrl(url); setFaviconKey(key) }} />
         </div>
       </div>
 
       <div className="space-y-4 rounded-xl border border-neutral-800 p-4">
-        <h2 className="text-sm font-semibold text-neutral-200">Contact</h2>
+        <h2 className="text-sm font-semibold text-neutral-200">{t.contactSection}</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Address (FR)" name="addressFr" value={values.addressFr} onChange={(v) => set('addressFr', v)} />
-          <Field label="Address (EN)" name="addressEn" value={values.addressEn} onChange={(v) => set('addressEn', v)} />
-          <Field label="City" name="city" value={values.city} onChange={(v) => set('city', v)} />
-          <Field label="Country" name="country" value={values.country} onChange={(v) => set('country', v)} />
-          <Field label="Primary Phone" name="phonePrimary" value={values.phonePrimary} onChange={(v) => set('phonePrimary', v)} />
-          <Field label="Secondary Phone" name="phoneSecondary" value={values.phoneSecondary} onChange={(v) => set('phoneSecondary', v)} />
-          <Field label="WhatsApp (with country code)" name="whatsapp" value={values.whatsapp} onChange={(v) => set('whatsapp', v)} />
-          <Field label="Primary Email" name="emailPrimary" value={values.emailPrimary} onChange={(v) => set('emailPrimary', v)} />
-          <Field label="Contact Form Recipient Email" name="emailContact" value={values.emailContact} onChange={(v) => set('emailContact', v)} />
-          <Field label="Business Hours (FR)" name="businessHoursFr" value={values.businessHoursFr} onChange={(v) => set('businessHoursFr', v)} textarea />
-          <Field label="Business Hours (EN)" name="businessHoursEn" value={values.businessHoursEn} onChange={(v) => set('businessHoursEn', v)} textarea />
+          <Field label={t.addressFr} name="addressFr" value={values.addressFr} onChange={(v) => set('addressFr', v)} />
+          <Field label={t.addressEn} name="addressEn" value={values.addressEn} onChange={(v) => set('addressEn', v)} />
+          <Field label={t.city} name="city" value={values.city} onChange={(v) => set('city', v)} />
+          <Field label={t.country} name="country" value={values.country} onChange={(v) => set('country', v)} />
+          <Field label={t.phonePrimary} name="phonePrimary" value={values.phonePrimary} onChange={(v) => set('phonePrimary', v)} />
+          <Field label={t.phoneSecondary} name="phoneSecondary" value={values.phoneSecondary} onChange={(v) => set('phoneSecondary', v)} />
+          <Field label={t.whatsapp} name="whatsapp" value={values.whatsapp} onChange={(v) => set('whatsapp', v)} />
+          <Field label={t.emailPrimary} name="emailPrimary" value={values.emailPrimary} onChange={(v) => set('emailPrimary', v)} />
+          <Field label={t.emailContact} name="emailContact" value={values.emailContact} onChange={(v) => set('emailContact', v)} />
+          <Field label={t.businessHoursFr} name="businessHoursFr" value={values.businessHoursFr} onChange={(v) => set('businessHoursFr', v)} textarea />
+          <Field label={t.businessHoursEn} name="businessHoursEn" value={values.businessHoursEn} onChange={(v) => set('businessHoursEn', v)} textarea />
         </div>
       </div>
 
       <div className="space-y-4 rounded-xl border border-neutral-800 p-4">
-        <h2 className="text-sm font-semibold text-neutral-200">Map / Location</h2>
-        <p className="text-xs text-neutral-500">
-          Used by the homepage Map section and the Contact page.
-        </p>
+        <h2 className="text-sm font-semibold text-neutral-200">{t.mapSection}</h2>
+        <p className="text-xs text-neutral-500">{t.mapSectionNote}</p>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Google Maps embed URL" name="mapEmbedUrl" value={values.mapEmbedUrl} onChange={(v) => set('mapEmbedUrl', v)} textarea />
-          <Field label="Google Maps place URL" name="mapPlaceUrl" value={values.mapPlaceUrl} onChange={(v) => set('mapPlaceUrl', v)} textarea />
-          <Field label="Latitude" name="latitude" value={values.latitude} onChange={(v) => set('latitude', v)} />
-          <Field label="Longitude" name="longitude" value={values.longitude} onChange={(v) => set('longitude', v)} />
+          <Field label={t.mapEmbedUrl} name="mapEmbedUrl" value={values.mapEmbedUrl} onChange={(v) => set('mapEmbedUrl', v)} textarea />
+          <Field label={t.mapPlaceUrl} name="mapPlaceUrl" value={values.mapPlaceUrl} onChange={(v) => set('mapPlaceUrl', v)} textarea />
+          <Field label={t.latitude} name="latitude" value={values.latitude} onChange={(v) => set('latitude', v)} />
+          <Field label={t.longitude} name="longitude" value={values.longitude} onChange={(v) => set('longitude', v)} />
         </div>
       </div>
 
       <div className="space-y-4 rounded-xl border border-neutral-800 p-4">
-        <h2 className="text-sm font-semibold text-neutral-200">Default SEO</h2>
+        <h2 className="text-sm font-semibold text-neutral-200">{t.seoSection}</h2>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Default SEO Title (FR)" name="defaultSeoTitleFr" value={values.defaultSeoTitleFr} onChange={(v) => set('defaultSeoTitleFr', v)} />
-          <Field label="Default SEO Title (EN)" name="defaultSeoTitleEn" value={values.defaultSeoTitleEn} onChange={(v) => set('defaultSeoTitleEn', v)} />
-          <Field label="Default SEO Description (FR)" name="defaultSeoDescriptionFr" value={values.defaultSeoDescriptionFr} onChange={(v) => set('defaultSeoDescriptionFr', v)} textarea />
-          <Field label="Default SEO Description (EN)" name="defaultSeoDescriptionEn" value={values.defaultSeoDescriptionEn} onChange={(v) => set('defaultSeoDescriptionEn', v)} textarea />
-          <MediaPicker label="Default social share image" folder="site" url={ogImageUrl} compact onChange={(url, key) => { setOgImageUrl(url); setOgImageKey(key) }} />
-          <Field label="Google Site Verification" name="googleSiteVerification" value={values.googleSiteVerification} onChange={(v) => set('googleSiteVerification', v)} />
-          <Field label="Analytics ID" name="analyticsId" value={values.analyticsId} onChange={(v) => set('analyticsId', v)} />
+          <Field label={t.defaultSeoTitleFr} name="defaultSeoTitleFr" value={values.defaultSeoTitleFr} onChange={(v) => set('defaultSeoTitleFr', v)} />
+          <Field label={t.defaultSeoTitleEn} name="defaultSeoTitleEn" value={values.defaultSeoTitleEn} onChange={(v) => set('defaultSeoTitleEn', v)} />
+          <Field label={t.defaultSeoDescriptionFr} name="defaultSeoDescriptionFr" value={values.defaultSeoDescriptionFr} onChange={(v) => set('defaultSeoDescriptionFr', v)} textarea />
+          <Field label={t.defaultSeoDescriptionEn} name="defaultSeoDescriptionEn" value={values.defaultSeoDescriptionEn} onChange={(v) => set('defaultSeoDescriptionEn', v)} textarea />
+          <MediaPicker label={t.ogImage} folder="site" url={ogImageUrl} compact onChange={(url, key) => { setOgImageUrl(url); setOgImageKey(key) }} />
+          <Field label={t.googleSiteVerification} name="googleSiteVerification" value={values.googleSiteVerification} onChange={(v) => set('googleSiteVerification', v)} />
+          <Field label={t.analyticsId} name="analyticsId" value={values.analyticsId} onChange={(v) => set('analyticsId', v)} />
         </div>
       </div>
 
       <div className="space-y-4 rounded-xl border border-neutral-800 p-4">
-        <h2 className="text-sm font-semibold text-neutral-200">Email (display only)</h2>
-        <p className="text-xs text-neutral-500">
-          SMTP host/port/credentials are configured via server environment variables for security
-          and are not editable here.
-        </p>
+        <h2 className="text-sm font-semibold text-neutral-200">{t.emailSection}</h2>
+        <p className="text-xs text-neutral-500">{t.emailSectionNote}</p>
         <div className="grid gap-4 md:grid-cols-2">
-          <Field label="From Name" name="smtpFromName" value={values.smtpFromName} onChange={(v) => set('smtpFromName', v)} />
-          <Field label="From Email" name="smtpFromEmail" value={values.smtpFromEmail} onChange={(v) => set('smtpFromEmail', v)} />
-          <Field label="Reply-To" name="smtpReplyTo" value={values.smtpReplyTo} onChange={(v) => set('smtpReplyTo', v)} />
+          <Field label={t.fromName} name="smtpFromName" value={values.smtpFromName} onChange={(v) => set('smtpFromName', v)} />
+          <Field label={t.fromEmail} name="smtpFromEmail" value={values.smtpFromEmail} onChange={(v) => set('smtpFromEmail', v)} />
+          <Field label={t.replyTo} name="smtpReplyTo" value={values.smtpReplyTo} onChange={(v) => set('smtpReplyTo', v)} />
         </div>
       </div>
 
@@ -179,7 +176,7 @@ export default function SettingsForm({ initial }: { initial: SettingsFormData })
         type="submit"
         className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold"
       >
-        Save Settings
+        {t.saveSettings}
       </button>
     </form>
   )

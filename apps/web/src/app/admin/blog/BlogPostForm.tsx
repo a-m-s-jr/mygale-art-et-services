@@ -8,6 +8,7 @@ import slugify from 'slugify'
 import MarkdownPreview from '@/components/MarkdownPreview'
 import { createBlogPost, updateBlogPost } from './actions'
 import { uploadMedia } from '@/lib/mediaClient'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
@@ -37,7 +38,7 @@ function formatDateTime(value?: Date | null) {
   return iso.slice(0, 16)
 }
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -45,7 +46,7 @@ function SubmitButton({ label }: { label: string }) {
       className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : label}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -85,8 +86,11 @@ export default function BlogPostForm({
 
   const action = mode === 'create' ? createBlogPost : updateBlogPost
   const [state, formAction] = useActionState(action, initialState)
+  const adminT = useAdminT()
+  const t = adminT.blog
+  const common = adminT.common
 
-  const previewContent = useMemo(() => content || 'Start writing to see a preview...', [content])
+  const previewContent = useMemo(() => content || t.previewPlaceholder, [content, t.previewPlaceholder])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -97,7 +101,7 @@ export default function BlogPostForm({
     if (result.ok && result.url) {
       setCoverImage(result.url)
     } else {
-      alert(result.error || 'Upload failed')
+      alert(result.error || common.uploadFailed)
     }
   }
 
@@ -113,7 +117,7 @@ export default function BlogPostForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">Title *</label>
+          <label className="text-sm text-neutral-300">{t.titleLabel}</label>
           <input
             name="title"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -123,7 +127,7 @@ export default function BlogPostForm({
           />
         </div>
         <div>
-          <label className="text-sm text-neutral-300">Slug *</label>
+          <label className="text-sm text-neutral-300">{common.slug} *</label>
           <input
             name="slug"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -138,7 +142,7 @@ export default function BlogPostForm({
       </div>
 
       <div>
-        <label className="text-sm text-neutral-300">Excerpt *</label>
+        <label className="text-sm text-neutral-300">{t.excerpt}</label>
         <textarea
           name="excerpt"
           className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -151,7 +155,7 @@ export default function BlogPostForm({
 
       {/* Cover Image Upload */}
       <div>
-        <label className="text-sm text-neutral-300">Cover Image</label>
+        <label className="text-sm text-neutral-300">{t.coverImage}</label>
         <div className="mt-1 flex items-center gap-3">
           <input
             type="file"
@@ -160,7 +164,7 @@ export default function BlogPostForm({
             disabled={uploading}
             className="block w-full text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-neutral-800 file:text-neutral-200 hover:file:bg-neutral-700 disabled:opacity-50"
           />
-          {uploading && <span className="text-xs text-neutral-400">Uploading...</span>}
+          {uploading && <span className="text-xs text-neutral-400">{common.uploading}</span>}
         </div>
         {coverImage && (
           <div className="mt-2">
@@ -184,7 +188,7 @@ export default function BlogPostForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">Locale *</label>
+          <label className="text-sm text-neutral-300">{t.localeLabel}</label>
           <select
             name="locale"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -197,14 +201,14 @@ export default function BlogPostForm({
           </select>
         </div>
         <div>
-          <label className="text-sm text-neutral-300">Category</label>
+          <label className="text-sm text-neutral-300">{t.categoryLabel}</label>
           <select
             name="categoryId"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
             value={categoryId}
             onChange={(e) => setCategoryId(e.target.value)}
           >
-            <option value="">None</option>
+            <option value="">{t.categoryNone}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.nameFr} / {c.nameEn}
@@ -216,7 +220,7 @@ export default function BlogPostForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">Tags (comma-separated)</label>
+          <label className="text-sm text-neutral-300">{t.tagsLabel}</label>
           <input
             name="tags"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -226,29 +230,27 @@ export default function BlogPostForm({
           />
         </div>
         <div>
-          <label className="text-sm text-neutral-300">Linked translation</label>
+          <label className="text-sm text-neutral-300">{t.linkedTranslation}</label>
           <select
             name="translationOfId"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
             value={translationOfId}
             onChange={(e) => setTranslationOfId(e.target.value)}
           >
-            <option value="">None</option>
+            <option value="">{t.linkedTranslationNone}</option>
             {translationOptions.map((p) => (
               <option key={p.id} value={p.id}>
                 [{p.locale.toUpperCase()}] {p.title}
               </option>
             ))}
           </select>
-          <p className="mt-1 text-xs text-neutral-500">
-            Link this post to its FR/EN counterpart so readers can switch language on the article.
-          </p>
+          <p className="mt-1 text-xs text-neutral-500">{t.linkedTranslationNote}</p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">SEO Title *</label>
+          <label className="text-sm text-neutral-300">{t.seoTitle}</label>
           <input
             name="seoTitle"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -258,7 +260,7 @@ export default function BlogPostForm({
           />
         </div>
         <div>
-          <label className="text-sm text-neutral-300">SEO Description *</label>
+          <label className="text-sm text-neutral-300">{t.seoDescription}</label>
           <input
             name="seoDescription"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -278,11 +280,11 @@ export default function BlogPostForm({
             checked={published}
             onChange={(e) => setPublished(e.target.checked)}
           />
-          Published
+          {t.publishedCheckbox}
         </label>
 
         <div className="flex items-center gap-2">
-          <label className="text-sm text-neutral-300">Published At</label>
+          <label className="text-sm text-neutral-300">{t.publishedAt}</label>
           <input
             type="datetime-local"
             name="publishedAt"
@@ -295,7 +297,7 @@ export default function BlogPostForm({
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">Markdown Content *</label>
+          <label className="text-sm text-neutral-300">{t.markdownContent}</label>
           <textarea
             name="content"
             className="mt-1 min-h-80 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 font-mono text-sm"
@@ -305,7 +307,7 @@ export default function BlogPostForm({
           />
         </div>
         <div>
-          <div className="text-sm text-neutral-300">Live Preview</div>
+          <div className="text-sm text-neutral-300">{t.livePreview}</div>
           <div className="mt-1 min-h-80 rounded-lg border border-neutral-800 bg-neutral-900 px-4 py-3">
             <MarkdownPreview content={previewContent} />
           </div>
@@ -313,8 +315,11 @@ export default function BlogPostForm({
       </div>
 
       <div className="flex items-center gap-3">
-        <SubmitButton label={mode === 'create' ? 'Create Post' : 'Save Changes'} />
-        <span className="text-xs text-neutral-400">Fields marked * are required.</span>
+        <SubmitButton
+          label={mode === 'create' ? t.createButton : common.saveChanges}
+          pendingLabel={common.saving}
+        />
+        <span className="text-xs text-neutral-400">{common.fieldsRequired}</span>
       </div>
     </form>
   )

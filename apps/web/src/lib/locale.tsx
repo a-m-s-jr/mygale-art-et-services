@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
+import { getAdminTranslations } from '@/lib/adminTranslations'
 
 export type Lang = 'fr' | 'en'
 
@@ -102,4 +103,10 @@ export function LocaleProvider({
 
 export function useLocale() {
   return useContext(LocaleContext)
+}
+
+/** Admin panel translations for the current locale (Client Components). */
+export function useAdminT() {
+  const { lang } = useLocale()
+  return getAdminTranslations(lang)
 }

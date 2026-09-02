@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import SortableList from '@/components/admin/SortableList'
 import { SortableRow, DragHandle } from '@/components/admin/SortableRow'
 import { bulkReorderSocialLinks, deleteSocialLink } from './actions'
+import { useAdminT } from '@/lib/locale'
 
 type LinkRow = { id: string; platform: string; label: string | null; url: string; visible: boolean }
 
@@ -13,6 +14,9 @@ export default function SocialLinksTable({ links: initial }: { links: LinkRow[] 
   const [links, setLinks] = useState(initial)
   const [, startTransition] = useTransition()
   const router = useRouter()
+  const adminT = useAdminT()
+  const t = adminT.socialLinks
+  const common = adminT.common
 
   // See ServicesTable for why this sync is required after same-route redirects.
   useEffect(() => {
@@ -37,10 +41,10 @@ export default function SocialLinksTable({ links: initial }: { links: LinkRow[] 
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
               <th className="px-4 py-3 w-10"></th>
-              <th className="px-4 py-3">Platform</th>
-              <th className="px-4 py-3">URL</th>
-              <th className="px-4 py-3">Visible</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{t.tablePlatform}</th>
+              <th className="px-4 py-3">{t.tableUrl}</th>
+              <th className="px-4 py-3">{t.tableVisible}</th>
+              <th className="px-4 py-3">{t.tableActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -66,7 +70,7 @@ export default function SocialLinksTable({ links: initial }: { links: LinkRow[] 
                             : 'bg-neutral-700/40 text-neutral-300'
                         }`}
                       >
-                        {link.visible ? 'Visible' : 'Hidden'}
+                        {link.visible ? common.visible : common.hidden}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -75,7 +79,7 @@ export default function SocialLinksTable({ links: initial }: { links: LinkRow[] 
                           href={`/admin/social-links/${link.id}/edit`}
                           className="rounded border border-neutral-700 px-3 py-1 text-xs"
                         >
-                          Edit
+                          {t.edit}
                         </Link>
 
                         <form action={deleteSocialLink}>
@@ -84,7 +88,7 @@ export default function SocialLinksTable({ links: initial }: { links: LinkRow[] 
                             type="submit"
                             className="rounded border border-red-500/60 px-3 py-1 text-xs text-red-200"
                           >
-                            Delete
+                            {t.delete}
                           </button>
                         </form>
                       </div>
@@ -97,7 +101,7 @@ export default function SocialLinksTable({ links: initial }: { links: LinkRow[] 
         </table>
       </SortableList>
       {links.length === 0 ? (
-        <div className="px-4 py-6 text-sm text-neutral-400">No social links yet.</div>
+        <div className="px-4 py-6 text-sm text-neutral-400">{t.noLinks}</div>
       ) : null}
     </div>
   )

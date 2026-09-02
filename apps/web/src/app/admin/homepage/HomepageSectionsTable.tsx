@@ -6,16 +6,7 @@ import { useRouter } from 'next/navigation'
 import SortableList from '@/components/admin/SortableList'
 import { SortableRow, DragHandle } from '@/components/admin/SortableRow'
 import { bulkReorderHomepageSections, toggleHomepageSectionVisibility } from './actions'
-
-const TYPE_LABEL: Record<string, string> = {
-  HERO: 'Hero',
-  SERVICES_GRID: 'Services grid',
-  ABOUT: 'About',
-  MAP: 'Map / Location',
-  STATS: 'Statistics',
-  PARTNERS: 'Partners',
-  TESTIMONIALS: 'Testimonials',
-}
+import { useAdminT } from '@/lib/locale'
 
 type SectionRow = { id: string; type: string; titleFr: string | null; visible: boolean }
 
@@ -23,6 +14,10 @@ export default function HomepageSectionsTable({ sections: initial }: { sections:
   const [sections, setSections] = useState(initial)
   const [, startTransition] = useTransition()
   const router = useRouter()
+  const adminT = useAdminT()
+  const t = adminT.homepage
+  const common = adminT.common
+  const typeLabel = t.typeLabels as Record<string, string>
 
   // See ServicesTable for why this sync is required after same-route redirects.
   useEffect(() => {
@@ -47,10 +42,10 @@ export default function HomepageSectionsTable({ sections: initial }: { sections:
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
               <th className="px-4 py-3 w-10"></th>
-              <th className="px-4 py-3">Section</th>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Visible</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{t.tableSection}</th>
+              <th className="px-4 py-3">{t.tableTitle}</th>
+              <th className="px-4 py-3">{t.tableVisible}</th>
+              <th className="px-4 py-3">{t.tableActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -62,7 +57,7 @@ export default function HomepageSectionsTable({ sections: initial }: { sections:
                       <DragHandle dragHandleProps={dragHandleProps} />
                     </td>
                     <td className="px-4 py-3 font-semibold">
-                      {TYPE_LABEL[section.type] || section.type}
+                      {typeLabel[section.type] || section.type}
                     </td>
                     <td className="px-4 py-3 text-neutral-300">{section.titleFr || '—'}</td>
                     <td className="px-4 py-3">
@@ -73,7 +68,7 @@ export default function HomepageSectionsTable({ sections: initial }: { sections:
                             : 'bg-neutral-700/40 text-neutral-300'
                         }`}
                       >
-                        {section.visible ? 'Visible' : 'Hidden'}
+                        {section.visible ? common.visible : common.hidden}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -82,7 +77,7 @@ export default function HomepageSectionsTable({ sections: initial }: { sections:
                           href={`/admin/homepage/${section.id}/edit`}
                           className="rounded border border-neutral-700 px-3 py-1 text-xs"
                         >
-                          Edit
+                          {t.edit}
                         </Link>
 
                         <form action={toggleHomepageSectionVisibility}>
@@ -96,7 +91,7 @@ export default function HomepageSectionsTable({ sections: initial }: { sections:
                             type="submit"
                             className="rounded border border-neutral-700 px-3 py-1 text-xs"
                           >
-                            {section.visible ? 'Hide' : 'Show'}
+                            {section.visible ? t.hide : t.show}
                           </button>
                         </form>
                       </div>

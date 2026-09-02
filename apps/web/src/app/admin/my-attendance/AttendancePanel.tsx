@@ -4,7 +4,7 @@ import { useActionState, useState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { checkInAttendance } from './actions'
 import { formatClockTime } from '@/lib/timezone'
-import { useLocale } from '@/lib/locale'
+import { useAdminT } from '@/lib/locale'
 
 type Recorded = { arrivalAt: string; status: 'ON_TIME' | 'LATE' }
 
@@ -12,33 +12,6 @@ const initialState: {
   error?: string
   result?: { arrivalAt: string; status: 'ON_TIME' | 'LATE'; alreadyRecorded: boolean }
 } = {}
-
-const T = {
-  fr: {
-    scan: 'Scanner le code de présence',
-    recording: 'Enregistrement...',
-    prompt:
-      "Vous n'avez pas encore pointé aujourd'hui. Scannez le code QR de présence à l'entrée, ou appuyez sur le bouton ci-dessous si vous avez suivi un lien.",
-    recordedNow: 'Présence enregistrée avec succès.',
-    recordedAlready: "Votre présence d'aujourd'hui est enregistrée.",
-    arrival: 'Arrivée :',
-    status: 'Statut :',
-    onTime: 'À L’HEURE',
-    late: 'EN RETARD',
-  },
-  en: {
-    scan: 'Scan Attendance QR',
-    recording: 'Recording...',
-    prompt:
-      "You haven't checked in today. Scan the attendance QR code at the entrance, or tap the button below if you followed a link from it.",
-    recordedNow: 'Attendance recorded successfully.',
-    recordedAlready: "Today's attendance is recorded.",
-    arrival: 'Arrival:',
-    status: 'Status:',
-    onTime: 'ON TIME',
-    late: 'LATE',
-  },
-}
 
 function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
@@ -62,8 +35,7 @@ function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: st
  * own "recorded successfully" confirmation ever paints.
  */
 export default function AttendancePanel({ initialRecord }: { initialRecord: Recorded | null }) {
-  const { lang } = useLocale()
-  const t = T[lang]
+  const t = useAdminT().myAttendance
   const [record, setRecord] = useState<Recorded | null>(initialRecord)
   const [justRecorded, setJustRecorded] = useState(false)
   const [state, formAction] = useActionState(checkInAttendance, initialState)

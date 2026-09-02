@@ -3,10 +3,11 @@
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { setAttendanceWindow } from './actions'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
-function SubmitButton() {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -14,7 +15,7 @@ function SubmitButton() {
       className="rounded-lg bg-[#003366] px-4 py-2 text-sm font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : 'Save Window'}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -29,12 +30,14 @@ export default function WindowForm({
   windowEnd: string
 }) {
   const [state, formAction] = useActionState(setAttendanceWindow, initialState)
+  const adminT = useAdminT()
+  const t = adminT.attendanceConfig
 
   return (
     <form action={formAction} className="flex flex-wrap items-end gap-3">
       <input type="hidden" name="departmentId" value={departmentId ?? ''} />
       <div>
-        <label className="block text-xs text-neutral-400">Start (on-time from)</label>
+        <label className="block text-xs text-neutral-400">{t.windowStart}</label>
         <input
           type="time"
           name="windowStart"
@@ -44,7 +47,7 @@ export default function WindowForm({
         />
       </div>
       <div>
-        <label className="block text-xs text-neutral-400">Late after</label>
+        <label className="block text-xs text-neutral-400">{t.windowEnd}</label>
         <input
           type="time"
           name="windowEnd"
@@ -53,7 +56,7 @@ export default function WindowForm({
           className="mt-1 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-sm"
         />
       </div>
-      <SubmitButton />
+      <SubmitButton label={t.saveWindow} pendingLabel={adminT.common.saving} />
       {state.error ? <p className="w-full text-xs text-red-300">{state.error}</p> : null}
     </form>
   )

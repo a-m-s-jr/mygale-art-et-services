@@ -1,11 +1,13 @@
+import { getAdminT } from '@/lib/getLocale'
 import AnnouncementForm from '../AnnouncementForm'
 
-export default function NewAnnouncementPage() {
+export default async function NewAnnouncementPage() {
+  const t = (await getAdminT()).announcements
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Create Announcement</h1>
-        <p className="text-sm text-neutral-400">Publish a new global banner message.</p>
+        <h1 className="text-2xl font-semibold">{t.createTitle}</h1>
+        <p className="text-sm text-neutral-400">{t.createSubtitle}</p>
       </div>
       <AnnouncementForm mode="create" />
     </div>

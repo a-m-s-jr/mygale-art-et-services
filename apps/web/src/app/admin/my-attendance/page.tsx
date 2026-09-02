@@ -1,27 +1,22 @@
 import prisma from '@/lib/prisma'
 import { requireRole } from '@/lib/auth'
 import { calendarDate } from '@/lib/timezone'
-import { getLocale } from '@/lib/getLocale'
+import { getAdminT } from '@/lib/getLocale'
 import AttendancePanel from './AttendancePanel'
-
-const T = {
-  fr: { heading: 'Mon pointage', noDepartment: 'Aucun département assigné' },
-  en: { heading: 'My Attendance', noDepartment: 'No department assigned' },
-}
 
 export default async function MyAttendancePage() {
   const user = await requireRole('USER')
 
-  const [today, department, jobRole, locale] = await Promise.all([
+  const [today, department, jobRole, adminT] = await Promise.all([
     prisma.attendance.findUnique({
       where: { userId_date: { userId: user.id, date: calendarDate(new Date()) } },
     }),
     user.departmentId ? prisma.department.findUnique({ where: { id: user.departmentId } }) : null,
     user.jobRoleId ? prisma.jobRole.findUnique({ where: { id: user.jobRoleId } }) : null,
-    getLocale(),
+    getAdminT(),
   ])
 
-  const t = T[locale]
+  const t = adminT.myAttendance
 
   return (
     <div className="max-w-md space-y-6">

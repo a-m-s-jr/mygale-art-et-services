@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { deleteBlogPost, toggleBlogPostPublish } from './actions'
+import { getAdminT } from '@/lib/getLocale'
 
 function formatDate(value: Date | null) {
   if (!value) return '--'
@@ -8,22 +9,27 @@ function formatDate(value: Date | null) {
 }
 
 export default async function AdminBlogPage() {
-  const posts = await prisma.blogPost.findMany({
-    orderBy: [{ createdAt: 'desc' }],
-  })
+  const [posts, adminT] = await Promise.all([
+    prisma.blogPost.findMany({
+      orderBy: [{ createdAt: 'desc' }],
+    }),
+    getAdminT(),
+  ])
+  const t = adminT.blog
+  const common = adminT.common
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Blog Posts</h1>
-          <p className="text-sm text-neutral-400">Manage, publish, and update posts.</p>
+          <h1 className="text-2xl font-semibold">{t.title}</h1>
+          <p className="text-sm text-neutral-400">{t.subtitle}</p>
         </div>
         <Link
           href="/admin/blog/new"
           className="rounded-lg bg-[#003366] px-4 py-2 text-sm font-semibold"
         >
-          New Post
+          {t.newPost}
         </Link>
       </div>
 
@@ -31,11 +37,11 @@ export default async function AdminBlogPage() {
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Locale</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Published</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{t.tableTitle}</th>
+              <th className="px-4 py-3">{t.tableLocale}</th>
+              <th className="px-4 py-3">{t.tableStatus}</th>
+              <th className="px-4 py-3">{t.tablePublished}</th>
+              <th className="px-4 py-3">{t.tableActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -54,7 +60,7 @@ export default async function AdminBlogPage() {
                         : 'bg-yellow-500/20 text-yellow-300'
                     }`}
                   >
-                    {post.published ? 'Published' : 'Draft'}
+                    {post.published ? common.published : common.draft}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-neutral-300">{formatDate(post.publishedAt)}</td>
@@ -64,7 +70,7 @@ export default async function AdminBlogPage() {
                       href={`/admin/blog/${post.id}/edit`}
                       className="rounded border border-neutral-700 px-3 py-1 text-xs"
                     >
-                      Edit
+                      {t.edit}
                     </Link>
 
                     <form action={toggleBlogPostPublish}>
@@ -74,7 +80,7 @@ export default async function AdminBlogPage() {
                         type="submit"
                         className="rounded border border-neutral-700 px-3 py-1 text-xs"
                       >
-                        {post.published ? 'Unpublish' : 'Publish'}
+                        {post.published ? t.unpublish : t.publish}
                       </button>
                     </form>
 
@@ -84,7 +90,7 @@ export default async function AdminBlogPage() {
                         type="submit"
                         className="rounded border border-red-500/60 px-3 py-1 text-xs text-red-200"
                       >
-                        Delete
+                        {t.delete}
                       </button>
                     </form>
                   </div>
@@ -94,9 +100,9 @@ export default async function AdminBlogPage() {
           </tbody>
         </table>
         {posts.length === 0 ? (
-          <div className="px-4 py-6 text-sm text-neutral-400">No blog posts yet.</div>
+          <div className="px-4 py-6 text-sm text-neutral-400">{t.noPosts}</div>
         ) : null}
       </div>
     </div>
   )
-}
+}

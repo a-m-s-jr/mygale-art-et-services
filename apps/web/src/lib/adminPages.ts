@@ -66,6 +66,26 @@ export const ADMIN_PAGES: AdminPage[] = [
   { key: 'audit-log', href: '/admin/audit-log', label: 'Audit Log', minRole: 'ADMIN' },
 ]
 
+/** Maps an ADMIN_PAGES `key` to its property name in adminTranslations' `nav` dictionary. */
+export const NAV_TRANSLATION_KEY: Record<string, string> = {
+  services: 'services',
+  homepage: 'homepage',
+  about: 'about',
+  media: 'media',
+  blog: 'blog',
+  'blog-categories': 'blogCategories',
+  announcements: 'announcements',
+  'contact-submissions': 'inbox',
+  navigation: 'navigation',
+  'social-links': 'socialLinks',
+  redirects: 'redirects',
+  settings: 'settings',
+  users: 'users',
+  departments: 'departments',
+  attendance: 'attendance',
+  'audit-log': 'auditLog',
+}
+
 export type PageAccessUser = {
   role: Role | null
   pagesRestricted: boolean

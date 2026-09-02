@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import { requireRole } from '@/lib/auth'
+import { getAdminT } from '@/lib/getLocale'
 import NavigationItemForm from '../../NavigationItemForm'
 
 export default async function EditNavigationItemPage({
@@ -10,16 +11,20 @@ export default async function EditNavigationItemPage({
 }) {
   await requireRole('ADMIN')
   const { id } = await params
-  const item = await prisma.navigationItem.findUnique({ where: { id } })
+  const [item, adminT] = await Promise.all([
+    prisma.navigationItem.findUnique({ where: { id } }),
+    getAdminT(),
+  ])
 
   if (!item) {
     notFound()
   }
+  const t = adminT.navigation
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Edit Navigation Item</h1>
+        <h1 className="text-2xl font-semibold">{t.editTitle}</h1>
       </div>
       <NavigationItemForm
         initial={{

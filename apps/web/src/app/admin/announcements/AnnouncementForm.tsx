@@ -5,6 +5,7 @@ import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createAnnouncement, updateAnnouncement } from './actions'
 import { uploadMedia } from '@/lib/mediaClient'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
@@ -26,7 +27,7 @@ function formatDateTime(value?: Date | null) {
   return iso.slice(0, 16)
 }
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -34,7 +35,7 @@ function SubmitButton({ label }: { label: string }) {
       className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : label}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -58,6 +59,9 @@ export default function AnnouncementForm({
 
   const action = mode === 'create' ? createAnnouncement : updateAnnouncement
   const [state, formAction] = useActionState(action, initialState)
+  const adminT = useAdminT()
+  const t = adminT.announcements
+  const common = adminT.common
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -68,7 +72,7 @@ export default function AnnouncementForm({
     if (result.ok && result.url) {
       setImageUrl(result.url)
     } else {
-      alert(result.error || 'Upload failed')
+      alert(result.error || common.uploadFailed)
     }
   }
 
@@ -83,7 +87,7 @@ export default function AnnouncementForm({
       {mode === 'edit' && initial?.id ? <input type="hidden" name="id" value={initial.id} /> : null}
 
       <div>
-        <label className="text-sm text-neutral-300">Title *</label>
+        <label className="text-sm text-neutral-300">{t.titleLabel}</label>
         <input
           name="title"
           className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -94,7 +98,7 @@ export default function AnnouncementForm({
       </div>
 
       <div>
-        <label className="text-sm text-neutral-300">Message *</label>
+        <label className="text-sm text-neutral-300">{t.messageLabel}</label>
         <textarea
           name="message"
           className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -107,7 +111,7 @@ export default function AnnouncementForm({
 
       {/* Banner Image Upload */}
       <div>
-        <label className="text-sm text-neutral-300">Banner Image (optional)</label>
+        <label className="text-sm text-neutral-300">{t.bannerImage}</label>
         <div className="mt-1 flex items-center gap-3">
           <input
             type="file"
@@ -116,7 +120,7 @@ export default function AnnouncementForm({
             disabled={uploading}
             className="block w-full text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-neutral-800 file:text-neutral-200 hover:file:bg-neutral-700 disabled:opacity-50"
           />
-          {uploading && <span className="text-xs text-neutral-400">Uploading...</span>}
+          {uploading && <span className="text-xs text-neutral-400">{common.uploading}</span>}
         </div>
         {imageUrl && (
           <div className="mt-2">
@@ -133,16 +137,16 @@ export default function AnnouncementForm({
 
       <div className="grid gap-4 md:grid-cols-3">
         <div>
-          <label className="text-sm text-neutral-300">Type</label>
+          <label className="text-sm text-neutral-300">{t.typeLabel}</label>
           <select
             name="type"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
             value={type}
             onChange={(e) => setType(e.target.value as AnnouncementFormData['type'])}
           >
-            <option value="info">Info</option>
-            <option value="warning">Warning</option>
-            <option value="promo">Promo</option>
+            <option value="info">{t.typeInfo}</option>
+            <option value="warning">{t.typeWarning}</option>
+            <option value="promo">{t.typePromo}</option>
           </select>
         </div>
         <div className="flex items-center gap-2">
@@ -153,7 +157,7 @@ export default function AnnouncementForm({
             checked={active}
             onChange={(e) => setActive(e.target.checked)}
           />
-          <label className="text-sm text-neutral-300">Active</label>
+          <label className="text-sm text-neutral-300">{t.activeCheckbox}</label>
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -163,13 +167,13 @@ export default function AnnouncementForm({
             checked={dismissible}
             onChange={(e) => setDismissible(e.target.checked)}
           />
-          <label className="text-sm text-neutral-300">Dismissible</label>
+          <label className="text-sm text-neutral-300">{t.dismissibleCheckbox}</label>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">Start Date (optional)</label>
+          <label className="text-sm text-neutral-300">{t.startDate}</label>
           <input
             type="datetime-local"
             name="startsAt"
@@ -179,7 +183,7 @@ export default function AnnouncementForm({
           />
         </div>
         <div>
-          <label className="text-sm text-neutral-300">End Date (optional)</label>
+          <label className="text-sm text-neutral-300">{t.endDate}</label>
           <input
             type="datetime-local"
             name="endsAt"
@@ -191,8 +195,11 @@ export default function AnnouncementForm({
       </div>
 
       <div className="flex items-center gap-3">
-        <SubmitButton label={mode === 'create' ? 'Create Announcement' : 'Save Changes'} />
-        <span className="text-xs text-neutral-400">Fields marked * are required.</span>
+        <SubmitButton
+          label={mode === 'create' ? t.createButton : common.saveChanges}
+          pendingLabel={common.saving}
+        />
+        <span className="text-xs text-neutral-400">{common.fieldsRequired}</span>
       </div>
     </form>
   )

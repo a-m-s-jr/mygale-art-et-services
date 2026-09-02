@@ -1,28 +1,31 @@
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { requireRole } from '@/lib/auth'
+import { getAdminT } from '@/lib/getLocale'
 
 export default async function AdminUsersPage() {
   const currentUser = await requireRole('ADMIN')
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: 'asc' },
-    include: { department: { select: { name: true } }, jobRole: { select: { name: true } } },
-  })
+  const [users, t] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: { createdAt: 'asc' },
+      include: { department: { select: { name: true } }, jobRole: { select: { name: true } } },
+    }),
+    getAdminT(),
+  ])
+  const c = t.common
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Users</h1>
-          <p className="text-sm text-neutral-400">
-            Manage admin panel access. Only Super Admins can grant Admin or Super Admin roles.
-          </p>
+          <h1 className="text-2xl font-semibold">{t.users.title}</h1>
+          <p className="text-sm text-neutral-400">{t.users.subtitle}</p>
         </div>
         <Link
           href="/admin/users/new"
           className="rounded-lg bg-[#003366] px-4 py-2 text-sm font-semibold"
         >
-          New User
+          {t.users.newUser}
         </Link>
       </div>
 
@@ -30,13 +33,13 @@ export default async function AdminUsersPage() {
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Department</th>
-              <th className="px-4 py-3">Job Role</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{t.users.name}</th>
+              <th className="px-4 py-3">{t.users.email}</th>
+              <th className="px-4 py-3">{t.users.role}</th>
+              <th className="px-4 py-3">{t.users.department}</th>
+              <th className="px-4 py-3">{t.users.jobRole}</th>
+              <th className="px-4 py-3">{t.users.status}</th>
+              <th className="px-4 py-3">{t.users.actions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -46,7 +49,7 @@ export default async function AdminUsersPage() {
                   {u.name}
                   {u.id === currentUser.id ? (
                     <span className="ml-2 rounded-full bg-neutral-800 px-2 py-0.5 text-[10px] text-neutral-400">
-                      you
+                      {t.users.you}
                     </span>
                   ) : null}
                 </td>
@@ -62,7 +65,7 @@ export default async function AdminUsersPage() {
                         : 'bg-neutral-700/40 text-neutral-300'
                     }`}
                   >
-                    {u.active ? 'Active' : 'Deactivated'}
+                    {u.active ? c.active : c.deactivated}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -70,7 +73,7 @@ export default async function AdminUsersPage() {
                     href={`/admin/users/${u.id}/edit`}
                     className="rounded border border-neutral-700 px-3 py-1 text-xs"
                   >
-                    Edit
+                    {t.users.edit}
                   </Link>
                 </td>
               </tr>

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createSocialLink, updateSocialLink } from './actions'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
@@ -17,7 +18,7 @@ type SocialLinkFormData = {
   visible: boolean
 }
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -25,7 +26,7 @@ function SubmitButton({ label }: { label: string }) {
       className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : label}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -44,6 +45,9 @@ export default function SocialLinkForm({
 
   const action = mode === 'create' ? createSocialLink : updateSocialLink
   const [state, formAction] = useActionState(action, initialState)
+  const adminT = useAdminT()
+  const t = adminT.socialLinks
+  const common = adminT.common
 
   return (
     <form action={formAction} className="space-y-6">
@@ -57,7 +61,7 @@ export default function SocialLinkForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">Platform *</label>
+          <label className="text-sm text-neutral-300">{t.platformLabel}</label>
           <select
             name="platform"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -73,19 +77,19 @@ export default function SocialLinkForm({
           </select>
         </div>
         <div>
-          <label className="text-sm text-neutral-300">Label</label>
+          <label className="text-sm text-neutral-300">{t.labelLabel}</label>
           <input
             name="label"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="Displayed text (optional)"
+            placeholder={t.labelPlaceholder}
           />
         </div>
       </div>
 
       <div>
-        <label className="text-sm text-neutral-300">URL *</label>
+        <label className="text-sm text-neutral-300">{t.urlLabel}</label>
         <input
           name="url"
           className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -103,10 +107,13 @@ export default function SocialLinkForm({
           checked={visible}
           onChange={(e) => setVisible(e.target.checked)}
         />
-        Visible (shown in Footer and Contact page)
+        {t.visibleCheckbox}
       </label>
 
-      <SubmitButton label={mode === 'create' ? 'Add Social Link' : 'Save Changes'} />
+      <SubmitButton
+        label={mode === 'create' ? t.addButton : common.saveChanges}
+        pendingLabel={common.saving}
+      />
     </form>
   )
 }

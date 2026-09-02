@@ -2,26 +2,29 @@ import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { requireRole } from '@/lib/auth'
 import { deleteRedirect, toggleRedirectActive } from './actions'
+import { getAdminT } from '@/lib/getLocale'
 
 export default async function AdminRedirectsPage() {
   await requireRole('ADMIN')
-  const redirects = await prisma.redirect.findMany({ orderBy: { createdAt: 'desc' } })
+  const [redirects, adminT] = await Promise.all([
+    prisma.redirect.findMany({ orderBy: { createdAt: 'desc' } }),
+    getAdminT(),
+  ])
+  const t = adminT.redirects
+  const common = adminT.common
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Redirects</h1>
-          <p className="text-sm text-neutral-400">
-            Manage URL redirects. One is created automatically whenever a service&apos;s slug
-            changes.
-          </p>
+          <h1 className="text-2xl font-semibold">{t.title}</h1>
+          <p className="text-sm text-neutral-400">{t.subtitle}</p>
         </div>
         <Link
           href="/admin/redirects/new"
           className="rounded-lg bg-[#003366] px-4 py-2 text-sm font-semibold"
         >
-          New Redirect
+          {t.newRedirect}
         </Link>
       </div>
 
@@ -29,11 +32,11 @@ export default async function AdminRedirectsPage() {
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
-              <th className="px-4 py-3">From</th>
-              <th className="px-4 py-3">To</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Active</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{t.tableFrom}</th>
+              <th className="px-4 py-3">{t.tableTo}</th>
+              <th className="px-4 py-3">{t.tableStatus}</th>
+              <th className="px-4 py-3">{t.tableActive}</th>
+              <th className="px-4 py-3">{t.tableActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -50,7 +53,7 @@ export default async function AdminRedirectsPage() {
                         : 'bg-neutral-700/40 text-neutral-300'
                     }`}
                   >
-                    {r.active ? 'Active' : 'Inactive'}
+                    {r.active ? common.active : common.inactive}
                   </span>
                 </td>
                 <td className="px-4 py-3">
@@ -59,7 +62,7 @@ export default async function AdminRedirectsPage() {
                       href={`/admin/redirects/${r.id}/edit`}
                       className="rounded border border-neutral-700 px-3 py-1 text-xs"
                     >
-                      Edit
+                      {t.edit}
                     </Link>
 
                     <form action={toggleRedirectActive}>
@@ -69,7 +72,7 @@ export default async function AdminRedirectsPage() {
                         type="submit"
                         className="rounded border border-neutral-700 px-3 py-1 text-xs"
                       >
-                        {r.active ? 'Deactivate' : 'Activate'}
+                        {r.active ? t.deactivate : t.activate}
                       </button>
                     </form>
 
@@ -79,7 +82,7 @@ export default async function AdminRedirectsPage() {
                         type="submit"
                         className="rounded border border-red-500/60 px-3 py-1 text-xs text-red-200"
                       >
-                        Delete
+                        {t.delete}
                       </button>
                     </form>
                   </div>
@@ -89,7 +92,7 @@ export default async function AdminRedirectsPage() {
           </tbody>
         </table>
         {redirects.length === 0 ? (
-          <div className="px-4 py-6 text-sm text-neutral-400">No redirects yet.</div>
+          <div className="px-4 py-6 text-sm text-neutral-400">{t.noRedirects}</div>
         ) : null}
       </div>
     </div>

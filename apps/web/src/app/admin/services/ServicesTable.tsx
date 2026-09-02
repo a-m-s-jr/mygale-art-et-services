@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import SortableList from '@/components/admin/SortableList'
 import { SortableRow, DragHandle } from '@/components/admin/SortableRow'
 import { bulkReorderServices, softDeleteService, toggleServicePublish } from './actions'
+import { useAdminT } from '@/lib/locale'
 
 type ServiceRow = {
   id: string
@@ -20,6 +21,9 @@ export default function ServicesTable({ services: initial }: { services: Service
   const [services, setServices] = useState(initial)
   const [, startTransition] = useTransition()
   const router = useRouter()
+  const adminT = useAdminT()
+  const t = adminT.services
+  const common = adminT.common
 
   // Server actions redirect back to this same route after mutating (publish
   // toggle, soft-delete, etc.); Next.js refreshes the RSC payload but this
@@ -47,11 +51,11 @@ export default function ServicesTable({ services: initial }: { services: Service
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
               <th className="px-4 py-3 w-10"></th>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Slug</th>
-              <th className="px-4 py-3">Featured</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{t.tableTitle}</th>
+              <th className="px-4 py-3">{t.tableSlug}</th>
+              <th className="px-4 py-3">{t.tableFeatured}</th>
+              <th className="px-4 py-3">{t.tableStatus}</th>
+              <th className="px-4 py-3">{t.tableActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -67,7 +71,7 @@ export default function ServicesTable({ services: initial }: { services: Service
                       <div className="text-xs text-neutral-400">{service.titleEn}</div>
                     </td>
                     <td className="px-4 py-3 text-neutral-300">{service.slug}</td>
-                    <td className="px-4 py-3 text-neutral-300">{service.featured ? 'Yes' : 'No'}</td>
+                    <td className="px-4 py-3 text-neutral-300">{service.featured ? t.yes : t.no}</td>
                     <td className="px-4 py-3">
                       <span
                         className={`rounded-full px-2 py-1 text-xs font-semibold ${
@@ -76,7 +80,7 @@ export default function ServicesTable({ services: initial }: { services: Service
                             : 'bg-yellow-500/20 text-yellow-300'
                         }`}
                       >
-                        {service.published ? 'Published' : 'Draft'}
+                        {service.published ? common.published : common.draft}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -85,20 +89,20 @@ export default function ServicesTable({ services: initial }: { services: Service
                           href={`/admin/services/${service.id}/edit`}
                           className="rounded border border-neutral-700 px-3 py-1 text-xs"
                         >
-                          Edit
+                          {t.edit}
                         </Link>
                         <Link
                           href={`/services/${service.slug}?preview=1`}
                           target="_blank"
                           className="rounded border border-neutral-700 px-3 py-1 text-xs"
                         >
-                          Preview
+                          {t.preview}
                         </Link>
                         <Link
                           href={`/admin/services/${service.id}/revisions`}
                           className="rounded border border-neutral-700 px-3 py-1 text-xs"
                         >
-                          History
+                          {t.history}
                         </Link>
 
                         <form action={toggleServicePublish}>
@@ -112,7 +116,7 @@ export default function ServicesTable({ services: initial }: { services: Service
                             type="submit"
                             className="rounded border border-neutral-700 px-3 py-1 text-xs"
                           >
-                            {service.published ? 'Unpublish' : 'Publish'}
+                            {service.published ? t.unpublish : t.publish}
                           </button>
                         </form>
 
@@ -122,7 +126,7 @@ export default function ServicesTable({ services: initial }: { services: Service
                             type="submit"
                             className="rounded border border-red-500/60 px-3 py-1 text-xs text-red-200"
                           >
-                            Delete
+                            {t.delete}
                           </button>
                         </form>
                       </div>
@@ -135,7 +139,7 @@ export default function ServicesTable({ services: initial }: { services: Service
         </table>
       </SortableList>
       {services.length === 0 ? (
-        <div className="px-4 py-6 text-sm text-neutral-400">No services yet.</div>
+        <div className="px-4 py-6 text-sm text-neutral-400">{t.noServices}</div>
       ) : null}
     </div>
   )
