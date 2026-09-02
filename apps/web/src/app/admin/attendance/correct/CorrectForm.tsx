@@ -3,10 +3,11 @@
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { correctAttendance } from './actions'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
-function SubmitButton() {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -14,13 +15,15 @@ function SubmitButton() {
       className="rounded-lg bg-[#003366] px-5 py-2 text-sm font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : 'Save Correction'}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
 
 export default function CorrectForm({ id, arrivalTime }: { id: string; arrivalTime: string }) {
   const [state, formAction] = useActionState(correctAttendance, initialState)
+  const adminT = useAdminT()
+  const t = adminT.attendanceCorrect
 
   return (
     <form action={formAction} className="space-y-4">
@@ -33,7 +36,7 @@ export default function CorrectForm({ id, arrivalTime }: { id: string; arrivalTi
       ) : null}
 
       <div>
-        <label className="text-sm text-neutral-300">Arrival time *</label>
+        <label className="text-sm text-neutral-300">{t.arrivalTime}</label>
         <input
           type="time"
           name="arrivalTime"
@@ -44,17 +47,17 @@ export default function CorrectForm({ id, arrivalTime }: { id: string; arrivalTi
       </div>
 
       <div>
-        <label className="text-sm text-neutral-300">Reason for correction *</label>
+        <label className="text-sm text-neutral-300">{t.reason}</label>
         <textarea
           name="note"
           required
           rows={3}
           className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
-          placeholder="e.g. Employee scanned the QR but the phone lost signal; confirmed arrival with supervisor."
+          placeholder={t.reasonPlaceholder}
         />
       </div>
 
-      <SubmitButton />
+      <SubmitButton label={t.saveCorrection} pendingLabel={adminT.common.saving} />
     </form>
   )
 }

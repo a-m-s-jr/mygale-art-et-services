@@ -1,13 +1,16 @@
 import prisma from '@/lib/prisma'
 import { DEFAULT_WINDOW_START_MINUTES, DEFAULT_WINDOW_END_MINUTES } from '@/lib/attendance'
 import { formatMinutesAsTime } from '@/lib/timezone'
+import { getAdminT } from '@/lib/getLocale'
 import WindowForm from './WindowForm'
 
 export default async function AttendanceConfigPage() {
-  const [departments, windows] = await Promise.all([
+  const [departments, windows, adminT] = await Promise.all([
     prisma.department.findMany({ orderBy: { name: 'asc' } }),
     prisma.attendanceWindow.findMany(),
+    getAdminT(),
   ])
+  const t = adminT.attendanceConfig
 
   const windowByDepartmentId = new Map(
     windows.filter((w) => w.departmentId).map((w) => [w.departmentId as string, w]),
@@ -17,18 +20,12 @@ export default async function AttendanceConfigPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Attendance Window</h1>
-        <p className="text-sm text-neutral-400">
-          Employees arriving before or during this period are considered ON TIME. Employees arriving
-          after the end time are considered LATE. Each department can override the default window
-          below.
-        </p>
+        <h1 className="text-2xl font-semibold">{t.title}</h1>
+        <p className="text-sm text-neutral-400">{t.subtitle}</p>
       </div>
 
       <div className="rounded-xl border border-neutral-800 p-4 space-y-2">
-        <div className="text-sm font-semibold">
-          Default window (all departments without their own)
-        </div>
+        <div className="text-sm font-semibold">{t.defaultWindowLabel}</div>
         <WindowForm
           departmentId={null}
           windowStart={formatMinutesAsTime(
@@ -42,18 +39,14 @@ export default async function AttendanceConfigPage() {
 
       <div className="space-y-4">
         <div className="text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          Department overrides
+          {t.departmentOverrides}
         </div>
         {departments.map((dept) => {
           const w = windowByDepartmentId.get(dept.id)
           return (
             <div key={dept.id} className="rounded-xl border border-neutral-800 p-4 space-y-2">
               <div className="text-sm font-semibold">{dept.name}</div>
-              {!w ? (
-                <p className="text-xs text-neutral-500">
-                  Currently using the default window above.
-                </p>
-              ) : null}
+              {!w ? <p className="text-xs text-neutral-500">{t.usingDefault}</p> : null}
               <WindowForm
                 departmentId={dept.id}
                 windowStart={formatMinutesAsTime(
@@ -71,10 +64,7 @@ export default async function AttendanceConfigPage() {
           )
         })}
         {departments.length === 0 ? (
-          <p className="text-sm text-neutral-400">
-            No departments yet — add one from the Departments page to set a department-specific
-            window.
-          </p>
+          <p className="text-sm text-neutral-400">{t.noDepartments}</p>
         ) : null}
       </div>
     </div>

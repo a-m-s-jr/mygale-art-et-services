@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { deleteAnnouncement, toggleAnnouncementActive } from './actions'
+import { getAdminT } from '@/lib/getLocale'
 
 function formatDate(value: Date | null) {
   if (!value) return '--'
@@ -8,22 +9,27 @@ function formatDate(value: Date | null) {
 }
 
 export default async function AdminAnnouncementsPage() {
-  const announcements = await prisma.announcement.findMany({
-    orderBy: [{ createdAt: 'desc' }],
-  })
+  const [announcements, adminT] = await Promise.all([
+    prisma.announcement.findMany({
+      orderBy: [{ createdAt: 'desc' }],
+    }),
+    getAdminT(),
+  ])
+  const t = adminT.announcements
+  const common = adminT.common
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Announcements</h1>
-          <p className="text-sm text-neutral-400">Manage global announcement banners.</p>
+          <h1 className="text-2xl font-semibold">{t.title}</h1>
+          <p className="text-sm text-neutral-400">{t.subtitle}</p>
         </div>
         <Link
           href="/admin/announcements/new"
           className="rounded-lg bg-[#003366] px-4 py-2 text-sm font-semibold"
         >
-          New Announcement
+          {t.newAnnouncement}
         </Link>
       </div>
 
@@ -31,11 +37,11 @@ export default async function AdminAnnouncementsPage() {
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Type</th>
-              <th className="px-4 py-3">Active</th>
-              <th className="px-4 py-3">Schedule</th>
-              <th className="px-4 py-3 whitespace-nowrap">Actions</th>
+              <th className="px-4 py-3">{t.tableTitle}</th>
+              <th className="px-4 py-3">{t.tableType}</th>
+              <th className="px-4 py-3">{t.tableActive}</th>
+              <th className="px-4 py-3">{t.tableSchedule}</th>
+              <th className="px-4 py-3 whitespace-nowrap">{t.tableActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -58,12 +64,12 @@ export default async function AdminAnnouncementsPage() {
                         : 'bg-neutral-700/40 text-neutral-300'
                     }`}
                   >
-                    {announcement.active ? 'Active' : 'Inactive'}
+                    {announcement.active ? common.active : common.inactive}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-neutral-300 whitespace-nowrap">
-                  <div className="text-xs">Start: {formatDate(announcement.startsAt)}</div>
-                  <div className="text-xs">End: {formatDate(announcement.endsAt)}</div>
+                  <div className="text-xs">{t.startLabel}: {formatDate(announcement.startsAt)}</div>
+                  <div className="text-xs">{t.endLabel}: {formatDate(announcement.endsAt)}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <div className="flex items-center gap-1">
@@ -71,7 +77,7 @@ export default async function AdminAnnouncementsPage() {
                       href={`/admin/announcements/${announcement.id}/edit`}
                       className="rounded border border-neutral-700 px-2 py-1 text-xs hover:bg-neutral-800"
                     >
-                      Edit
+                      {t.edit}
                     </Link>
 
                     <form action={toggleAnnouncementActive} className="inline">
@@ -85,7 +91,7 @@ export default async function AdminAnnouncementsPage() {
                         type="submit"
                         className="rounded border border-neutral-700 px-2 py-1 text-xs hover:bg-neutral-800"
                       >
-                        {announcement.active ? 'Off' : 'On'}
+                        {announcement.active ? t.off : t.on}
                       </button>
                     </form>
 
@@ -95,7 +101,7 @@ export default async function AdminAnnouncementsPage() {
                         type="submit"
                         className="rounded border border-red-500/60 px-2 py-1 text-xs text-red-200 hover:bg-red-500/10"
                       >
-                        Delete
+                        {t.delete}
                       </button>
                     </form>
                   </div>
@@ -105,7 +111,7 @@ export default async function AdminAnnouncementsPage() {
           </tbody>
         </table>
         {announcements.length === 0 ? (
-          <div className="px-4 py-6 text-sm text-neutral-400">No announcements yet.</div>
+          <div className="px-4 py-6 text-sm text-neutral-400">{t.noAnnouncements}</div>
         ) : null}
       </div>
     </div>

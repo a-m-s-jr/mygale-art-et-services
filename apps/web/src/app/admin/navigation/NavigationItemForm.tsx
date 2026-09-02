@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { updateNavigationItem } from './actions'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
@@ -16,7 +17,7 @@ type NavigationItemFormData = {
   openInNewTab: boolean
 }
 
-function SubmitButton() {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -24,7 +25,7 @@ function SubmitButton() {
       className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : 'Save Changes'}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -36,6 +37,9 @@ export default function NavigationItemForm({ initial }: { initial: NavigationIte
   const [openInNewTab, setOpenInNewTab] = useState(initial.openInNewTab)
 
   const [state, formAction] = useActionState(updateNavigationItem, initialState)
+  const adminT = useAdminT()
+  const t = adminT.navigation
+  const common = adminT.common
 
   return (
     <form action={formAction} className="space-y-6">
@@ -49,7 +53,7 @@ export default function NavigationItemForm({ initial }: { initial: NavigationIte
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">Label (FR) *</label>
+          <label className="text-sm text-neutral-300">{t.labelFr}</label>
           <input
             name="labelFr"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -59,7 +63,7 @@ export default function NavigationItemForm({ initial }: { initial: NavigationIte
           />
         </div>
         <div>
-          <label className="text-sm text-neutral-300">Label (EN) *</label>
+          <label className="text-sm text-neutral-300">{t.labelEn}</label>
           <input
             name="labelEn"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -72,7 +76,7 @@ export default function NavigationItemForm({ initial }: { initial: NavigationIte
 
       {initial.linkType !== 'SERVICES_DROPDOWN' ? (
         <div>
-          <label className="text-sm text-neutral-300">Link</label>
+          <label className="text-sm text-neutral-300">{t.linkLabel}</label>
           <input
             name="href"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -81,9 +85,7 @@ export default function NavigationItemForm({ initial }: { initial: NavigationIte
           />
         </div>
       ) : (
-        <p className="text-xs text-neutral-500">
-          This item always links to /services and shows the services dropdown.
-        </p>
+        <p className="text-xs text-neutral-500">{t.servicesDropdownNote}</p>
       )}
 
       <label className="flex items-center gap-2 text-sm text-neutral-300">
@@ -94,10 +96,10 @@ export default function NavigationItemForm({ initial }: { initial: NavigationIte
           checked={openInNewTab}
           onChange={(e) => setOpenInNewTab(e.target.checked)}
         />
-        Open in new tab
+        {t.openInNewTab}
       </label>
 
-      <SubmitButton />
+      <SubmitButton label={common.saveChanges} pendingLabel={common.saving} />
     </form>
   )
 }

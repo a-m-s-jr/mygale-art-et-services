@@ -1,22 +1,25 @@
 import { notFound } from 'next/navigation'
 import prisma from '@/lib/prisma'
+import { getAdminT } from '@/lib/getLocale'
 import AnnouncementForm from '../../AnnouncementForm'
 
 export default async function EditAnnouncementPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  const announcement = await prisma.announcement.findUnique({
-    where: { id },
-  })
+  const [announcement, adminT] = await Promise.all([
+    prisma.announcement.findUnique({ where: { id } }),
+    getAdminT(),
+  ])
 
   if (!announcement) {
     notFound()
   }
+  const t = adminT.announcements
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Edit Announcement</h1>
-        <p className="text-sm text-neutral-400">Update copy, schedule, and visibility.</p>
+        <h1 className="text-2xl font-semibold">{t.editTitle}</h1>
+        <p className="text-sm text-neutral-400">{t.editSubtitle}</p>
       </div>
       <AnnouncementForm
         mode="edit"

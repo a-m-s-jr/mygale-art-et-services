@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { uploadMedia } from '@/lib/mediaClient'
+import { useAdminT } from '@/lib/locale'
 
 export default function MediaUploadWidget() {
   const [folder, setFolder] = useState('uploads')
   const [uploading, setUploading] = useState(false)
   const router = useRouter()
+  const t = useAdminT().media
 
   async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
@@ -27,7 +29,7 @@ export default function MediaUploadWidget() {
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl border border-neutral-800 p-4">
       <div>
-        <label className="text-xs text-neutral-400">Folder</label>
+        <label className="text-xs text-neutral-400">{t.folderLabel}</label>
         <input
           value={folder}
           onChange={(e) => setFolder(e.target.value || 'uploads')}
@@ -35,7 +37,7 @@ export default function MediaUploadWidget() {
         />
       </div>
       <div>
-        <label className="text-xs text-neutral-400">Upload files</label>
+        <label className="text-xs text-neutral-400">{t.uploadFilesLabel}</label>
         <input
           type="file"
           accept="image/*"
@@ -45,7 +47,7 @@ export default function MediaUploadWidget() {
           className="mt-1 block text-sm text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-neutral-800 file:text-neutral-200 hover:file:bg-neutral-700 disabled:opacity-50"
         />
       </div>
-      {uploading && <span className="text-xs text-neutral-400">Uploading...</span>}
+      {uploading && <span className="text-xs text-neutral-400">{t.uploading}</span>}
     </div>
   )
 }

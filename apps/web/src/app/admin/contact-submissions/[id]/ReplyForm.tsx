@@ -4,10 +4,11 @@ import { useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { sendReply } from './actions'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
-function SubmitButton() {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -15,7 +16,7 @@ function SubmitButton() {
       className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Sending...' : 'Send Reply'}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -30,6 +31,7 @@ export default function ReplyForm({
   const [channel, setChannel] = useState<'email' | 'phone' | 'whatsapp' | 'note'>('email')
   const [body, setBody] = useState('')
   const [state, formAction] = useActionState(sendReply, initialState)
+  const t = useAdminT().replyForm
 
   return (
     <form action={formAction} className="space-y-4 rounded-xl border border-neutral-800 p-4">
@@ -43,22 +45,22 @@ export default function ReplyForm({
       {returnTo ? <input type="hidden" name="returnTo" value={returnTo} /> : null}
 
       <div>
-        <label className="text-sm text-neutral-300">Channel</label>
+        <label className="text-sm text-neutral-300">{t.channelLabel}</label>
         <select
           name="channel"
           className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
           value={channel}
           onChange={(e) => setChannel(e.target.value as typeof channel)}
         >
-          <option value="email">Email (sends to the submitter)</option>
-          <option value="phone">Phone call (log only)</option>
-          <option value="whatsapp">WhatsApp (log only)</option>
-          <option value="note">Internal note (log only)</option>
+          <option value="email">{t.channelEmail}</option>
+          <option value="phone">{t.channelPhone}</option>
+          <option value="whatsapp">{t.channelWhatsapp}</option>
+          <option value="note">{t.channelNote}</option>
         </select>
       </div>
 
       <div>
-        <label className="text-sm text-neutral-300">Message</label>
+        <label className="text-sm text-neutral-300">{t.messageLabel}</label>
         <textarea
           name="body"
           rows={5}
@@ -69,7 +71,7 @@ export default function ReplyForm({
         />
       </div>
 
-      <SubmitButton />
+      <SubmitButton label={t.sendReply} pendingLabel={t.sending} />
     </form>
   )
 }

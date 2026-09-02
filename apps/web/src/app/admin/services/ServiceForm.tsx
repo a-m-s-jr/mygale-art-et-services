@@ -9,6 +9,7 @@ import MediaPicker from '@/components/admin/MediaPicker'
 import RichTextEditor from '@/components/admin/RichTextEditor'
 import SortableList from '@/components/admin/SortableList'
 import { SortableCard, DragHandle } from '@/components/admin/SortableRow'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
@@ -43,7 +44,7 @@ type ServiceFormData = {
   sections: SectionFormData[]
 }
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -51,7 +52,7 @@ function SubmitButton({ label }: { label: string }) {
       className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : label}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -89,6 +90,9 @@ export default function ServiceForm({
   const [featured, setFeatured] = useState(initial?.featured ?? true)
   const [published, setPublished] = useState(initial?.published ?? true)
   const [sections, setSections] = useState<SectionFormData[]>(initial?.sections ?? [])
+  const adminT = useAdminT()
+  const t = adminT.services
+  const common = adminT.common
 
   useEffect(() => {
     if (!slugTouched) {
@@ -260,23 +264,21 @@ export default function ServiceForm({
 
       {pendingDraft ? (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
-          <span>
-            An autosaved draft from {new Date(pendingDraft.savedAt).toLocaleString()} was found.
-          </span>
+          <span>{t.autosaveFound(new Date(pendingDraft.savedAt).toLocaleString())}</span>
           <div className="flex gap-2">
             <button
               type="button"
               onClick={applyDraft}
               className="rounded border border-amber-400 px-3 py-1 text-xs"
             >
-              Restore draft
+              {t.restoreDraft}
             </button>
             <button
               type="button"
               onClick={dismissDraft}
               className="rounded border border-neutral-700 px-3 py-1 text-xs"
             >
-              Discard
+              {t.discardDraft}
             </button>
           </div>
         </div>
@@ -288,11 +290,11 @@ export default function ServiceForm({
       <input type="hidden" name="sectionsJson" value={sectionsJson} />
 
       <div className="space-y-4 rounded-xl border border-neutral-800 p-4">
-        <h2 className="text-sm font-semibold text-neutral-200">Basics</h2>
+        <h2 className="text-sm font-semibold text-neutral-200">{t.basics}</h2>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="text-sm text-neutral-300">Title (FR) *</label>
+            <label className="text-sm text-neutral-300">{common.titleFr}</label>
             <input
               name="titleFr"
               className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -302,7 +304,7 @@ export default function ServiceForm({
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">Title (EN) *</label>
+            <label className="text-sm text-neutral-300">{common.titleEn}</label>
             <input
               name="titleEn"
               className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -314,7 +316,7 @@ export default function ServiceForm({
         </div>
 
         <div>
-          <label className="text-sm text-neutral-300">Slug *</label>
+          <label className="text-sm text-neutral-300">{common.slug} *</label>
           <input
             name="slug"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -325,14 +327,12 @@ export default function ServiceForm({
             }}
             required
           />
-          <p className="mt-1 text-xs text-neutral-500">
-            Changing the slug changes the page URL (/services/{slug || '...'})
-          </p>
+          <p className="mt-1 text-xs text-neutral-500">{t.slugHint(slug || '...')}</p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="text-sm text-neutral-300">Summary (FR) *</label>
+            <label className="text-sm text-neutral-300">{t.summaryFr}</label>
             <textarea
               name="summaryFr"
               rows={3}
@@ -343,7 +343,7 @@ export default function ServiceForm({
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">Summary (EN) *</label>
+            <label className="text-sm text-neutral-300">{t.summaryEn}</label>
             <textarea
               name="summaryEn"
               rows={3}
@@ -356,7 +356,7 @@ export default function ServiceForm({
         </div>
 
         <MediaPicker
-          label="Hero / card image"
+          label={t.heroImage}
           folder="services"
           url={heroImageUrl}
           onChange={(url, key) => {
@@ -367,7 +367,7 @@ export default function ServiceForm({
 
         <div className="grid gap-4 md:grid-cols-3">
           <div>
-            <label className="text-sm text-neutral-300">Order</label>
+            <label className="text-sm text-neutral-300">{t.order}</label>
             <input
               type="number"
               name="order"
@@ -384,7 +384,7 @@ export default function ServiceForm({
               checked={featured}
               onChange={(e) => setFeatured(e.target.checked)}
             />
-            Featured on homepage
+            {t.featuredCheckbox}
           </label>
           <label className="flex items-center gap-2 text-sm text-neutral-300 mt-6">
             <input
@@ -394,16 +394,16 @@ export default function ServiceForm({
               checked={published}
               onChange={(e) => setPublished(e.target.checked)}
             />
-            Published
+            {t.publishedCheckbox}
           </label>
         </div>
       </div>
 
       <div className="space-y-4 rounded-xl border border-neutral-800 p-4">
-        <h2 className="text-sm font-semibold text-neutral-200">SEO</h2>
+        <h2 className="text-sm font-semibold text-neutral-200">{common.seoSection}</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="text-sm text-neutral-300">SEO Title (FR)</label>
+            <label className="text-sm text-neutral-300">{common.seoTitleFr}</label>
             <input
               name="seoTitleFr"
               className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -412,7 +412,7 @@ export default function ServiceForm({
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">SEO Title (EN)</label>
+            <label className="text-sm text-neutral-300">{common.seoTitleEn}</label>
             <input
               name="seoTitleEn"
               className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -421,7 +421,7 @@ export default function ServiceForm({
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">SEO Description (FR)</label>
+            <label className="text-sm text-neutral-300">{common.seoDescriptionFr}</label>
             <textarea
               name="seoDescriptionFr"
               rows={2}
@@ -431,7 +431,7 @@ export default function ServiceForm({
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">SEO Description (EN)</label>
+            <label className="text-sm text-neutral-300">{common.seoDescriptionEn}</label>
             <textarea
               name="seoDescriptionEn"
               rows={2}
@@ -445,18 +445,18 @@ export default function ServiceForm({
 
       <div className="space-y-4 rounded-xl border border-neutral-800 p-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-neutral-200">Content sections</h2>
+          <h2 className="text-sm font-semibold text-neutral-200">{t.contentSections}</h2>
           <button
             type="button"
             onClick={addSection}
             className="rounded border border-neutral-700 px-3 py-1 text-xs"
           >
-            + Add section
+            {t.addSection}
           </button>
         </div>
 
         {sections.length === 0 ? (
-          <p className="text-sm text-neutral-500">No sections yet.</p>
+          <p className="text-sm text-neutral-500">{t.noSections}</p>
         ) : null}
 
         <SortableList
@@ -474,7 +474,7 @@ export default function ServiceForm({
                 {({ dragHandleProps }) => (
                   <>
               <div className="flex items-center justify-between gap-2">
-                <span className="text-xs text-neutral-500">Section {index + 1}</span>
+                <span className="text-xs text-neutral-500">{t.section} {index + 1}</span>
                 <div className="flex items-center gap-2">
                   <DragHandle dragHandleProps={dragHandleProps} />
                   <button
@@ -482,14 +482,14 @@ export default function ServiceForm({
                     onClick={() => removeSection(index)}
                     className="rounded border border-red-500/60 px-2 py-1 text-xs text-red-200"
                   >
-                    Remove
+                    {t.remove}
                   </button>
                 </div>
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
                 <div>
-                  <label className="text-xs text-neutral-400">Title (FR)</label>
+                  <label className="text-xs text-neutral-400">{common.titleFrOptional}</label>
                   <input
                     data-testid={`section-title-fr-${index}`}
                     className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm"
@@ -498,7 +498,7 @@ export default function ServiceForm({
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-neutral-400">Title (EN)</label>
+                  <label className="text-xs text-neutral-400">{common.titleEnOptional}</label>
                   <input
                     data-testid={`section-title-en-${index}`}
                     className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm"
@@ -509,7 +509,7 @@ export default function ServiceForm({
               </div>
 
               <div>
-                <label className="text-xs text-neutral-400">Type</label>
+                <label className="text-xs text-neutral-400">{t.sectionType}</label>
                 <select
                   className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm"
                   value={section.type}
@@ -517,15 +517,15 @@ export default function ServiceForm({
                     updateSection(index, { type: e.target.value as SectionFormData['type'] })
                   }
                 >
-                  <option value="BULLET_LIST">Bullet list</option>
-                  <option value="RICHTEXT">Text</option>
+                  <option value="BULLET_LIST">{t.bulletList}</option>
+                  <option value="RICHTEXT">{t.text}</option>
                 </select>
               </div>
 
               {section.type === 'BULLET_LIST' ? (
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <label className="text-xs text-neutral-400">Bullet items (FR, one per line)</label>
+                    <label className="text-xs text-neutral-400">{t.bulletItemsFr}</label>
                     <textarea
                       rows={4}
                       className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm"
@@ -534,7 +534,7 @@ export default function ServiceForm({
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-neutral-400">Bullet items (EN, one per line)</label>
+                    <label className="text-xs text-neutral-400">{t.bulletItemsEn}</label>
                     <textarea
                       rows={4}
                       className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm"
@@ -546,7 +546,7 @@ export default function ServiceForm({
               ) : (
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <label className="text-xs text-neutral-400">Text (FR)</label>
+                    <label className="text-xs text-neutral-400">{t.textFr}</label>
                     <div className="mt-1">
                       <RichTextEditor
                         value={section.bodyFr}
@@ -555,7 +555,7 @@ export default function ServiceForm({
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs text-neutral-400">Text (EN)</label>
+                    <label className="text-xs text-neutral-400">{t.textEn}</label>
                     <div className="mt-1">
                       <RichTextEditor
                         value={section.bodyEn}
@@ -567,7 +567,7 @@ export default function ServiceForm({
               )}
 
               <MediaPicker
-                label="Section image"
+                label={t.sectionImage}
                 folder="services"
                 url={section.mediaUrl}
                 compact
@@ -582,7 +582,10 @@ export default function ServiceForm({
       </div>
 
       <div className="flex items-center gap-3">
-        <SubmitButton label={mode === 'create' ? 'Create Service' : 'Save Changes'} />
+        <SubmitButton
+          label={mode === 'create' ? t.createButton : common.saveChanges}
+          pendingLabel={common.saving}
+        />
         {mode === 'edit' && initial?.slug ? (
           <a
             href={`/services/${initial.slug}?preview=1`}
@@ -590,10 +593,10 @@ export default function ServiceForm({
             rel="noreferrer"
             className="rounded border border-neutral-700 px-4 py-2 text-sm"
           >
-            Preview last saved version
+            {t.previewLastSaved}
           </a>
         ) : null}
-        <span className="text-xs text-neutral-400">Fields marked * are required.</span>
+        <span className="text-xs text-neutral-400">{common.fieldsRequired}</span>
       </div>
     </form>
   )

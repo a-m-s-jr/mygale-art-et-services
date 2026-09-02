@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { formatClockTime, formatCalendarDate, APP_TIMEZONE } from '@/lib/timezone'
+import { getAdminT } from '@/lib/getLocale'
 import type { AttendanceStatus, Prisma } from '@prisma/client'
 
 function todayISO() {
@@ -50,7 +51,7 @@ export default async function AdminAttendancePage({
       : {}),
   }
 
-  const [records, departments, jobRoles] = await Promise.all([
+  const [records, departments, jobRoles, adminT] = await Promise.all([
     prisma.attendance.findMany({
       where,
       orderBy: [{ date: 'desc' }, { arrivalAt: 'desc' }],
@@ -64,27 +65,29 @@ export default async function AdminAttendancePage({
           orderBy: { name: 'asc' },
         })
       : prisma.jobRole.findMany({ orderBy: { name: 'asc' } }),
+    getAdminT(),
   ])
+  const t = adminT.attendance
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Attendance</h1>
-          <p className="text-sm text-neutral-400">Daily arrivals across every department.</p>
+          <h1 className="text-2xl font-semibold">{t.title}</h1>
+          <p className="text-sm text-neutral-400">{t.subtitle}</p>
         </div>
         <div className="flex gap-2 text-sm">
           <Link
             href="/admin/attendance/config"
             className="rounded border border-neutral-700 px-3 py-1.5"
           >
-            Configure Window
+            {t.configureWindow}
           </Link>
           <Link
             href="/admin/attendance/qr"
             className="rounded border border-neutral-700 px-3 py-1.5"
           >
-            QR Code
+            {t.qrCode}
           </Link>
         </div>
       </div>
@@ -94,23 +97,23 @@ export default async function AdminAttendancePage({
         method="get"
       >
         <div>
-          <label className="block text-xs text-neutral-400">Search</label>
+          <label className="block text-xs text-neutral-400">{t.searchLabel}</label>
           <input
             type="text"
             name="q"
             defaultValue={q}
-            placeholder="Name or email"
+            placeholder={t.searchPlaceholder}
             className="mt-1 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs text-neutral-400">Department</label>
+          <label className="block text-xs text-neutral-400">{t.departmentLabel}</label>
           <select
             name="departmentId"
             defaultValue={departmentId ?? ''}
             className="mt-1 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-sm"
           >
-            <option value="">All</option>
+            <option value="">{adminT.common.all}</option>
             {departments.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.name}
@@ -119,13 +122,13 @@ export default async function AdminAttendancePage({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-neutral-400">Role</label>
+          <label className="block text-xs text-neutral-400">{t.roleLabel}</label>
           <select
             name="jobRoleId"
             defaultValue={jobRoleId ?? ''}
             className="mt-1 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-sm"
           >
-            <option value="">All</option>
+            <option value="">{adminT.common.all}</option>
             {jobRoles.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.name}
@@ -134,19 +137,19 @@ export default async function AdminAttendancePage({
           </select>
         </div>
         <div>
-          <label className="block text-xs text-neutral-400">Status</label>
+          <label className="block text-xs text-neutral-400">{t.statusLabel}</label>
           <select
             name="status"
             defaultValue={status ?? ''}
             className="mt-1 rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-sm"
           >
-            <option value="">All</option>
-            <option value="ON_TIME">On time</option>
-            <option value="LATE">Late</option>
+            <option value="">{adminT.common.all}</option>
+            <option value="ON_TIME">{t.onTime}</option>
+            <option value="LATE">{t.late}</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs text-neutral-400">From</label>
+          <label className="block text-xs text-neutral-400">{t.fromLabel}</label>
           <input
             type="date"
             name="from"
@@ -155,7 +158,7 @@ export default async function AdminAttendancePage({
           />
         </div>
         <div>
-          <label className="block text-xs text-neutral-400">To</label>
+          <label className="block text-xs text-neutral-400">{t.toLabel}</label>
           <input
             type="date"
             name="to"
@@ -164,10 +167,10 @@ export default async function AdminAttendancePage({
           />
         </div>
         <button type="submit" className="rounded-lg bg-[#003366] px-4 py-2 text-sm font-semibold">
-          Filter
+          {t.filter}
         </button>
         <Link href={buildHref({})} className="rounded border border-neutral-700 px-3 py-2 text-sm">
-          Reset to today
+          {t.resetToday}
         </Link>
       </form>
 
@@ -175,13 +178,13 @@ export default async function AdminAttendancePage({
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
-              <th className="px-4 py-3">Employee</th>
-              <th className="px-4 py-3">Department</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3">Arrival</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{t.employee}</th>
+              <th className="px-4 py-3">{t.department}</th>
+              <th className="px-4 py-3">{t.role}</th>
+              <th className="px-4 py-3">{t.date}</th>
+              <th className="px-4 py-3">{t.arrival}</th>
+              <th className="px-4 py-3">{t.status}</th>
+              <th className="px-4 py-3">{t.actions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -207,11 +210,11 @@ export default async function AdminAttendancePage({
                         : 'bg-amber-500/20 text-amber-300'
                     }`}
                   >
-                    {r.status === 'ON_TIME' ? 'On time' : 'Late'}
+                    {r.status === 'ON_TIME' ? t.onTime : t.late}
                   </span>
                   {r.source === 'MANUAL' ? (
                     <span className="ml-2 rounded-full bg-neutral-800 px-2 py-0.5 text-[10px] text-neutral-400">
-                      manual
+                      {t.manual}
                     </span>
                   ) : null}
                 </td>
@@ -220,7 +223,7 @@ export default async function AdminAttendancePage({
                     href={`/admin/attendance/correct/${r.id}`}
                     className="rounded border border-neutral-700 px-3 py-1 text-xs"
                   >
-                    Correct
+                    {t.correct}
                   </Link>
                 </td>
               </tr>
@@ -228,9 +231,7 @@ export default async function AdminAttendancePage({
           </tbody>
         </table>
         {records.length === 0 ? (
-          <div className="px-4 py-6 text-sm text-neutral-400">
-            No attendance records match these filters.
-          </div>
+          <div className="px-4 py-6 text-sm text-neutral-400">{t.noRecords}</div>
         ) : null}
       </div>
 
@@ -239,7 +240,7 @@ export default async function AdminAttendancePage({
           href="/admin/attendance/correct/new"
           className="rounded border border-neutral-700 px-3 py-1.5"
         >
-          Add missing attendance
+          {t.addMissing}
         </Link>
       </div>
     </div>

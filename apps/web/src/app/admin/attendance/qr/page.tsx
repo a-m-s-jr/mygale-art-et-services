@@ -1,18 +1,16 @@
 import { generateAttendanceQrDataUrl, getAttendanceCheckInUrl } from '@/lib/attendanceQr'
+import { getAdminT } from '@/lib/getLocale'
 
 export default async function AttendanceQrPage() {
-  const qrDataUrl = await generateAttendanceQrDataUrl()
+  const [qrDataUrl, adminT] = await Promise.all([generateAttendanceQrDataUrl(), getAdminT()])
   const url = getAttendanceCheckInUrl()
+  const t = adminT.attendanceQr
 
   return (
     <div className="max-w-md space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Attendance QR Code</h1>
-        <p className="text-sm text-neutral-400">
-          Print and display this at the entrance. Any logged-in employee who scans it is taken to
-          their own attendance page — the code itself doesn&apos;t identify anyone, so the same code
-          works for every department and role.
-        </p>
+        <h1 className="text-2xl font-semibold">{t.title}</h1>
+        <p className="text-sm text-neutral-400">{t.body}</p>
       </div>
 
       <div className="flex flex-col items-center gap-4 rounded-xl border border-neutral-800 bg-white p-6">

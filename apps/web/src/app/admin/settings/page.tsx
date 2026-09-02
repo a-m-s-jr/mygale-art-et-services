@@ -1,18 +1,18 @@
 import { getSiteSettings } from '@/lib/queries/settings'
 import { requireRole } from '@/lib/auth'
+import { getAdminT } from '@/lib/getLocale'
 import SettingsForm from './SettingsForm'
 
 export default async function AdminSettingsPage() {
   await requireRole('ADMIN')
-  const settings = await getSiteSettings()
+  const [settings, adminT] = await Promise.all([getSiteSettings(), getAdminT()])
+  const t = adminT.settings
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Settings</h1>
-        <p className="text-sm text-neutral-400">
-          Global company info, contact details, map, and default SEO.
-        </p>
+        <h1 className="text-2xl font-semibold">{t.title}</h1>
+        <p className="text-sm text-neutral-400">{t.subtitle}</p>
       </div>
       <SettingsForm
         initial={{

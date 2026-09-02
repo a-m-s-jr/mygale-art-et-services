@@ -2,6 +2,7 @@ import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import MediaUploadWidget from './MediaUploadWidget'
 import { deleteMediaItem, restoreMediaItem } from './actions'
+import { getAdminT } from '@/lib/getLocale'
 
 function formatSize(bytes: number | null) {
   if (!bytes) return '—'
@@ -18,38 +19,39 @@ export default async function AdminMediaPage({
   const { tab, folder, q } = await searchParams
   const showTrash = tab === 'trash'
 
-  const items = await prisma.media.findMany({
-    where: {
-      deletedAt: showTrash ? { not: null } : null,
-      ...(folder ? { folder: { startsWith: folder } } : {}),
-      ...(q
-        ? {
-            OR: [
-              { key: { contains: q, mode: 'insensitive' } },
-              { altFr: { contains: q, mode: 'insensitive' } },
-              { altEn: { contains: q, mode: 'insensitive' } },
-            ],
-          }
-        : {}),
-    },
-    orderBy: { createdAt: 'desc' },
-    take: 120,
-  })
-
-  const folders = await prisma.media.groupBy({
-    by: ['folder'],
-    where: { deletedAt: null },
-    _count: true,
-    orderBy: { folder: 'asc' },
-  })
+  const [items, folders, adminT] = await Promise.all([
+    prisma.media.findMany({
+      where: {
+        deletedAt: showTrash ? { not: null } : null,
+        ...(folder ? { folder: { startsWith: folder } } : {}),
+        ...(q
+          ? {
+              OR: [
+                { key: { contains: q, mode: 'insensitive' } },
+                { altFr: { contains: q, mode: 'insensitive' } },
+                { altEn: { contains: q, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 120,
+    }),
+    prisma.media.groupBy({
+      by: ['folder'],
+      where: { deletedAt: null },
+      _count: true,
+      orderBy: { folder: 'asc' },
+    }),
+    getAdminT(),
+  ])
+  const t = adminT.media
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Media Library</h1>
-        <p className="text-sm text-neutral-400">
-          All images uploaded across the site, backed by your S3/CloudFront storage.
-        </p>
+        <h1 className="text-2xl font-semibold">{t.title}</h1>
+        <p className="text-sm text-neutral-400">{t.subtitle}</p>
       </div>
 
       <MediaUploadWidget />
@@ -60,7 +62,7 @@ export default async function AdminMediaPage({
             href="/admin/media"
             className={`rounded px-3 py-1 ${!folder && !showTrash ? 'bg-neutral-800' : 'border border-neutral-800'}`}
           >
-            All
+            {t.allTab}
           </Link>
           {folders.map((f) => (
             <Link
@@ -75,7 +77,7 @@ export default async function AdminMediaPage({
             href="/admin/media?tab=trash"
             className={`rounded px-3 py-1 ${showTrash ? 'bg-neutral-800' : 'border border-neutral-800'}`}
           >
-            Trash
+            {t.trashTab}
           </Link>
         </div>
 
@@ -84,11 +86,11 @@ export default async function AdminMediaPage({
             type="text"
             name="q"
             defaultValue={q}
-            placeholder="Search by name or alt text..."
+            placeholder={t.searchPlaceholder}
             className="rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-sm"
           />
           <button type="submit" className="rounded border border-neutral-700 px-3 py-1.5 text-xs">
-            Search
+            {t.searchButton}
           </button>
         </form>
       </div>
@@ -114,7 +116,7 @@ export default async function AdminMediaPage({
                 <form action={restoreMediaItem}>
                   <input type="hidden" name="id" value={item.id} />
                   <button type="submit" className="w-full rounded border border-neutral-700 px-2 py-1 text-xs">
-                    Restore
+                    {t.restore}
                   </button>
                 </form>
               ) : (
@@ -124,7 +126,7 @@ export default async function AdminMediaPage({
                     type="submit"
                     className="w-full rounded border border-red-500/60 px-2 py-1 text-xs text-red-200"
                   >
-                    Delete
+                    {t.delete}
                   </button>
                 </form>
               )}
@@ -134,9 +136,7 @@ export default async function AdminMediaPage({
       </div>
 
       {items.length === 0 ? (
-        <p className="text-sm text-neutral-400">
-          {showTrash ? 'Trash is empty.' : 'No media found.'}
-        </p>
+        <p className="text-sm text-neutral-400">{showTrash ? t.trashEmpty : t.noMedia}</p>
       ) : null}
     </div>
   )

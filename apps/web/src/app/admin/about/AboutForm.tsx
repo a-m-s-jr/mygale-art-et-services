@@ -6,6 +6,7 @@ import { useFormStatus } from 'react-dom'
 import { updateAboutPage } from './actions'
 import MediaPicker from '@/components/admin/MediaPicker'
 import RichTextEditor from '@/components/admin/RichTextEditor'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
@@ -23,7 +24,7 @@ type AboutFormData = {
   heroImageUrl: string
 }
 
-function SubmitButton() {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -31,7 +32,7 @@ function SubmitButton() {
       className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : 'Save Changes'}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -51,6 +52,9 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
   const [heroImageKey, setHeroImageKey] = useState('')
 
   const [state, formAction] = useActionState(updateAboutPage, initialState)
+  const adminT = useAdminT()
+  const t = adminT.about
+  const common = adminT.common
 
   return (
     <form action={formAction} className="space-y-6">
@@ -66,7 +70,7 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
       <div className="space-y-4 rounded-xl border border-neutral-800 p-4">
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="text-sm text-neutral-300">Title (FR) *</label>
+            <label className="text-sm text-neutral-300">{common.titleFr}</label>
             <input
               name="titleFr"
               className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -76,7 +80,7 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">Title (EN) *</label>
+            <label className="text-sm text-neutral-300">{common.titleEn}</label>
             <input
               name="titleEn"
               className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -86,7 +90,7 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">Intro (FR) *</label>
+            <label className="text-sm text-neutral-300">{t.introFr}</label>
             <textarea
               name="introFr"
               rows={3}
@@ -97,7 +101,7 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">Intro (EN) *</label>
+            <label className="text-sm text-neutral-300">{t.introEn}</label>
             <textarea
               name="introEn"
               rows={3}
@@ -108,14 +112,14 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">Body (FR) *</label>
+            <label className="text-sm text-neutral-300">{t.bodyFr}</label>
             <div className="mt-1">
               <RichTextEditor value={bodyFr} onChange={setBodyFr} />
             </div>
             <input type="hidden" name="bodyFr" value={bodyFr} />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">Body (EN) *</label>
+            <label className="text-sm text-neutral-300">{t.bodyEn}</label>
             <div className="mt-1">
               <RichTextEditor value={bodyEn} onChange={setBodyEn} />
             </div>
@@ -124,7 +128,7 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
         </div>
 
         <MediaPicker
-          label="Hero image"
+          label={t.heroImage}
           folder="about"
           url={heroImageUrl}
           onChange={(url, key) => {
@@ -135,10 +139,10 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
       </div>
 
       <div className="space-y-4 rounded-xl border border-neutral-800 p-4">
-        <h2 className="text-sm font-semibold text-neutral-200">SEO</h2>
+        <h2 className="text-sm font-semibold text-neutral-200">{common.seoSection}</h2>
         <div className="grid gap-4 md:grid-cols-2">
           <div>
-            <label className="text-sm text-neutral-300">SEO Title (FR)</label>
+            <label className="text-sm text-neutral-300">{common.seoTitleFr}</label>
             <input
               name="seoTitleFr"
               className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -147,7 +151,7 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">SEO Title (EN)</label>
+            <label className="text-sm text-neutral-300">{common.seoTitleEn}</label>
             <input
               name="seoTitleEn"
               className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -156,7 +160,7 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">SEO Description (FR)</label>
+            <label className="text-sm text-neutral-300">{common.seoDescriptionFr}</label>
             <textarea
               name="seoDescriptionFr"
               rows={2}
@@ -166,7 +170,7 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
             />
           </div>
           <div>
-            <label className="text-sm text-neutral-300">SEO Description (EN)</label>
+            <label className="text-sm text-neutral-300">{common.seoDescriptionEn}</label>
             <textarea
               name="seoDescriptionEn"
               rows={2}
@@ -178,7 +182,7 @@ export default function AboutForm({ initial }: { initial: AboutFormData }) {
         </div>
       </div>
 
-      <SubmitButton />
+      <SubmitButton label={common.saveChanges} pendingLabel={common.saving} />
     </form>
   )
 }

@@ -1,17 +1,22 @@
 import prisma from '@/lib/prisma'
 import { createBlogCategory, deleteBlogCategory } from './actions'
+import { getAdminT } from '@/lib/getLocale'
 
 export default async function AdminBlogCategoriesPage() {
-  const categories = await prisma.blogCategory.findMany({
-    orderBy: { order: 'asc' },
-    include: { _count: { select: { posts: true } } },
-  })
+  const [categories, adminT] = await Promise.all([
+    prisma.blogCategory.findMany({
+      orderBy: { order: 'asc' },
+      include: { _count: { select: { posts: true } } },
+    }),
+    getAdminT(),
+  ])
+  const t = adminT.blogCategories
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold">Blog Categories</h1>
-        <p className="text-sm text-neutral-400">Organize blog posts into categories.</p>
+        <h1 className="text-2xl font-semibold">{t.title}</h1>
+        <p className="text-sm text-neutral-400">{t.subtitle}</p>
       </div>
 
       <form
@@ -20,18 +25,18 @@ export default async function AdminBlogCategoriesPage() {
       >
         <input
           name="nameFr"
-          placeholder="Name (FR) *"
+          placeholder={t.nameFrPlaceholder}
           required
           className="rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm"
         />
         <input
           name="nameEn"
-          placeholder="Name (EN) *"
+          placeholder={t.nameEnPlaceholder}
           required
           className="rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 text-sm"
         />
         <button type="submit" className="rounded-lg bg-[#003366] px-4 py-2 text-sm font-semibold">
-          Add Category
+          {t.addCategory}
         </button>
       </form>
 
@@ -39,10 +44,10 @@ export default async function AdminBlogCategoriesPage() {
         <table className="w-full text-left text-sm">
           <thead className="bg-neutral-900 text-neutral-300">
             <tr>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Slug</th>
-              <th className="px-4 py-3">Posts</th>
-              <th className="px-4 py-3">Actions</th>
+              <th className="px-4 py-3">{t.tableName}</th>
+              <th className="px-4 py-3">{t.tableSlug}</th>
+              <th className="px-4 py-3">{t.tablePosts}</th>
+              <th className="px-4 py-3">{t.tableActions}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
@@ -61,7 +66,7 @@ export default async function AdminBlogCategoriesPage() {
                       type="submit"
                       className="rounded border border-red-500/60 px-3 py-1 text-xs text-red-200"
                     >
-                      Delete
+                      {t.delete}
                     </button>
                   </form>
                 </td>
@@ -70,7 +75,7 @@ export default async function AdminBlogCategoriesPage() {
           </tbody>
         </table>
         {categories.length === 0 ? (
-          <div className="px-4 py-6 text-sm text-neutral-400">No categories yet.</div>
+          <div className="px-4 py-6 text-sm text-neutral-400">{t.noCategories}</div>
         ) : null}
       </div>
     </div>

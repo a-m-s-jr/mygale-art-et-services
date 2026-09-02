@@ -3,10 +3,11 @@
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createManualAttendance } from '../actions'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
-function SubmitButton() {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -14,7 +15,7 @@ function SubmitButton() {
       className="rounded-lg bg-[#003366] px-5 py-2 text-sm font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : 'Add Attendance'}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -25,6 +26,8 @@ export default function NewAttendanceForm({
   employees: { id: string; name: string; email: string }[]
 }) {
   const [state, formAction] = useActionState(createManualAttendance, initialState)
+  const adminT = useAdminT()
+  const t = adminT.attendanceCorrect
 
   return (
     <form action={formAction} className="space-y-4">
@@ -35,13 +38,13 @@ export default function NewAttendanceForm({
       ) : null}
 
       <div>
-        <label className="text-sm text-neutral-300">Employee *</label>
+        <label className="text-sm text-neutral-300">{t.employeeLabel}</label>
         <select
           name="userId"
           required
           className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
         >
-          <option value="">Select an employee</option>
+          <option value="">{t.selectEmployee}</option>
           {employees.map((e) => (
             <option key={e.id} value={e.id}>
               {e.name} ({e.email})
@@ -52,7 +55,7 @@ export default function NewAttendanceForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">Date *</label>
+          <label className="text-sm text-neutral-300">{t.dateLabel}</label>
           <input
             type="date"
             name="date"
@@ -61,7 +64,7 @@ export default function NewAttendanceForm({
           />
         </div>
         <div>
-          <label className="text-sm text-neutral-300">Arrival time *</label>
+          <label className="text-sm text-neutral-300">{t.arrivalTime}</label>
           <input
             type="time"
             name="arrivalTime"
@@ -72,17 +75,17 @@ export default function NewAttendanceForm({
       </div>
 
       <div>
-        <label className="text-sm text-neutral-300">Reason *</label>
+        <label className="text-sm text-neutral-300">{t.reason}</label>
         <textarea
           name="note"
           required
           rows={3}
           className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
-          placeholder="e.g. Employee forgot to scan the QR code; confirmed arrival with supervisor."
+          placeholder={t.reasonAddPlaceholder}
         />
       </div>
 
-      <SubmitButton />
+      <SubmitButton label={t.addAttendance} pendingLabel={adminT.common.saving} />
     </form>
   )
 }

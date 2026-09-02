@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { useActionState } from 'react'
 import { useFormStatus } from 'react-dom'
 import { createUser, updateUser } from './actions'
-import { ADMIN_PAGES } from '@/lib/adminPages'
+import { ADMIN_PAGES, NAV_TRANSLATION_KEY } from '@/lib/adminPages'
+import { useAdminT } from '@/lib/locale'
 
 const initialState = { error: '' as string | undefined }
 
@@ -24,7 +25,7 @@ type UserFormData = {
 
 type DepartmentOption = { id: string; name: string; jobRoles: { id: string; name: string }[] }
 
-function SubmitButton({ label }: { label: string }) {
+function SubmitButton({ label, pendingLabel }: { label: string; pendingLabel: string }) {
   const { pending } = useFormStatus()
   return (
     <button
@@ -32,7 +33,7 @@ function SubmitButton({ label }: { label: string }) {
       className="rounded-lg bg-[#003366] px-5 py-2 text-white font-semibold disabled:opacity-60"
       disabled={pending}
     >
-      {pending ? 'Saving...' : label}
+      {pending ? pendingLabel : label}
     </button>
   )
 }
@@ -62,6 +63,8 @@ export default function UserForm({
   const [departmentId, setDepartmentId] = useState(initial?.departmentId ?? '')
   const [jobRoleId, setJobRoleId] = useState(initial?.jobRoleId ?? '')
   const jobRolesForDepartment = departments.find((d) => d.id === departmentId)?.jobRoles ?? []
+  const adminT = useAdminT()
+  const t = adminT.userForm
 
   const action = mode === 'create' ? createUser : updateUser
   const [state, formAction] = useActionState(action, initialState)
@@ -87,7 +90,7 @@ export default function UserForm({
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
-          <label className="text-sm text-neutral-300">Name *</label>
+          <label className="text-sm text-neutral-300">{t.nameLabel}</label>
           <input
             name="name"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -97,7 +100,7 @@ export default function UserForm({
           />
         </div>
         <div>
-          <label className="text-sm text-neutral-300">Email *</label>
+          <label className="text-sm text-neutral-300">{t.emailLabel}</label>
           <input
             name="email"
             type="email"
@@ -110,7 +113,7 @@ export default function UserForm({
         </div>
         <div>
           <label className="text-sm text-neutral-300">
-            {mode === 'create' ? 'Password *' : 'New password (leave blank to keep current)'}
+            {mode === 'create' ? t.passwordCreate : t.passwordEdit}
           </label>
           <input
             name="password"
@@ -123,7 +126,7 @@ export default function UserForm({
           />
         </div>
         <div>
-          <label className="text-sm text-neutral-300">Role *</label>
+          <label className="text-sm text-neutral-300">{t.roleLabel}</label>
           <select
             name="role"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 disabled:opacity-50"
@@ -138,13 +141,11 @@ export default function UserForm({
             ))}
           </select>
           {!canGrantAdmin ? (
-            <p className="mt-1 text-xs text-neutral-500">
-              Only a Super Admin can grant Admin or Super Admin.
-            </p>
+            <p className="mt-1 text-xs text-neutral-500">{t.onlySuperAdminGrant}</p>
           ) : null}
         </div>
         <div>
-          <label className="text-sm text-neutral-300">Department</label>
+          <label className="text-sm text-neutral-300">{t.departmentLabel}</label>
           <select
             name="departmentId"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2"
@@ -154,7 +155,7 @@ export default function UserForm({
               setJobRoleId('')
             }}
           >
-            <option value="">No department (not an attendance employee)</option>
+            <option value="">{t.noDepartmentOption}</option>
             {departments.map((d) => (
               <option key={d.id} value={d.id}>
                 {d.name}
@@ -163,7 +164,7 @@ export default function UserForm({
           </select>
         </div>
         <div>
-          <label className="text-sm text-neutral-300">Job Role</label>
+          <label className="text-sm text-neutral-300">{t.jobRoleLabel}</label>
           <select
             name="jobRoleId"
             className="mt-1 w-full rounded-lg border border-neutral-800 bg-neutral-900 px-3 py-2 disabled:opacity-50"
@@ -171,7 +172,7 @@ export default function UserForm({
             onChange={(e) => setJobRoleId(e.target.value)}
             disabled={!departmentId}
           >
-            <option value="">No job role</option>
+            <option value="">{t.noJobRoleOption}</option>
             {jobRolesForDepartment.map((r) => (
               <option key={r.id} value={r.id}>
                 {r.name}
@@ -191,17 +192,17 @@ export default function UserForm({
             onChange={(e) => setActive(e.target.checked)}
             disabled={isSelf}
           />
-          Active (unchecking immediately signs this user out everywhere)
+          {t.activeCheckbox}
         </label>
       ) : null}
 
       <div className="space-y-3 rounded-lg border border-neutral-800 p-4">
-        <div className="text-sm font-semibold text-neutral-200">Admin page access</div>
+        <div className="text-sm font-semibold text-neutral-200">{t.pageAccessTitle}</div>
 
         {isAdminRole ? (
           <p className="text-sm text-neutral-400">
-            {role === 'SUPER_ADMIN' ? 'Super Admins' : 'Admins'} always have full access to every
-            admin page — this can&apos;t be restricted.
+            {role === 'SUPER_ADMIN' ? t.fullAccessSuperAdmins : t.fullAccessAdmins}
+            {t.fullAccessSuffix}
           </p>
         ) : (
           <>
@@ -213,7 +214,7 @@ export default function UserForm({
                 checked={pagesRestricted}
                 onChange={(e) => setPagesRestricted(e.target.checked)}
               />
-              Restrict this account to specific admin pages
+              {t.restrictCheckbox}
             </label>
 
             {pagesRestricted ? (
@@ -239,26 +240,23 @@ export default function UserForm({
                         onChange={() => toggleAllowedPage(page.key)}
                         disabled={!reachable}
                       />
-                      {page.label}
-                      {!reachable ? (
-                        <span className="text-xs text-neutral-600">(Admin only)</span>
-                      ) : null}
+                      {adminT.nav[NAV_TRANSLATION_KEY[page.key] as keyof typeof adminT.nav] ?? page.label}
+                      {!reachable ? <span className="text-xs text-neutral-600">{t.adminOnly}</span> : null}
                     </label>
                   )
                 })}
               </div>
             ) : (
-              <p className="text-xs text-neutral-500">
-                Full access to every page this role&apos;s rank permits. Check the box above to pick
-                specific pages instead — this can grant a page below the account&apos;s usual rank
-                (e.g. Blog to a Staff account), but never an Admin-only page.
-              </p>
+              <p className="text-xs text-neutral-500">{t.unrestrictedNote}</p>
             )}
           </>
         )}
       </div>
 
-      <SubmitButton label={mode === 'create' ? 'Create User' : 'Save Changes'} />
+      <SubmitButton
+        label={mode === 'create' ? t.createUser : t.saveChanges}
+        pendingLabel={adminT.common.saving}
+      />
     </form>
   )
 }

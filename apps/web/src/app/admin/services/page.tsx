@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { restoreService } from './actions'
+import { getAdminT } from '@/lib/getLocale'
 import ServicesTable from './ServicesTable'
 
 export default async function AdminServicesPage({
@@ -11,25 +12,27 @@ export default async function AdminServicesPage({
   const { tab } = await searchParams
   const showTrash = tab === 'trash'
 
-  const services = await prisma.service.findMany({
-    where: showTrash ? { deletedAt: { not: null } } : { deletedAt: null },
-    orderBy: showTrash ? { updatedAt: 'desc' } : { order: 'asc' },
-  })
+  const [services, adminT] = await Promise.all([
+    prisma.service.findMany({
+      where: showTrash ? { deletedAt: { not: null } } : { deletedAt: null },
+      orderBy: showTrash ? { updatedAt: 'desc' } : { order: 'asc' },
+    }),
+    getAdminT(),
+  ])
+  const t = adminT.services
 
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold">Services</h1>
-          <p className="text-sm text-neutral-400">
-            Manage service pages, sections, and ordering. Drag the handle to reorder.
-          </p>
+          <h1 className="text-2xl font-semibold">{t.title}</h1>
+          <p className="text-sm text-neutral-400">{t.subtitle}</p>
         </div>
         <Link
           href="/admin/services/new"
           className="rounded-lg bg-[#003366] px-4 py-2 text-sm font-semibold"
         >
-          New Service
+          {t.newService}
         </Link>
       </div>
 
@@ -38,13 +41,13 @@ export default async function AdminServicesPage({
           href="/admin/services"
           className={`rounded px-3 py-1 ${!showTrash ? 'bg-neutral-800' : 'border border-neutral-800'}`}
         >
-          Active
+          {t.tabActive}
         </Link>
         <Link
           href="/admin/services?tab=trash"
           className={`rounded px-3 py-1 ${showTrash ? 'bg-neutral-800' : 'border border-neutral-800'}`}
         >
-          Trash
+          {t.tabTrash}
         </Link>
       </div>
 
@@ -55,9 +58,9 @@ export default async function AdminServicesPage({
           <table className="w-full text-left text-sm">
             <thead className="bg-neutral-900 text-neutral-300">
               <tr>
-                <th className="px-4 py-3">Title</th>
-                <th className="px-4 py-3">Slug</th>
-                <th className="px-4 py-3">Actions</th>
+                <th className="px-4 py-3">{t.tableTitle}</th>
+                <th className="px-4 py-3">{t.tableSlug}</th>
+                <th className="px-4 py-3">{t.tableActions}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-neutral-800">
@@ -75,7 +78,7 @@ export default async function AdminServicesPage({
                         type="submit"
                         className="rounded border border-neutral-700 px-3 py-1 text-xs"
                       >
-                        Restore
+                        {t.restore}
                       </button>
                     </form>
                   </td>
@@ -84,7 +87,7 @@ export default async function AdminServicesPage({
             </tbody>
           </table>
           {services.length === 0 ? (
-            <div className="px-4 py-6 text-sm text-neutral-400">Trash is empty.</div>
+            <div className="px-4 py-6 text-sm text-neutral-400">{t.trashEmpty}</div>
           ) : null}
         </div>
       )}
