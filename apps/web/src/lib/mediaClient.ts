@@ -1,30 +1,8 @@
 'use client'
 
 /**
- * Initializes CloudFront signed cookies (prod) or fetches signed URLs (dev).
- * Call after login and after uploads to refresh cookie TTL.
- */
-export async function initMediaSession(keys: string[] = []): Promise<{ ok: boolean; urls?: string[]; signedUrls?: string[] }> {
-  try {
-    const res = await fetch('/api/media/session', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ keys }),
-    })
-    if (!res.ok) {
-      console.warn('Media session init failed', res.status)
-      return { ok: false }
-    }
-    return res.json()
-  } catch (err) {
-    console.error('initMediaSession error', err)
-    return { ok: false }
-  }
-}
-
-/**
- * Uploads a file to S3 via the backend and returns the CDN URL (or signed URL in dev).
+ * Uploads a file to S3 via the backend. The returned `url` points at this
+ * app's own same-origin media proxy (see /api/media/file), not the CDN.
  */
 export async function uploadMedia(
   file: File,
@@ -44,8 +22,9 @@ export async function uploadMedia(
     if (!res.ok) {
       return { ok: false, error: data.error || 'Upload failed' }
     }
-    // Refresh media session after upload
-    await initMediaSession()
+    // The uploaded file is served through this app's own same-origin proxy
+    // (see /api/media/file), not the CDN, so there's no signed cookie to
+    // refresh here.
     return { ok: true, key: data.key, url: data.url }
   } catch (err) {
     console.error('uploadMedia error', err)

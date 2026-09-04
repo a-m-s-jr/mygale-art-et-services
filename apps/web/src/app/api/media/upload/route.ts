@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 import { getCurrentUser } from '@/lib/auth'
-import { buildCdnUrl } from '@/lib/cloudfrontSigner'
 import prisma from '@/lib/prisma'
 
 const ROLE_RANK: Record<string, number> = {
@@ -62,12 +61,14 @@ function corsHeaders(): HeadersInit {
 // Every uploaded file here is public site content (service photos, homepage
 // images, blog covers, logos) — the same public pages later render this
 // exact URL to anonymous visitors, with no session to attach a signature or
-// cookie to. So the stored URL must be a stable, unsigned CDN link: signing
-// it with an expiring query string would work only until that signature
-// expired, then break permanently since nothing ever re-signs a URL that's
-// already sitting in the database.
+// cookie to. The CloudFront distribution in front of the bucket is
+// configured to require a signed cookie/URL on these objects regardless, and
+// generating that signature is currently broken in production — so instead
+// of depending on CloudFront (or on it being configured correctly) at all,
+// point at this app's own same-origin proxy route, which fetches the object
+// straight from S3 with credentials already proven to work for uploads.
 function resolveUrl(key: string) {
-  return buildCdnUrl(key)
+  return `/api/media/file/${key}`
 }
 
 async function putObject(key: string, body: Buffer, contentType: string) {
