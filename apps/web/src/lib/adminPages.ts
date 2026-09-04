@@ -63,7 +63,7 @@ export const ADMIN_PAGES: AdminPage[] = [
   { key: 'users', href: '/admin/users', label: 'Users', minRole: 'ADMIN' },
   { key: 'departments', href: '/admin/departments', label: 'Departments', minRole: 'ADMIN' },
   { key: 'attendance', href: '/admin/attendance', label: 'Attendance', minRole: 'ADMIN' },
-  { key: 'audit-log', href: '/admin/audit-log', label: 'Audit Log', minRole: 'ADMIN' },
+  { key: 'audit-log', href: '/admin/audit-log', label: 'Audit Log', minRole: 'SUPER_ADMIN' },
 ]
 
 /** Maps an ADMIN_PAGES `key` to its property name in adminTranslations' `nav` dictionary. */
@@ -95,12 +95,12 @@ export type PageAccessUser = {
 /**
  * Whether `user` can open the admin section identified by `sectionKey`.
  *
- * SUPER_ADMIN and ADMIN always have full access and can't be locked out.
- * Admin-tier pages (Users, Settings, Navigation, ...) are never reachable
- * below Admin rank, regardless of any per-user grant — that boundary can't
- * be widened via the permission checkboxes.
+ * Admin-tier-and-up pages (Users, Settings, Navigation, Audit Log, ...) have
+ * a hard floor that nothing can bypass — not the per-user `allowedPages`
+ * grant, and for a SUPER_ADMIN-only page, not even an Admin account itself.
+ * That's what makes e.g. Audit Log genuinely off-limits to Admins.
  *
- * For everyone else: an unrestricted account (the default) gets access to
+ * Below that floor: an unrestricted account (the default) gets access to
  * every page its role rank already permits, same as before. A *restricted*
  * account's explicit `allowedPages` grant is what governs Editor-tier pages
  * instead — regardless of the account's own rank — so e.g. a Staff account
@@ -113,9 +113,11 @@ export function hasPageAccess(user: PageAccessUser, sectionKey: string): boolean
   const page = ADMIN_PAGES.find((p) => p.key === sectionKey)
   if (!page) return true
 
+  const minRank = ROLE_RANK[page.minRole]
+  if (minRank >= ROLE_RANK.ADMIN) return rank >= minRank
+
   if (rank >= ROLE_RANK.ADMIN) return true
-  if (page.minRole === 'ADMIN') return false
-  if (!user.pagesRestricted) return rank >= ROLE_RANK[page.minRole]
+  if (!user.pagesRestricted) return rank >= minRank
 
   return user.allowedPages.includes(sectionKey)
 }

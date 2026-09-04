@@ -1,10 +1,14 @@
 import prisma from '@/lib/prisma'
+import { requireRole } from '@/lib/auth'
 import { DEFAULT_WINDOW_START_MINUTES, DEFAULT_WINDOW_END_MINUTES } from '@/lib/attendance'
 import { formatMinutesAsTime } from '@/lib/timezone'
 import { getAdminT } from '@/lib/getLocale'
 import WindowForm from './WindowForm'
 
 export default async function AttendanceConfigPage() {
+  // Managing the attendance time window is Super-Admin-only — an Admin can
+  // still view/correct attendance, just not change what counts as late.
+  await requireRole('SUPER_ADMIN')
   const [departments, windows, adminT] = await Promise.all([
     prisma.department.findMany({ orderBy: { name: 'asc' } }),
     prisma.attendanceWindow.findMany(),

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { formatClockTime, formatCalendarDate, APP_TIMEZONE } from '@/lib/timezone'
 import { getAdminT } from '@/lib/getLocale'
+import { requireRole } from '@/lib/auth'
 import type { AttendanceStatus, Prisma } from '@prisma/client'
 
 function todayISO() {
@@ -29,6 +30,7 @@ export default async function AdminAttendancePage({
     to?: string
   }>
 }) {
+  const currentUser = await requireRole('ADMIN')
   const { q, departmentId, jobRoleId, status, from, to } = await searchParams
   const today = todayISO()
   const dateFrom = from || today
@@ -77,12 +79,14 @@ export default async function AdminAttendancePage({
           <p className="text-sm text-neutral-400">{t.subtitle}</p>
         </div>
         <div className="flex gap-2 text-sm">
-          <Link
-            href="/admin/attendance/config"
-            className="rounded border border-neutral-700 px-3 py-1.5"
-          >
-            {t.configureWindow}
-          </Link>
+          {currentUser.role === 'SUPER_ADMIN' ? (
+            <Link
+              href="/admin/attendance/config"
+              className="rounded border border-neutral-700 px-3 py-1.5"
+            >
+              {t.configureWindow}
+            </Link>
+          ) : null}
           <Link
             href="/admin/attendance/qr"
             className="rounded border border-neutral-700 px-3 py-1.5"
@@ -212,11 +216,6 @@ export default async function AdminAttendancePage({
                   >
                     {r.status === 'ON_TIME' ? t.onTime : t.late}
                   </span>
-                  {r.source === 'MANUAL' ? (
-                    <span className="ml-2 rounded-full bg-neutral-800 px-2 py-0.5 text-[10px] text-neutral-400">
-                      {t.manual}
-                    </span>
-                  ) : null}
                 </td>
                 <td className="px-4 py-3">
                   <Link

@@ -19,6 +19,11 @@ export default async function EditUserPage({ params }: { params: Promise<{ id: s
   if (!user) {
     notFound()
   }
+  // Super Admin accounts are invisible to Admins, same as on the Users list —
+  // an Admin can't reach one's edit page even by guessing the URL.
+  if (actor.role !== 'SUPER_ADMIN' && user.role === 'SUPER_ADMIN') {
+    notFound()
+  }
 
   return (
     <div className="space-y-6">
