@@ -84,10 +84,16 @@ export function zonedTimeToInstant(dateStr: string, timeStr: string): Date | nul
   return Number.isNaN(instant.getTime()) ? null : instant
 }
 
-/** Formats a @db.Date value (stored at UTC midnight) as a plain date, ignoring any local-tz shift. */
+/** Formats a @db.Date value (stored at UTC midnight) as a plain date with its weekday, ignoring any local-tz shift. */
 export function formatCalendarDate(date: Date): string {
+  // dateStyle can't be combined with explicit fields like weekday (Intl
+  // throws), so the "medium" look (e.g. "Sep 4, 2026") is spelled out by
+  // hand here with weekday prepended: "Fri, Sep 4, 2026".
   return new Intl.DateTimeFormat('en-US', {
     timeZone: 'UTC',
-    dateStyle: 'medium',
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   }).format(date)
 }

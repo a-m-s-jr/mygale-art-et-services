@@ -18,7 +18,7 @@ function describeMeta(meta: any) {
 }
 
 export default async function AdminAuditLogPage() {
-  await requireRole('ADMIN')
+  await requireRole('SUPER_ADMIN')
   const [entries, adminT] = await Promise.all([
     prisma.auditLog.findMany({
       orderBy: { createdAt: 'desc' },

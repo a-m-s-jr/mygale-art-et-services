@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 import { getCurrentUser } from '@/lib/auth'
-import { buildCdnUrl, isSignedUrlsFallback, signUrl } from '@/lib/cloudfrontSigner'
+import { buildCdnUrl } from '@/lib/cloudfrontSigner'
 import prisma from '@/lib/prisma'
 
 const ROLE_RANK: Record<string, number> = {
@@ -59,11 +59,15 @@ function corsHeaders(): HeadersInit {
   }
 }
 
+// Every uploaded file here is public site content (service photos, homepage
+// images, blog covers, logos) — the same public pages later render this
+// exact URL to anonymous visitors, with no session to attach a signature or
+// cookie to. So the stored URL must be a stable, unsigned CDN link: signing
+// it with an expiring query string would work only until that signature
+// expired, then break permanently since nothing ever re-signs a URL that's
+// already sitting in the database.
 function resolveUrl(key: string) {
-  const cdnUrl = buildCdnUrl(key)
-  const ttl = Number(process.env.CLOUDFRONT_COOKIE_TTL_SECONDS || '3600')
-  const expiresAt = Math.floor(Date.now() / 1000) + ttl
-  return isSignedUrlsFallback() ? signUrl(cdnUrl, expiresAt) : cdnUrl
+  return buildCdnUrl(key)
 }
 
 async function putObject(key: string, body: Buffer, contentType: string) {

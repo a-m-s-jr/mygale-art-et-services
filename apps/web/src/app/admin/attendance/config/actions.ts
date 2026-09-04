@@ -13,7 +13,7 @@ function asString(value: FormDataEntryValue | null) {
 }
 
 export async function setAttendanceWindow(_prevState: ActionState, formData: FormData) {
-  const actor = await requireRole('ADMIN')
+  const actor = await requireRole('SUPER_ADMIN')
 
   const departmentIdRaw = asString(formData.get('departmentId'))
   const departmentId = departmentIdRaw === '' ? null : departmentIdRaw

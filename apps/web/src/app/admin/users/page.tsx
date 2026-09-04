@@ -13,6 +13,10 @@ export default async function AdminUsersPage() {
     getAdminT(),
   ])
   const c = t.common
+  // Admins can manage every non-Super-Admin account; Super Admin accounts
+  // are invisible to them entirely — only a Super Admin can see/reach one.
+  const visibleUsers =
+    currentUser.role === 'SUPER_ADMIN' ? users : users.filter((u) => u.role !== 'SUPER_ADMIN')
 
   return (
     <div className="space-y-6">
@@ -43,7 +47,7 @@ export default async function AdminUsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-800">
-            {users.map((u) => (
+            {visibleUsers.map((u) => (
               <tr key={u.id} className="bg-neutral-950">
                 <td className="px-4 py-3">
                   {u.name}

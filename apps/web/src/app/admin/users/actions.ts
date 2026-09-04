@@ -165,6 +165,9 @@ export async function updateUser(_prevState: ActionState, formData: FormData) {
   if (!target) {
     return { error: 'User not found.' }
   }
+  if (actor.role !== 'SUPER_ADMIN' && target.role === 'SUPER_ADMIN') {
+    return { error: 'Only a Super Admin can manage a Super Admin account.' }
+  }
 
   const isSelf = target.id === actor.id
   if (isSelf && (role !== target.role || !active)) {
